@@ -5,6 +5,8 @@ import { ADMISSIONS_FACTS } from '../data/sourced';
 import { DESTINATION_BY_SLUG } from '../lib/store';
 
 const countries = [...new Set(ADMISSIONS_FACTS.map((f) => f.destination))].map((s) => DESTINATION_BY_SLUG[s]);
+const names = countries.map((c) => c.inName);
+const countryList = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
 const universityCount = new Set(ADMISSIONS_FACTS.map((f) => f.institution?.slug)).size;
 ---
 
@@ -15,7 +17,7 @@ const universityCount = new Set(ADMISSIONS_FACTS.map((f) => f.institution?.slug)
   <PageHead
     eyebrow="Free tool"
     title="Check against published minimums"
-    lede={`See how your marks compare with what ${universityCount} universities in ${countries.map((c) => c.name).join(', ')} publish for applicants from India. Each minimum is quoted from the university’s own page.`}
+    lede={`See how your marks compare with what ${universityCount} universities in ${countryList} publish for applicants from India. Each minimum is quoted from the university’s own page.`}
   >
     <p class="small subtle" style="margin:0;max-width:70ch">
       This isn’t a prediction and it isn’t a ranking. Meeting a minimum doesn’t mean you’ll get an offer, because universities look
