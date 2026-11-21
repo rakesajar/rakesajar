@@ -73,7 +73,7 @@ Reviewer: separate agent on a different model (Fable), read-only, own build copy
 ## Security and data-protection review of the sign-up flow (8610aa4)
 
 Independent agent (same model family, did not author the code). No blockers; the static site sends nothing until an
-endpoint is configured. Fixes in the commit after `cb02a2b`.
+endpoint is configured. Fixes in commit `e83c7df`.
 
 | Sev | Finding | Disposition |
 |---|---|---|
