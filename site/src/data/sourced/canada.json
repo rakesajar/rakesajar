@@ -1,0 +1,368 @@
+[
+  {
+    "id": "canada-toronto-entry-ug",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "entry_ug",
+    "label": "Indian qualifications accepted for undergraduate entry",
+    "value": "CBSE (AISSC) or CISCE (ISC) Class XII; state board results considered individually. No minimum percentage is published on this page.",
+    "url": "https://future.utoronto.ca/international-high-school-requirements-country?page=3",
+    "passage": "All India Senior School Certificate (awarded by CBSE) or Indian School Certificate (awarded by CISCE). Year 12 State Board Exams with excellent results will also be considered on an individual basis.",
+    "minimum": null,
+    "money": null,
+    "notes": "Country page lists qualifications only, no percentage. Separate note: CBSE applicants to calculus-requiring programmes need Class XII Standard Mathematics (Applied Mathematics not accepted)."
+  },
+  {
+    "id": "canada-toronto-entry-ug-maths",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "entry_ug",
+    "label": "CBSE maths for calculus-based programmes",
+    "value": "Class XII Standard Mathematics required; Applied Mathematics does not meet the calculus requirement",
+    "url": "https://future.utoronto.ca/international-high-school-requirements-country?page=3",
+    "passage": "CBSE students interested in programs that require Calculus for admission, such as business, engineering, and science programs, must present Class XII Standard Mathematics for admission consideration. Class XII Applied Mathematics (new and old syllabus) will not meet the Calculus requirement.",
+    "minimum": null,
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "canada-toronto-english-ielts",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "english",
+    "label": "IELTS Academic for undergraduate entry",
+    "value": "Overall 6.5, no band below 6.0",
+    "url": "https://future.utoronto.ca/english-language-requirements",
+    "passage": "The minimum requirement is an overall band of 6.5, with no band below 6.0.",
+    "minimum": {
+      "type": "ielts",
+      "min": 6.5
+    },
+    "money": null,
+    "notes": "India is not on the page's list of countries that may qualify for exemption; exemptions are decided after applying."
+  },
+  {
+    "id": "canada-toronto-english-class12",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "english",
+    "label": "Can Class XII English replace a test?",
+    "value": "Class XII English does not meet the English proficiency requirement",
+    "url": "https://future.utoronto.ca/english-language-requirements",
+    "passage": "No. A senior-level English course is required for admission, but it does not meet the English language proficiency requirement.",
+    "minimum": null,
+    "money": null,
+    "notes": "Answer to the FAQ \"Can I submit my Grade 12 English course instead of a language test?\""
+  },
+  {
+    "id": "canada-toronto-deadline",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "deadline",
+    "label": "Undergraduate application deadline (2027 admissions)",
+    "value": "January 15 (recommended early application date November 7), e.g. Arts & Science St. George",
+    "url": "https://future.utoronto.ca/deadlines",
+    "passage": "Arts & Science, U of T St. George (including International Foundation Program)\nNovember 7\nJanuary 15",
+    "minimum": null,
+    "money": null,
+    "notes": "Adjacent table cells (programme / recommended early application date / deadline) from the 2027 admissions table; same dates for most faculties. Medical Radiation Sciences deadline is February 1 (n/a early date). No year in the cells; table is headed \"2027 admissions Deadlines to apply\"."
+  },
+  {
+    "id": "canada-toronto-apply-route",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply (undergraduate)",
+    "value": "Through the Ontario Universities' Application Centre (OUAC), then the Join U of T applicant portal",
+    "url": "https://future.utoronto.ca/how-to-apply",
+    "passage": "All applications to U of T start with the Ontario Universities' Application Centre (OUAC).",
+    "minimum": null,
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "canada-toronto-scholarship-pearson",
+    "institution": {
+      "slug": "toronto",
+      "name": "University of Toronto"
+    },
+    "aspect": "scholarship",
+    "label": "Lester B. Pearson International Scholarship",
+    "value": "Covers tuition, books, incidental fees and full residence support for four years; school nomination required",
+    "url": "https://future.utoronto.ca/pearson-scholarships",
+    "passage": "One of our most competitive scholarships, the Pearson Scholarships cover tuition, books, incidental fees, and full residence support for four years.",
+    "minimum": null,
+    "money": null,
+    "notes": " The 2026 nomination and application deadlines have passed."
+  },
+  {
+    "id": "canada-ubc-english-class12",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "english",
+    "label": "Class XII English accepted instead of a test (CBSE/ISC)",
+    "value": "Minimum 75% in senior English (Indian grading scale), at a CBSE- or CISCE-affiliated school",
+    "url": "https://you.ubc.ca/applying-ubc/requirements/english-language-competency/",
+    "passage": "You have achieved a minimum grade of 75% (Indian grading scale) on your senior English subject.",
+    "minimum": null,
+    "money": null,
+    "notes": "Under \"6. Indian secondary school curricula\"; also requires the school be CBSE/CISCE affiliated. UBC reserves the right to exclude schools."
+  },
+  {
+    "id": "canada-ubc-english-ielts",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "english",
+    "label": "IELTS Academic (English Language Admission Standard)",
+    "value": "6.5, with no part less than 6.0",
+    "url": "https://you.ubc.ca/applying-ubc/requirements/english-language-competency/",
+    "passage": "6.5, with no part less than 6.0",
+    "minimum": {
+      "type": "ielts",
+      "min": 6.5
+    },
+    "money": null,
+    "notes": "Table cell under IELTS / International English Language Testing System (Academic)."
+  },
+  {
+    "id": "canada-ubc-deadline",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "deadline",
+    "label": "Application deadline, Winter Session (September 2027 start)",
+    "value": "January 15, 2027, 11:59PM PCT",
+    "url": "https://you.ubc.ca/applying-ubc/dates-deadlines/",
+    "passage": "January 15, 2027\n(11:59PM PCT)\nApplications due\nDeadline to apply for Winter Session (September 2027 to April 2028).",
+    "minimum": null,
+    "money": null,
+    "notes": "Adjacent lines on the dates page. UBC Vancouver page.",
+    "effectiveTo": "2027-01-15"
+  },
+  {
+    "id": "canada-ubc-scholarship-deadline",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "deadline",
+    "label": "International Scholars Program: apply-by deadline",
+    "value": "December 2, 2026, 12:00PM PCT (extended)",
+    "url": "https://you.ubc.ca/financial-planning/scholarships-awards-international-students/international-scholars/",
+    "passage": "We have extended the deadline to apply, and you now have until December 2nd, 2026, at 12:00PM PCT (Pacific Time) to apply to UBC and submit your International Scholars Program application.",
+    "minimum": null,
+    "money": null,
+    "notes": "",
+    "effectiveTo": "2026-12-02"
+  },
+  {
+    "id": "canada-ubc-scholarship-imes",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "scholarship",
+    "label": "International Major Entrance Scholarship (IMES), 2027/2028",
+    "value": "$10,000 – $25,000/year; automatic consideration on admission",
+    "url": "https://you.ubc.ca/financial-planning/scholarships-awards-international-students/international-entrance-scholarships/",
+    "passage": "For the 2027/2028 academic year, IMES awards will be valued at $10,000 – $25,000/year.",
+    "minimum": null,
+    "money": {
+      "amount": 10000,
+      "currency": "CAD",
+      "per": "year"
+    },
+    "notes": "Range $10,000–$25,000; money.amount is the lower bound."
+  },
+  {
+    "id": "canada-ubc-apply-route",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply",
+    "value": "Through the EducationPlannerBC website",
+    "url": "https://you.ubc.ca/applying-ubc/how-to-apply/application/",
+    "passage": "To apply to UBC and most other BC post-secondary institutions, you’ll use the EducationPlannerBC website.",
+    "minimum": null,
+    "money": null,
+    "notes": "Page currently notes the EPBC application is unavailable/being restored."
+  },
+  {
+    "id": "canada-ubc-application-fee",
+    "institution": {
+      "slug": "ubc",
+      "name": "The University of British Columbia"
+    },
+    "aspect": "apply_route",
+    "label": "Application fee (international)",
+    "value": "$173.25",
+    "url": "https://you.ubc.ca/applying-ubc/how-to-apply/application/",
+    "passage": "International students who require a study permit: $173.25",
+    "minimum": null,
+    "money": {
+      "amount": 173.25,
+      "currency": "CAD",
+      "per": "once"
+    },
+    "notes": ""
+  },
+  {
+    "id": "canada-mcgill-entry-ug",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII (CBSE/ISC) for undergraduate entry",
+    "value": "Normally 75%–87% on in-progress grades, 80%–91% on final Class XII results, depending on programme",
+    "url": "https://www.mcgill.ca/undergraduate-admissions/apply/requirements/international/india",
+    "passage": "The minimum requirements are overall averages and prerequisite subject requirements normally between 75% to the 87% on in-progress grades and depending on the program applied to. Higher overall averages and results in prerequisite subjects (between 80% and 91%) are expected when final Class XII results are presented.",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 75,
+      "max": 87
+    },
+    "money": null,
+    "notes": "Minimums do not guarantee admission. Reviewed on a minimum of four academic courses."
+  },
+  {
+    "id": "canada-mcgill-english-exemption",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "english",
+    "label": "English proficiency exemption",
+    "value": "Required unless four years of schooling in a country where English is the acknowledged primary language (India not on that list)",
+    "url": "https://www.mcgill.ca/undergraduate-admissions/apply/requirements/international/india",
+    "passage": "Applicants who have lived and attended school, for at least four years, in a country where English is the acknowledged primary language, are not required to provide further proof of English proficiency.",
+    "minimum": null,
+    "money": null,
+    "notes": "India does not appear in the country list on https://www.mcgill.ca/undergraduate-admissions/apply/english-proficiency."
+  },
+  {
+    "id": "canada-mcgill-deadline",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "deadline",
+    "label": "Application deadlines (applicants with Indian Senior School Certificates)",
+    "value": "Application January 15; supporting documents March 1; Major Entrance Scholarship January 21",
+    "url": "https://www.mcgill.ca/undergraduate-admissions/apply/requirements/international/india",
+    "passage": "Application for admission\nJanuary 15\nSupporting documents\nMarch 1\nMajor Entrance Scholarship application & documents\nJanuary 21",
+    "minimum": null,
+    "money": null,
+    "notes": "Table rows (adjacent lines) under DEADLINES on the India page; no year stated."
+  },
+  {
+    "id": "canada-mcgill-english-ielts",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "english",
+    "label": "IELTS Academic (undergraduate)",
+    "value": "Band 6.5 or better, each component 6.0 or better",
+    "url": "https://www.mcgill.ca/undergraduate-admissions/apply/english-proficiency",
+    "passage": "A band score of 6.5 or better; individual component scores of 6.0 or better.",
+    "minimum": {
+      "type": "ielts",
+      "min": 6.5
+    },
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "canada-mcgill-apply-route",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply",
+    "value": "Online application, opens October 1; fee $140.16 CAD (non-refundable)",
+    "url": "https://www.mcgill.ca/undergraduate-admissions/apply",
+    "passage": "As of October 1, you can apply online .\nSubmit your application\nApplication fee: $140.16 CAD (non-refundable).",
+    "minimum": null,
+    "money": {
+      "amount": 140.16,
+      "currency": "CAD",
+      "per": "once"
+    },
+    "notes": ""
+  },
+  {
+    "id": "canada-mcgill-scholarship-one-year",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "scholarship",
+    "label": "One-year entrance scholarship",
+    "value": "$3,000 (non-renewable); all applicants meeting minimum requirements automatically considered",
+    "url": "https://www.mcgill.ca/studentaid/scholarships-aid/future-undergrads/entrance-scholarships",
+    "passage": "One-year Scholarships , valued at $3,000 (non-renewable)",
+    "minimum": null,
+    "money": {
+      "amount": 3000,
+      "currency": "CAD",
+      "per": "once"
+    },
+    "notes": ""
+  },
+  {
+    "id": "canada-mcgill-scholarship-major",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "scholarship",
+    "label": "Major Entrance Scholarships",
+    "value": "Valued between $12,000 and $48,000 ($3,000 to $12,000 per year, renewable up to 4 years); the $12,000 level is for Canadians/PRs only",
+    "url": "https://www.mcgill.ca/studentaid/scholarships-aid/future-undergrads/entrance-scholarships",
+    "passage": "Major Entrance Scholarships , valued between $12,000 and $48,000 ($3,000 to $12,000 per annum renewable for up to 4 years provided criteria for renewal are met)",
+    "minimum": null,
+    "money": null,
+    "notes": "Page also states: \"$12,000 scholarships are only available to Canadian citizens or legal permanent residents of Canada.\" So international max per year is lower."
+  },
+  {
+    "id": "canada-mcgill-entry-pg",
+    "institution": {
+      "slug": "mcgill",
+      "name": "McGill University"
+    },
+    "aspect": "entry_pg",
+    "label": "Indian bachelor's for master's entry (graduate equivalency)",
+    "value": "Minimum overall 55 out of 100, or Second Division, Upper",
+    "url": "https://www.mcgill.ca/gradapplicants/how-apply/application-steps/equivalency",
+    "passage": "A minimum overall of 55 out of 100 is required, or a standing of Second Division, Upper (or Second Division if there is no upper/lower classification).",
+    "minimum": {
+      "type": "percent",
+      "stage": "pg",
+      "min": 55
+    },
+    "money": null,
+    "notes": "Qualifying degrees listed in the India block: 4-year Bachelor’s, or 3-year Bachelor’s from institutions with a NAAC rating of “A”. Page is a country dropdown; this sentence is in the India block (webform-component--india) per raw HTML. Departments may set higher minimums. This exact sentence occurs once on the page, inside the India block."
+  }
+]

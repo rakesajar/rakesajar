@@ -1,22 +1,22 @@
 # Progress
 
 ## Now
-Pilot website (free tier) complete on branch `ccr-8f80979e-5gwduk`. Status: **verified candidate, ready for product-owner
-approval**. Not merged, not deployed.
+Fable critique ideas 1, 4, 7, 8 implemented on `ccr-8f80979e-5gwduk`: 74 machine-sourced facts (9 universities in UK/Canada/
+Australia + RBI/MEA India facts), eligibility check, India page, waitlist and change alerts. Not merged, not deployed.
 
 ## Next
-Product owner decides on merge/deploy and the parked items below.
+Product owner: switch sign-ups on (operator, privacy contact, retention), amend req.md FR-7/FR-12, decide UCAS/national
+portals. Schedule `npm --prefix site run verify:passages:stamp` daily in the `rakesajar-pathfinder` environment + rebuild.
 
 ## Verified
-Gate PASS 7/7 (tests, secrets, lint, sast, dependencies, diff_coverage, knowledge) on `a1ef8e0` against `origin/main`.
-Independent branch review + delta review (same model family) and a Fable design/copy review: all BLOCKER/MAJOR findings
-fixed; dispositions in `docs/reviews-pilot-website.md`. Unexecuted: `npm --prefix site run check:sources` (egress to official
-domains blocked here), print stylesheet visual check, Safari/Firefox.
+See the latest gate receipt in the session. `verify:passages` 74/74 on 21 Nov 2026.
 
 ## Blocked / parked
 - UCAS (UK central admissions) and other national application portals are not on the §7.2 allowlist; adding them is a
   product-owner decision.
 - Print stylesheet and non-Chromium browsers not yet verified.
+- TCS (incometax.gov.in loads content via JavaScript) and education loans: not sourced; India page says so.
+- ANU, UCL, Melbourne, Monash block automated reading; Edinburgh PG/English pages redirect to blocked hosts.
 - Legal operator name, contact/grievance channel, production domain, pricing, analytics: reserved to product owner.
 - Source URLs not live-checked from sandbox; run `npm --prefix site run check:sources` with network access.
 - Seed facts will show "re-check due" from 22 Nov (volatile) / 28 Nov 2026 (most rules) until Phase 0 agents or a

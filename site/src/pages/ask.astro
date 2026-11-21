@@ -6,7 +6,8 @@ import { DESTINATIONS } from '../lib/store';
 
 const examples = [
   'What is tuition at French public universities for a master’s?',
-  'Where do I start looking for courses in Germany?',
+  'What Class 12 percentage does McGill ask for?',
+  'How much money can we send abroad for studies from India?',
   'Tell me about studying in Japan',
   'Visa fees for the USA',
   'UK Graduate Route after my master’s',
@@ -79,6 +80,7 @@ const examples = [
   <script>
     import { DESTINATIONS } from '../data/destinations';
     import { FACTS, SIGNALS } from '../data/facts';
+    import { INDIA_FACTS } from '../data/sourced';
     import type { DestinationSlug, SourceRef } from '../data/types';
     import { ask, consumeQuota, FREE_DAILY_QUESTIONS, type Answer, type QuotaState } from '../lib/concierge';
     import { formatDate } from '../lib/facts';
@@ -124,7 +126,7 @@ const examples = [
     };
     const link = (s: SourceRef) =>
       h('a', { href: s.url, rel: 'noopener', target: '_blank' }, s.tier === 'T1' ? 'Official: ' : 'Institution: ', hostOf(s.url));
-    const destName = (slug: DestinationSlug) => DESTINATIONS.find((d) => d.slug === slug)!.name;
+    const destName = (slug: DestinationSlug | 'india') => (slug === 'india' ? 'India' : DESTINATIONS.find((d) => d.slug === slug)!.name);
 
     function renderAnswer(question: string, a: Answer): HTMLElement {
       const box = h('article', { className: 'answer' });
@@ -145,7 +147,7 @@ const examples = [
         for (const it of a.items) {
           const value = h('span', {}, it.value);
           value.dataset.fact = it.factId;
-          const li = h('li', {}, h('strong', {}, (multi ? destName(it.destination) + ': ' : '') + it.label + ': '), value);
+          const li = h('li', {}, h('strong', {}, (multi ? destName(it.destination) + ': ' : '') + (it.institution ? it.institution + ', ' : '') + it.label + ': '), value);
           if (it.conditions) li.append(' ', h('span', { className: 'muted' }, it.conditions));
           li.append(h('div', { className: 'cite' }, link(it.citation.source), ` · verified ${formatDate(it.citation.verifiedAt)}`));
           ul.append(li);
@@ -193,7 +195,7 @@ const examples = [
       writeQuota(quota.state);
       const answer = ask(
         { question, destinations: dest.value ? [dest.value as DestinationSlug] : [], asOf: asOf.value || today(), now: new Date() },
-        { facts: FACTS, signals: SIGNALS, destinations: DESTINATIONS },
+        { facts: FACTS, signals: SIGNALS, destinations: DESTINATIONS, originFacts: INDIA_FACTS },
       );
       out.prepend(renderAnswer(question, answer));
       showQuota();

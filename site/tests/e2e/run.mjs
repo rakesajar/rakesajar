@@ -304,6 +304,86 @@ try {
     await ctx.close();
   });
 
+  await check('Admissions: guides show universities with quoted entry rules', async () => {
+    const { page, ctx, errors } = await open('/destinations/uk');
+    assert((await page.locator('#courses .uni').count()) === 3, 'UK should list 3 universities');
+    assert(await page.locator('#fact-uk-manchester-entry-ug').isVisible(), 'Manchester Class XII minimum missing');
+    assert(
+      (await page.locator('#fact-uk-manchester-entry-ug').textContent()).includes('manchester.ac.uk'),
+      'no university source',
+    );
+    assert(errors.length === 0, 'JS errors ' + errors);
+    await ctx.close();
+  });
+
+  await check('Eligibility: compares with published minimums, never scores', async () => {
+    const { page, ctx, errors } = await open('/eligibility');
+    await page.fill('#e-percent', '82');
+    await page.fill('#e-ielts', '6.5');
+    await page.selectOption('#e-country', 'canada');
+    const text = (await page.locator('[data-elig-rows]').textContent()).replace(/\s+/g, ' ');
+    assert(
+      text.includes('McGill University') && text.includes('Within the stated range'),
+      'McGill range verdict missing: ' + text.slice(0, 300),
+    );
+    assert(text.includes('Meets the stated minimum'), 'IELTS verdict missing');
+    assert(!/chance|likely|score|rank|safe|reach/i.test(text), 'verdicts must not talk about chances or scores');
+    await page.check('input[name=stage][value=pg]');
+    await page.fill('#e-percent', '50');
+    assert(
+      (await page.locator('[data-elig-rows]').textContent()).includes('Below the stated minimum'),
+      'PG below verdict missing',
+    );
+    assert(errors.length === 0, 'JS errors ' + errors);
+    await ctx.close();
+  });
+
+  await check('India page quotes RBI and MEA and is honest about gaps', async () => {
+    const { page, ctx } = await open('/india');
+    assert(await page.locator('#fact-in-lrs-limit').isVisible(), 'LRS fact missing');
+    assert((await page.locator('#fact-in-lrs-limit').textContent()).includes('rbi.org.in'), 'LRS not sourced to RBI');
+    assert((await page.locator('main').textContent()).includes('we don’t state them'), 'TCS gap not stated');
+    await ctx.close();
+  });
+
+  await check(
+    'Waitlist: minors blocked, unconfigured endpoint sends nothing, configured endpoint posts a validated record',
+    async () => {
+      const { page, ctx } = await open('/plans');
+      const form = page.locator('#join [data-waitlist]');
+      await form.locator('label.chip', { hasText: 'under 18' }).click();
+      assert(await form.locator('[data-under18]').isVisible(), 'under-18 message not shown');
+      assert(await form.locator('button[type=submit]').isDisabled(), 'minor can submit');
+      await form.locator('label.chip', { hasText: 'parent or guardian' }).click();
+      await form.locator('input[name=email]').fill('parent@example.com');
+      await form.locator('label.chip', { hasText: 'Canada' }).click();
+      await form.locator('button[type=submit]').click();
+      assert((await form.locator('[data-waitlist-status]').textContent()).includes('agreement'), 'consent not enforced');
+      await form.locator('input[name=consent]').check();
+      let posted = null;
+      await ctx.route('https://waitlist.test/**', (r) => {
+        posted = JSON.parse(r.request().postData());
+        return r.fulfill({ status: 201, json: { ok: true }, headers: { 'Access-Control-Allow-Origin': '*' } });
+      });
+      await form.locator('button[type=submit]').click();
+      assert(
+        (await form.locator('[data-waitlist-status]').textContent()).includes('nothing was sent'),
+        'unconfigured endpoint should send nothing',
+      );
+      assert(posted === null, 'something was posted without an endpoint');
+      await form.evaluate((f) => (f.dataset.endpoint = 'https://waitlist.test/signup'));
+      await form.locator('button[type=submit]').click();
+      await page.waitForFunction(() =>
+        document.querySelector('#join [data-waitlist-status]').textContent.includes('on the list'),
+      );
+      assert(
+        posted && posted.who === 'parent' && posted.consent.given === true && posted.destinations[0] === 'canada',
+        'bad payload ' + JSON.stringify(posted),
+      );
+      await ctx.close();
+    },
+  );
+
   await check('AC-10 accessibility (axe: no serious/critical), light and dark', async () => {
     const pages = [
       '/',
@@ -328,7 +408,17 @@ try {
   });
 
   await check('AC-10 no horizontal scroll at 360px; mobile menu works', async () => {
-    for (const p of ['/', '/destinations/canada', '/compare', '/cost-planner', '/ask', '/how-we-verify', '/plans']) {
+    for (const p of [
+      '/',
+      '/destinations/canada',
+      '/compare',
+      '/eligibility',
+      '/india',
+      '/cost-planner',
+      '/ask',
+      '/how-we-verify',
+      '/plans',
+    ]) {
       const { page, ctx } = await open(p, { width: 360 });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       assert(overflow <= 0, `${p} overflows by ${overflow}px`);

@@ -6,7 +6,7 @@
  * stale or missing, and never answers from memory. The production concierge keeps these rules
  * and adds live domain-filtered search between "fact store" and "refuse" (CA-1).
  */
-import type { DestinationSlug, Fact, Signal, SourceRef, Stage, Topic } from '../data/types';
+import type { DestinationSlug, Fact, OriginFact, Signal, SourceRef, Stage, Topic } from '../data/types';
 import type { Destination } from '../data/destinations';
 import { appliesOn, isStale, NOT_CURRENT, STATUS_LABEL } from './facts';
 
@@ -20,10 +20,12 @@ export interface Citation {
 
 export interface AnswerItem {
   factId: string;
-  destination: DestinationSlug;
+  destination: DestinationSlug | 'india';
   label: string;
   value: string;
   conditions?: string;
+  /** University the fact is about, for admissions answers. */
+  institution?: string;
   citation: Citation;
 }
 
@@ -99,6 +101,54 @@ const TOPIC_KEYWORDS: Record<Topic, string[]> = {
   tuition: ['tuition', 'university fee', 'university fees', 'course fee', 'fees for university', 'college fee'],
   employment: ['salary', 'employment pass', 'ep ', 'work visa', 'qualifying'],
   policy: ['cap', 'change', 'changes', 'changing', 'court', 'duration of status', 'd/s', 'proposed'],
+  admissions: [
+    'entry requirement',
+    'entry requirements',
+    'requirements',
+    'admission',
+    'admissions',
+    'eligible',
+    'eligibility',
+    'percentage',
+    'marks',
+    'cut off',
+    'cutoff',
+    'class 12',
+    'class xii',
+    '12th',
+    'cbse',
+    'isc',
+    'ielts',
+    'toefl',
+    'pte',
+    'english test',
+    'scholarship',
+    'scholarships',
+    'deadline',
+    'deadlines',
+    'intake',
+    'intakes',
+    'how to apply',
+    'get in',
+  ],
+  remittance: [
+    'send money',
+    'sending money',
+    'send abroad',
+    'sending abroad',
+    'money abroad',
+    'transfer money',
+    'remit',
+    'remitted',
+    'remittance',
+    'remittances',
+    'liberalised remittance',
+    'lrs',
+    'tcs',
+    'forex',
+    'tax on',
+  ],
+  documents: ['apostille', 'apostilled', 'attest', 'attested', 'attestation', 'legalise', 'legalize', 'e-sanad', 'esanad'],
 };
 
 const FRAUD_PATTERNS = [
@@ -169,11 +219,41 @@ function containsTerm(text: string, term: string): boolean {
   return termPattern(term).test(text);
 }
 
-export function detectDestinations(q: string): DestinationSlug[] {
+/** Distinctive words for a university name: "The University of Manchester" → ["manchester", "university of manchester"]. */
+export function institutionAliases(name: string): string[] {
+  const n = name.toLowerCase().replace(/[’']/g, "'");
+  const core = n
+    .replace(/^the /, '')
+    .replace(/^university of /, '')
+    .replace(/ university$/, '')
+    .trim();
+  const initials = n
+    .replace(/^the /, '')
+    .split(/\s+/)
+    .filter((w) => !['of', 'and'].includes(w))
+    .map((w) => w[0])
+    .join('');
+  return [...new Set([n.replace(/^the /, ''), core, initials.length >= 2 ? initials : ''])].filter((a) => a.length >= 2);
+}
+
+/** Universities named in the question, matched against those we hold admissions facts for. */
+export function detectInstitutions(q: string, facts: readonly Fact[] = []): string[] {
+  const text = normalise(q);
+  const seen = new Map<string, string>();
+  for (const f of facts) if (f.institution) seen.set(f.institution.slug, f.institution.name);
+  return [...seen].filter(([, name]) => institutionAliases(name).some((a) => containsTerm(text, a))).map(([slug]) => slug);
+}
+
+export function detectDestinations(q: string, facts: readonly Fact[] = []): DestinationSlug[] {
   const text = normalise(q);
   const found = (Object.keys(DESTINATION_ALIASES) as DestinationSlug[]).filter((slug) =>
     DESTINATION_ALIASES[slug].some((alias) => containsTerm(text, alias)),
   );
+  // A named university implies its country.
+  for (const slug of detectInstitutions(q, facts)) {
+    const d = facts.find((f) => f.institution?.slug === slug)!.destination;
+    if (!found.includes(d)) found.push(d);
+  }
   // Upper-case "US" is the country; lower-case "us" is the pronoun.
   if (!found.includes('usa') && /(^|[^A-Za-z])US([^A-Za-z]|$)/.test(q)) found.push('usa');
   return found;
@@ -215,7 +295,7 @@ export function isDistress(q: string): boolean {
 const OVERVIEW = /\b(tell me about|overview|summary|summarise|summarize|basics|what about|how about|studying in|study in)\b/;
 /** Subjects with no verified facts in the pilot store: never answered with an adjacent snapshot. */
 const UNSUPPORTED =
-  /\b(scholarships?|deadlines?|rankings?|ranked|ielts|toefl|pte|duolingo|gre|gmat|intakes?|loans?|accommodation|housing|insurance|acceptance rate|wife|husband|spouse|partner|dependants?|dependents?|children|kids|family visa|refund|refundable|ihs|health surcharge|nhs|permanent residen\w*|pr|citizenship|interview|refusal rate|success rate|chances?|wait(ing)? time|processing time|how long does it take|biometrics?|medical|police|apostille|overstay\w*|volunteer\w*|disclose|declare|change (my )?course|switch\w*|extend|extension|renew\w*)\b/;
+  /\b(rankings?|ranked|duolingo|gre|gmat|loans?|accommodation|housing|insurance|acceptance rate|wife|husband|spouse|partner|dependants?|dependents?|children|kids|family visa|refund|refundable|ihs|health surcharge|nhs|permanent residen\w*|pr|citizenship|interview|refusal rate|success rate|chances?|wait(ing)? time|processing time|how long does it take|biometrics?|medical|police|overstay\w*|volunteer\w*|disclose|declare|change (my )?course|switch\w*|extend|extension|renew\w*)\b/;
 
 /**
  * Qualifiers that narrow a question to a case our facts may not cover. Items in the topic are kept only if
@@ -227,9 +307,14 @@ const QUALIFIERS: { ask: RegExp; fact: RegExp }[] = [
   { ask: /\b(on[- ]campus)\b/, fact: /on campus|on-campus/ },
 ];
 
+/** English-test questions about a visa (not a university) are a subject we hold no facts on. */
+const VISA_ENGLISH =
+  /\b(pgwp|opt|485|visa|permit|graduate route|stamp 1g|pswv)\b.{0,40}\b(ielts|toefl|pte|english test)\b|\b(ielts|toefl|pte|english test)\b.{0,40}\b(pgwp|opt|485|visa|permit|graduate route|stamp 1g|pswv)\b/;
+
 /** True when the question is about a subject the pilot fact store does not cover. */
 export function isUnsupportedSubject(q: string): boolean {
-  return UNSUPPORTED.test(normalise(q));
+  const text = normalise(q);
+  return UNSUPPORTED.test(text) || VISA_ENGLISH.test(text);
 }
 const FILLER = new Set(['and', 'the', 'for', 'vs', 'versus', 'compare', 'what', 'about']);
 
@@ -265,6 +350,8 @@ export interface AskInput {
 
 export interface Store {
   facts: readonly Fact[];
+  /** India overlay facts (sending money, documents). */
+  originFacts?: readonly OriginFact[];
   signals: readonly Signal[];
   destinations: readonly Destination[];
 }
@@ -294,7 +381,35 @@ export function ask(input: AskInput, store: Store): Answer {
     };
   }
 
-  const dests = [...new Set([...(input.destinations ?? []), ...detectDestinations(q)])];
+  const dests = [...new Set([...(input.destinations ?? []), ...detectDestinations(q, store.facts)])];
+
+  // Money and documents from India don't depend on the destination.
+  const indiaTopics = detectTopics(q).filter((t): t is 'remittance' | 'documents' => t === 'remittance' || t === 'documents');
+  if (indiaTopics.length && store.originFacts?.length) {
+    const items: AnswerItem[] = store.originFacts
+      .filter((f) => (indiaTopics as string[]).includes(f.topic) && !NOT_CURRENT.has(f.status) && !isStale(f, input.now))
+      .map((f) => ({
+        factId: f.id,
+        destination: 'india' as const,
+        label: f.label,
+        value: f.value,
+        conditions: f.conditions,
+        citation: { factId: f.id, source: f.sources[0], verifiedAt: f.verifiedAt },
+      }));
+    if (items.length)
+      return {
+        kind: 'answer',
+        destinations: dests,
+        topics: indiaTopics,
+        asOf: input.asOf,
+        items,
+        withheld: [],
+        reported: [],
+        dateSensitive: false,
+        safePhrase: SAFE_PHRASE,
+      };
+  }
+
   if (dests.length === 0) {
     return {
       kind: 'refuse',
@@ -326,6 +441,7 @@ export function ask(input: AskInput, store: Store): Answer {
     const official = dest?.portals[0];
     const text = normalise(q);
     const stages = detectStages(q);
+    const named = detectInstitutions(q, store.facts);
     const active = QUALIFIERS.filter((qq) => qq.ask.test(text));
     const candidates = store.facts.filter(
       (f) =>
@@ -334,7 +450,9 @@ export function ask(input: AskInput, store: Store): Answer {
         // A qualified work question ("during holidays") only matches facts that mention that case.
         (f.topic !== 'work' || active.every((qq) => qq.fact.test(f.value.toLowerCase()))) &&
         // A question about one level of study ("for a master's") skips rules for other levels.
-        (!f.stages || stages.length === 0 || f.stages.some((st) => stages.includes(st))),
+        (!f.stages || stages.length === 0 || f.stages.some((st) => stages.includes(st))) &&
+        // Naming a university narrows admissions facts to it.
+        (f.topic !== 'admissions' || named.length === 0 || named.includes(f.institution!.slug)),
     );
     for (const f of candidates) {
       // Outside the user's application date window — not the applicable rule (CA-3).
@@ -364,6 +482,7 @@ export function ask(input: AskInput, store: Store): Answer {
       items.push({
         factId: f.id,
         destination: slug,
+        institution: f.institution?.name,
         label: f.label,
         value: f.value,
         conditions: f.conditions,

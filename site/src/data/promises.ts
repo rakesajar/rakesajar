@@ -30,8 +30,8 @@ export const PROMISES: Pledge[] = [
     title: 'We don’t rank universities or predict admissions',
     why: 'Nobody outside an admissions office can honestly tell you your chances, and rankings measure what the ranker chooses, not what matters to you.',
     howWeKeepIt:
-      'There are no rankings, scores or “featured” universities anywhere on Pathfinder. Countries are listed in the same order for everyone.',
-    check: { label: 'See all destinations', href: '/destinations' },
+      'There are no rankings, scores or “featured” universities anywhere on Pathfinder, and everything is listed alphabetically. Our eligibility check only compares your marks with the minimum each university publishes, and says so plainly.',
+    check: { label: 'Try the eligibility check', href: '/eligibility' },
   },
   {
     id: 'no-ghostwriting',

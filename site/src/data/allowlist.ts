@@ -40,7 +40,12 @@ export const ALLOWLIST: Record<DestinationSlug | OriginSlug, AllowEntry[]> = {
     { pattern: 'ukcisa.org.uk', tier: 'T2' },
     { pattern: '*.ac.uk', tier: 'T2' },
   ],
-  canada: [{ pattern: 'canada.ca', tier: 'T1' }],
+  canada: [
+    { pattern: 'canada.ca', tier: 'T1' },
+    { pattern: 'utoronto.ca', tier: 'T2', note: 'Designated learning institution' },
+    { pattern: 'ubc.ca', tier: 'T2', note: 'Designated learning institution' },
+    { pattern: 'mcgill.ca', tier: 'T2', note: 'Designated learning institution' },
+  ],
   australia: [
     { pattern: 'homeaffairs.gov.au', tier: 'T1' },
     { pattern: 'immi.homeaffairs.gov.au', tier: 'T1' },

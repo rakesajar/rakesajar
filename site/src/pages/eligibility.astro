@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { ADMISSIONS_FACTS } from '../data/sourced';
+import { DESTINATION_BY_SLUG } from '../lib/store';
+
+const countries = [...new Set(ADMISSIONS_FACTS.map((f) => f.destination))].map((s) => DESTINATION_BY_SLUG[s]);
+const universityCount = new Set(ADMISSIONS_FACTS.map((f) => f.institution?.slug)).size;
+---
+
+<Base
+  title="Check against published minimums"
+  description="Compare your Class XII or bachelor's percentage and IELTS score with the minimums universities publish for Indian applicants. No scores, no predictions."
+>
+  <PageHead
+    eyebrow="Free tool"
+    title="Check against published minimums"
+    lede={`See how your marks compare with what ${universityCount} universities in ${countries.map((c) => c.name).join(', ')} publish for applicants from India. Each minimum is quoted from the university’s own page.`}
+  >
+    <p class="small subtle" style="margin:0;max-width:70ch">
+      This isn’t a prediction and it isn’t a ranking. Meeting a minimum doesn’t mean you’ll get an offer, because universities look
+      at more than marks. Being below one means you should read that university’s page closely before you apply.
+    </p>
+  </PageHead>
+
+  <section class="section-tight">
+    <div class="container grid" style="gap:28px">
+      <form class="card grid" style="gap:18px" data-elig onsubmit="return false">
+        <fieldset>
+          <legend>I’m applying for</legend>
+          <div class="chip-group">
+            <label class="chip"><input type="radio" name="stage" value="ug" checked /><span>An undergraduate degree</span></label>
+            <label class="chip"><input type="radio" name="stage" value="pg" /><span>A master’s</span></label>
+          </div>
+        </fieldset>
+        <div class="grid grid-3" style="align-items:start">
+          <div class="field">
+            <label for="e-percent" data-percent-label>Your Class XII percentage (CBSE or ISC)</label>
+            <input id="e-percent" name="percent" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="e.g. 84" />
+          </div>
+          <div class="field">
+            <label for="e-ielts">Your IELTS overall <span class="hint">(optional)</span></label>
+            <input id="e-ielts" name="ielts" type="number" min="0" max="9" step="0.5" inputmode="decimal" placeholder="e.g. 7.0" />
+          </div>
+          <div class="field">
+            <label for="e-country">Country</label>
+            <select id="e-country" name="country">
+              <option value="">All with published minimums</option>
+              {countries.map((c) => <option value={c.slug}>{c.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <p class="small muted" style="margin:0">Nothing you type leaves your browser.</p>
+      </form>
+
+      <div aria-live="polite">
+        <div class="table-wrap">
+          <table data-elig-table>
+            <caption class="visually-hidden">Your figures compared with published minimums</caption>
+            <thead>
+              <tr>
+                <th scope="col">University</th>
+                <th scope="col">What the university publishes</th>
+                <th scope="col">Your figure</th>
+              </tr>
+            </thead>
+            <tbody data-elig-rows></tbody>
+          </table>
+        </div>
+        <p class="small muted" data-elig-none style="margin-top:16px"></p>
+        <noscript><p class="callout warn">This check needs JavaScript. Each country page lists the same minimums.</p></noscript>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { FACTS } from '../data/facts';
+    import { checkEligibility, VERDICT_LABEL, type Verdict } from '../lib/eligibility';
+    import { formatDate } from '../lib/facts';
+    import { hostOf } from '../lib/domains';
+    import { DESTINATION_BY_SLUG } from '../data/destinations';
+
+    const form = document.querySelector<HTMLFormElement>('[data-elig]')!;
+    const rowsEl = document.querySelector<HTMLElement>('[data-elig-rows]')!;
+    const noneEl = document.querySelector<HTMLElement>('[data-elig-none]')!;
+    const percentLabel = document.querySelector<HTMLElement>('[data-percent-label]')!;
+    const PILL: Record<Verdict, string> = { meets: 'ok', meets_range_top: 'ok', within_range: 'info', below: 'warn' };
+
+    const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', ...kids: (Node | string)[]) => {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      n.append(...kids);
+      return n;
+    };
+
+    function render(): void {
+      const data = new FormData(form);
+      const stage = data.get('stage') === 'pg' ? 'pg' : 'ug';
+      percentLabel.textContent = stage === 'ug' ? 'Your Class XII percentage (CBSE or ISC)' : 'Your bachelor’s percentage';
+      const num = (k: string) => (String(data.get(k) ?? '').trim() === '' ? undefined : Number(data.get(k)));
+      const country = String(data.get('country') ?? '');
+      const facts = FACTS.filter((f) => !country || f.destination === country);
+      const result = checkEligibility(facts, { stage, percent: num('percent'), ielts: num('ielts') });
+
+      rowsEl.replaceChildren(
+        ...result.rows.map((r) => {
+          const f = r.fact;
+          const src = f.sources[0];
+          const link = el('a', '', hostOf(src.url));
+          Object.assign(link, { href: src.url, rel: 'noopener', target: '_blank' });
+          const value = el('div', '', f.value);
+          value.dataset.fact = f.id;
+          const verdict = r.verdict
+            ? el('span', `pill ${PILL[r.verdict]}`, VERDICT_LABEL[r.verdict])
+            : el('span', 'subtle small', r.kind === 'english' ? 'Add your IELTS to compare' : 'Add your percentage to compare');
+          return el(
+            'tr',
+            '',
+            el(
+              'th',
+              '',
+              f.institution!.name,
+              el('div', 'small subtle', `${DESTINATION_BY_SLUG[f.destination].name} · ${r.kind === 'english' ? 'English' : 'Academic'}`),
+            ),
+            el('td', '', el('div', 'small subtle', f.label), value, el('div', 'cite', link, ` · checked ${formatDate(f.verifiedAt)}`)),
+            el('td', '', verdict),
+          );
+        }),
+      );
+      noneEl.textContent = result.noMinimum.length
+        ? `No ${stage === 'ug' ? 'undergraduate' : 'master’s'} percentage published on the pages we checked for: ${result.noMinimum
+            .map((u) => u.name)
+            .join(', ')}. Their country pages show what they do publish.`
+        : '';
+    }
+    form.addEventListener('input', render);
+    form.addEventListener('change', render);
+    render();
+  </script>
+</Base>

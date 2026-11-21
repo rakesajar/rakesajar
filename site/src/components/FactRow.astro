@@ -22,7 +22,7 @@ const notCurrent = p === 'not_current' || p === 'expired';
   {...freshAttrs([fact])}
   id={anchor ? `fact-${fact.id}` : undefined}
 >
-  <div class="fact-label">{label ?? fact.label}</div>
+  <div class="fact-label" data-fact={fact.id}>{label ?? fact.label}</div>
   <div data-fact={fact.id}>
     <div class="fact-value">{fact.value}</div>
     {fact.conditions && <p class="fact-note">{fact.conditions}</p>}

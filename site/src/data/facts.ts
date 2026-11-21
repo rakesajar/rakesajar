@@ -7,6 +7,7 @@
  * - Source URLs must be HTTPS and on the destination's allowlist; rule facts need a T1 source.
  */
 import type { Fact, Signal, SourceRef } from './types';
+import { ADMISSIONS_FACTS } from './sourced';
 
 const SEED_DATE = '2026-11-21';
 
@@ -100,7 +101,8 @@ const S = {
   jpMext: src('https://www.mext.go.jp/en/', 'MEXT'),
 };
 
-export const FACTS: Fact[] = [
+/** Seed baseline from req.md §5. */
+export const SEED_FACTS: Fact[] = [
   // ---------------------------------------------------------------- Singapore
   seed({
     id: 'sg-permission',
@@ -710,6 +712,9 @@ export const FACTS: Fact[] = [
     sources: [S.jpMext],
   }),
 ];
+
+/** Every destination fact: the seed baseline plus machine-sourced admissions facts. */
+export const FACTS: Fact[] = [...SEED_FACTS, ...ADMISSIONS_FACTS];
 
 /** Early-warning reports (VR-7): never shown as fact. */
 export const SIGNALS: Signal[] = [

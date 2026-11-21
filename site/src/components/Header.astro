@@ -5,9 +5,10 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const links = [
   { href: '/destinations', label: 'Destinations' },
   { href: '/compare', label: 'Compare' },
+  { href: '/eligibility', label: 'Eligibility' },
   { href: '/cost-planner', label: 'Cost planner' },
+  { href: '/india', label: 'From India' },
   { href: '/ask', label: 'Ask' },
-  { href: '/changes', label: 'What’s changed' },
   { href: '/how-we-verify', label: 'How we verify' },
 ];
 const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);

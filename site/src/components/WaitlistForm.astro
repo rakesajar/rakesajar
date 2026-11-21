@@ -1,0 +1,163 @@
+---
+/**
+ * Waitlist / change-alert sign-up. Posts JSON to PUBLIC_WAITLIST_ENDPOINT (see services/waitlist). If the endpoint
+ * isn't configured, the form says so and sends nothing.
+ */
+import { DESTINATIONS } from '../data/destinations';
+import { CONSENT_TEXT } from '../lib/waitlist';
+
+interface Props {
+  purpose: 'waitlist' | 'alerts';
+  /** Pre-selected destination (country pages). */
+  destination?: string;
+  title?: string;
+  intro?: string;
+}
+const { purpose, destination, title, intro } = Astro.props;
+const id = `wl-${purpose}-${destination ?? 'all'}`;
+const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
+---
+
+<form class="card waitlist grid" style="gap:14px" data-waitlist data-endpoint={endpoint} data-purpose={purpose} novalidate>
+  {title && <h3 style="margin:0">{title}</h3>}
+  {intro && <p class="small muted" style="margin:0">{intro}</p>}
+  <fieldset>
+    <legend>I am</legend>
+    <div class="chip-group">
+      <label class="chip"><input type="radio" name="who" value="student" checked /><span>A student, 18 or over</span></label>
+      <label class="chip"><input type="radio" name="who" value="parent" /><span>A parent or guardian</span></label>
+      <label class="chip"><input type="radio" name="who" value="student_under_18" /><span>A student under 18</span></label>
+    </div>
+  </fieldset>
+  <p class="callout info small" data-under18 hidden>
+    If you’re under 18, please ask a parent or guardian to sign up with their own details. We don’t collect contact details from
+    minors.
+  </p>
+  <div class="grid grid-2" style="gap:14px" data-contact>
+    <div class="field">
+      <label for={`${id}-email`}>Email <span class="hint">(or WhatsApp)</span></label>
+      <input id={`${id}-email`} name="email" type="email" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label for={`${id}-wa`}>WhatsApp number</label>
+      <input id={`${id}-wa`} name="whatsapp" type="tel" autocomplete="tel" placeholder="+91 98765 43210" />
+    </div>
+  </div>
+  {
+    destination ? (
+      <input type="hidden" name="destinations" value={destination} />
+    ) : (
+      <fieldset data-contact>
+        <legend>Countries you’re considering</legend>
+        <div class="chip-group">
+          {DESTINATIONS.map((d) => (
+            <label class="chip">
+              <input type="checkbox" name="destinations" value={d.slug} />
+              <span>{d.name}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    )
+  }
+  {
+    purpose === 'waitlist' && (
+      <div class="grid grid-2" style="gap:14px" data-contact>
+        <div class="field">
+          <label for={`${id}-level`}>Level</label>
+          <select id={`${id}-level`} name="level">
+            <option value="">Not sure yet</option>
+            <option value="ug">Undergraduate</option>
+            <option value="pg">Master’s</option>
+            <option value="phd">PhD</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for={`${id}-intake`}>When would you start?</label>
+          <input id={`${id}-intake`} name="intake" type="month" />
+        </div>
+      </div>
+    )
+  }
+  <label class="row small" style="align-items:flex-start;flex-wrap:nowrap;font-weight:400" data-contact>
+    <input type="checkbox" name="consent" style="margin-top:4px" />
+    <span>{CONSENT_TEXT} <a href="/privacy#signups">How we use it</a>.</span>
+  </label>
+  <div class="row">
+    <button class="btn btn-primary" type="submit">{purpose === 'alerts' ? 'Tell me when this changes' : 'Join the waitlist'}</button>
+  </div>
+  <p class="small" data-waitlist-status role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  import { validateSignup, type SignupInput } from '../lib/waitlist';
+  import { DESTINATIONS } from '../data/destinations';
+
+  const KNOWN = DESTINATIONS.map((d) => d.slug);
+  document.querySelectorAll<HTMLFormElement>('[data-waitlist]').forEach((form) => {
+    const status = form.querySelector<HTMLElement>('[data-waitlist-status]')!;
+    const under18 = form.querySelector<HTMLElement>('[data-under18]')!;
+    const contactParts = form.querySelectorAll<HTMLElement>('[data-contact]');
+    const submit = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+
+    const sync = () => {
+      const minor = (form.elements.namedItem('who') as RadioNodeList).value === 'student_under_18';
+      under18.hidden = !minor;
+      contactParts.forEach((p) => (p.hidden = minor));
+      submit.disabled = minor;
+    };
+    form.addEventListener('change', sync);
+    sync();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const input: SignupInput = {
+        who: String(fd.get('who')) as SignupInput['who'],
+        email: String(fd.get('email') ?? ''),
+        whatsapp: String(fd.get('whatsapp') ?? ''),
+        destinations: fd.getAll('destinations').map(String),
+        level: String(fd.get('level') ?? '') as SignupInput['level'],
+        intake: String(fd.get('intake') ?? ''),
+        purpose: form.dataset.purpose === 'alerts' ? 'alerts' : 'waitlist',
+        consent: fd.get('consent') === 'on',
+        source: location.pathname,
+      };
+      const result = validateSignup(input, KNOWN);
+      if (!result.ok) {
+        status.className = 'small callout warn';
+        status.textContent = Object.values(result.errors).join(' ');
+        return;
+      }
+      const endpoint = form.dataset.endpoint;
+      if (!endpoint) {
+        status.className = 'small callout info';
+        status.textContent = 'Sign-ups aren’t switched on in this preview yet, so nothing was sent. Please check back soon.';
+        return;
+      }
+      submit.disabled = true;
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(result.record),
+          credentials: 'omit',
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        status.className = 'small callout';
+        status.textContent =
+          input.purpose === 'alerts'
+            ? 'Done. We’ll tell you when a rule or figure for this country changes.'
+            : 'You’re on the list. We’ll be in touch when Premium opens for your countries.';
+        form.reset();
+        sync();
+      } catch {
+        status.className = 'small callout warn';
+        status.textContent = 'Something went wrong and your details weren’t saved. Please try again in a minute.';
+      } finally {
+        submit.disabled = false;
+        sync();
+      }
+    });
+  });
+</script>

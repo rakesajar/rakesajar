@@ -2,7 +2,7 @@
  * Verifier rules applied to the fact store at build time (VR-1, VR-2, VR-4, VR-5, VR-6 units, DS-2).
  * The build fails if any error is returned, so a bad fact can never be published.
  */
-import type { ChangeEntry, Fact, Signal } from '../data/types';
+import type { ChangeEntry, Fact, OriginFact, Signal } from '../data/types';
 import { classifyUrl } from './domains';
 import { parseDate } from './facts';
 
@@ -12,10 +12,10 @@ const CURRENCIES = new Set(['SGD', 'USD', 'GBP', 'CAD', 'AUD', 'EUR', 'NZD', 'AE
 /** Currency symbols/codes as they appear in display values, used to cross-check `value` and `money`. */
 const DISPLAY_PREFIX: Record<string, string[]> = {
   SGD: ['S$'],
-  USD: ['US$'],
+  USD: ['US$', 'USD '],
   GBP: ['£'],
-  CAD: ['CA$'],
-  AUD: ['AUD '],
+  CAD: ['CA$', '$'],
+  AUD: ['AUD ', 'A$', '$'],
   EUR: ['€'],
   NZD: ['NZD '],
   AED: ['AED '],
@@ -32,11 +32,35 @@ function isIsoDate(s: string): boolean {
   }
 }
 
-function displayAmount(n: number): string {
-  return n.toLocaleString('en-US');
+function displayAmounts(n: number): string[] {
+  // Either grouping is fine: 250,000 or the Indian 2,50,000.
+  return [n.toLocaleString('en-US'), n.toLocaleString('en-IN')];
 }
 
-export function validateFact(f: Fact, today: string): string[] {
+/** Digits of every number in a string, with grouping separators removed ("2,50,000" → "250000"). */
+function numbersIn(s: string): string[] {
+  return (s.match(/\d[\d,.]*/g) ?? []).map((n) =>
+    n
+      .replace(/[.,]+$/, '')
+      .replace(/,/g, '')
+      .replace(/\.0+$/, ''),
+  );
+}
+
+/**
+ * A passage must actually contain the figures it backs: every number in the displayed value and in the
+ * structured minimum/money must also appear in the quoted passage.
+ */
+export function passageBacksValue(f: Pick<Fact, 'value' | 'passage' | 'minimum' | 'money'>): string[] {
+  if (!f.passage) return [];
+  const inPassage = new Set(numbersIn(f.passage));
+  const needed = [...numbersIn(f.value)];
+  if (f.minimum) needed.push(String(f.minimum.min), ...('max' in f.minimum && f.minimum.max ? [String(f.minimum.max)] : []));
+  if (f.money) needed.push(String(f.money.amount));
+  return [...new Set(needed)].filter((n) => !inPassage.has(n));
+}
+
+export function validateFact(f: Fact | OriginFact, today: string): string[] {
   const e: string[] = [];
   const at = (msg: string) => e.push(`${f.id}: ${msg}`);
 
@@ -46,7 +70,7 @@ export function validateFact(f: Fact, today: string): string[] {
 
   // DS-2 + tier rules.
   for (const s of f.sources) {
-    const scope = f.origin ? [f.destination, f.origin] : [f.destination];
+    const scope = 'destination' in f ? (f.origin ? [f.destination, f.origin] : [f.destination]) : [f.origin];
     const verdict = classifyUrl(s.url, scope);
     if (!verdict.allowed) at(`source ${s.url} rejected: ${verdict.reason}`);
     else if (verdict.tier !== s.tier) at(`source ${s.url} declared ${s.tier} but allowlist says ${verdict.tier}`);
@@ -73,6 +97,10 @@ export function validateFact(f: Fact, today: string): string[] {
 
   // Provenance: passages are never invented; machine-verified facts must carry one.
   if (f.verification === 'machine' && !f.passage) at('machine-verified facts must include the source passage');
+  for (const n of passageBacksValue(f)) at(`figure ${n} is not in the quoted passage`);
+  if (f.topic === 'admissions' && (!f.institution || !f.aspect)) at('admissions facts need an institution and an aspect');
+  if (f.minimum?.type === 'percent' && !(f.minimum.min > 0 && f.minimum.min <= 100)) at('percent minimum out of range');
+  if (f.minimum?.type === 'ielts' && !(f.minimum.min > 0 && f.minimum.min <= 9)) at('IELTS minimum out of range');
 
   // Units (VR-6).
   for (const m of [...(f.money ? [f.money] : []), ...(f.moneyParts ?? [])]) {
@@ -81,8 +109,8 @@ export function validateFact(f: Fact, today: string): string[] {
     if (m.amountMax !== undefined && m.amountMax < m.amount) at('amountMax must be ≥ amount');
     if (m.amountMax !== undefined && !f.estimate) at('ranges must be flagged as estimates');
     // The displayed value must contain the structured amount, so figures can't drift apart.
-    const shown = displayAmount(m.amount);
-    if (!f.value.includes(shown)) at(`value "${f.value}" does not show amount ${shown}`);
+    const shown = displayAmounts(m.amount);
+    if (!shown.some((x) => f.value.includes(x))) at(`value "${f.value}" does not show amount ${shown[0]}`);
     const prefixes = DISPLAY_PREFIX[m.currency] ?? [];
     if (prefixes.length && !prefixes.some((p) => f.value.includes(p)))
       at(`value "${f.value}" does not show currency ${m.currency}`);
@@ -91,7 +119,7 @@ export function validateFact(f: Fact, today: string): string[] {
 }
 
 export interface StoreInput {
-  facts: readonly Fact[];
+  facts: readonly (Fact | OriginFact)[];
   signals: readonly Signal[];
   changes: readonly ChangeEntry[];
 }

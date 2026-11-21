@@ -4,14 +4,15 @@ import FactRow from '../../components/FactRow.astro';
 import StatusPill from '../../components/StatusPill.astro';
 import SourceLink from '../../components/SourceLink.astro';
 import { ALLOWLIST } from '../../data/allowlist';
-import { INDIA_OFFICIAL_LINKS, type Destination } from '../../data/destinations';
-import type { Fact, SourceRef, Stage } from '../../data/types';
+import { type Destination } from '../../data/destinations';
+import type { AdmissionsAspect, Fact, SourceRef, Stage } from '../../data/types';
 import { hostOf } from '../../lib/domains';
 import { changingCount, formatDate, freshAttrs, plural, presentation } from '../../lib/facts';
 import PilotNote from '../../components/PilotNote.astro';
+import WaitlistForm from '../../components/WaitlistForm.astro';
 import ViewFlags from '../../components/ViewFlags.astro';
 import { formatMoney, upfrontEstimate } from '../../lib/money';
-import { BUILD_DATE, DESTINATIONS, FACTS, SIGNALS } from '../../lib/store';
+import { BUILD_DATE, DESTINATIONS, FACTS, INDIA_FACTS, SIGNALS } from '../../lib/store';
 
 export function getStaticPaths() {
   return DESTINATIONS.map((d) => ({ params: { slug: d.slug }, props: { d } }));
@@ -72,6 +73,30 @@ const srcLabel = (id: string) => {
   const f = facts.find((x) => x.id === id)!;
   return labelCount.get(f.label)! > 1 ? `${f.label} (${f.value})` : f.label;
 };
+// Universities with sourced admissions facts, alphabetical; facts in the order an applicant needs them.
+const ASPECT_ORDER: AdmissionsAspect[] = ['apply_route', 'entry_ug', 'entry_pg', 'entry_phd', 'english', 'deadline', 'intake', 'tuition', 'scholarship'];
+const ASPECT_LABEL: Record<AdmissionsAspect, string> = {
+  apply_route: 'How to apply',
+  entry_ug: 'Undergraduate entry',
+  entry_pg: 'Master’s entry',
+  entry_phd: 'PhD entry',
+  english: 'English',
+  deadline: 'Deadline',
+  intake: 'Intake',
+  tuition: 'Tuition',
+  scholarship: 'Scholarship',
+};
+const universities = [...new Set(facts.filter((f) => f.institution).map((f) => f.institution!.slug))]
+  .map((slug) => {
+    const list = facts.filter((f) => f.institution?.slug === slug);
+    return {
+      slug,
+      name: list[0].institution!.name,
+      facts: list.sort((a, b) => ASPECT_ORDER.indexOf(a.aspect!) - ASPECT_ORDER.indexOf(b.aspect!)),
+    };
+  })
+  .sort((a, b) => a.name.localeCompare(b.name, 'en'));
+const lrs = INDIA_FACTS.find((f) => f.id === 'in-lrs-limit')!;
 const num = (id: string) => String(sections.findIndex(([s]) => s === id) + 1).padStart(2, '0');
 const changing = changingCount(d.slug, FACTS, SIGNALS, today);
 const tuition = facts.filter((f) => f.topic === 'tuition');
@@ -135,10 +160,42 @@ const monthlyFacts = estimate.monthly.map((m) => facts.find((f) => f.id === m.fa
       <section id="courses" class="guide-section" aria-labelledby="h-courses">
         <span class="section-num">{num('courses')}</span>
         <h2 id="h-courses">Courses and applying</h2>
-        <p class="muted">
-          Start with the official places that list courses and institutions, then go to each university’s own course page for entry
-          requirements, test scores, intakes and deadlines. We haven’t verified those yet, so we don’t show them.
-        </p>
+        {
+          universities.length > 0 ? (
+            <p class="muted">
+              What {universities.length} universities in {d.inName} say on their own pages for applicants from India: how to apply,
+              entry minimums, English tests, deadlines and scholarships. Each line is quoted from the university’s page. Other
+              universities set their own rules, so check the course page for anywhere not listed here.
+            </p>
+          ) : (
+            <p class="muted">
+              Start with the official places that list courses and institutions, then go to each university’s own course page for
+              entry requirements, test scores, intakes and deadlines. We haven’t verified those for {d.inName} yet, so we don’t show
+              them.
+            </p>
+          )
+        }
+        {
+          universities.map((u) => (
+            <details class="uni" open={universities.length <= 3}>
+              <summary>
+                <span class="uni-name">{u.name}</span>
+                <span class="small subtle">{plural(u.facts.length, 'fact')} from the university’s own pages</span>
+              </summary>
+              <div class="facts">
+                {u.facts.map((f) => (
+                  <FactRow fact={f} today={today} label={f.label.toLowerCase().startsWith(ASPECT_LABEL[f.aspect!].toLowerCase()) ? f.label : `${ASPECT_LABEL[f.aspect!]}: ${f.label}`} />
+                ))}
+              </div>
+            </details>
+          ))
+        }
+        {universities.length > 0 && (
+          <p class="small" style="margin-top:16px">
+            Want to see where you stand? <a href="/eligibility">Check your marks against these published minimums</a>.
+          </p>
+        )}
+        <h3 style="margin-top:24px">Official starting points</h3>
         <ul class="stack" style="list-style:none;padding:0">
           {d.admissions.map((a) => <li><SourceLink source={a} showTitle /></li>)}
         </ul>
@@ -363,18 +420,20 @@ const monthlyFacts = estimate.monthly.map((m) => facts.find((f) => f.id === m.fa
         }
 
         <div class="card" style="margin-top:28px">
-          <h3>Applying from India?</h3>
-          <p class="small muted">Official starting points. We will add verified figures here as they are checked.</p>
-          <ul class="stack" style="list-style:none;padding:0">
-            {
-              INDIA_OFFICIAL_LINKS.map((l) => (
-                <li class="row" style="justify-content:space-between">
-                  <span>{l.topic}</span>
-                  <SourceLink source={l} showTitle />
-                </li>
-              ))
-            }
-          </ul>
+          <h3>Paying from India?</h3>
+          <p class="small muted">
+            Fees usually leave India under the RBI’s Liberalised Remittance Scheme:
+            <span data-fact={lrs.id}>{lrs.value.toLowerCase()}</span>. The <a href="/india">India page</a> covers the scheme and
+            getting your certificates apostilled, quoted from RBI and MEA.
+          </p>
+        </div>
+        <div style="margin-top:28px">
+          <WaitlistForm
+            purpose="alerts"
+            destination={d.slug}
+            title={`Get told when ${d.inName} changes a rule`}
+            intro="When a visa rule, fee or university requirement on this page changes, we’ll let you know. Nothing else."
+          />
         </div>
       </section>
 

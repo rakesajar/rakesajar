@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import FactRow from '../components/FactRow.astro';
+import SourceLink from '../components/SourceLink.astro';
+import { INDIA_OFFICIAL_LINKS } from '../data/destinations';
+import { BUILD_DATE, INDIA_FACTS } from '../lib/store';
+import type { Fact } from '../data/types';
+
+// FactRow expects a destination fact; India facts render the same way, so present them as such.
+const asRow = (f: (typeof INDIA_FACTS)[number]) => f as unknown as Fact;
+const money = INDIA_FACTS.filter((f) => f.topic === 'remittance');
+const documents = INDIA_FACTS.filter((f) => f.topic === 'documents');
+const today = BUILD_DATE;
+---
+
+<Base
+  title="Paying and preparing from India"
+  description="Sending money abroad for studies under RBI's Liberalised Remittance Scheme, and getting Indian educational documents apostilled by MEA, quoted from the official pages."
+>
+  <PageHead
+    eyebrow="For families in India"
+    title="Paying and preparing from India"
+    lede="The two things every Indian family deals with before the flight: sending money abroad, and getting certificates accepted overseas. Each line below is quoted from the Reserve Bank of India or the Ministry of External Affairs."
+  />
+
+  <section class="section-tight">
+    <div class="container prose" style="max-width:900px">
+      <h2 id="money">Sending money abroad for studies</h2>
+      <p class="muted">
+        Fees and living costs usually leave India under the Reserve Bank of India’s Liberalised Remittance Scheme (LRS). This is
+        what the RBI says about it.
+      </p>
+      <div class="facts">{money.map((f) => <FactRow fact={asRow(f)} today={today} />)}</div>
+
+      <div class="callout warn" style="margin-top:20px">
+        <p>
+          <strong>Tax collected at source (TCS)</strong> can apply when you send money abroad, and the rate depends on the amount
+          and on whether the money comes from an education loan. We couldn’t quote the current rules from the Income Tax
+          Department’s website (its pages load their content in a way our checks can’t read yet), so we don’t state them. Ask
+          your bank before you send, and check
+          <a href="https://www.incometax.gov.in" rel="noopener" target="_blank">incometax.gov.in</a>.
+        </p>
+      </div>
+      <p class="small muted">
+        <strong>Education loans:</strong> we haven’t verified any loan facts from an official government page yet, so we don’t
+        show any. We never take commissions from lenders.
+      </p>
+
+      <h2 id="documents" style="margin-top:48px">Getting your certificates accepted abroad</h2>
+      <p class="muted">
+        Universities and visa offices abroad sometimes ask for Indian certificates to be apostilled or attested. The Ministry of
+        External Affairs (MEA) does this through authorised agencies. This is what MEA says.
+      </p>
+      <div class="facts">{documents.map((f) => <FactRow fact={asRow(f)} today={today} />)}</div>
+      <p class="small muted" style="margin-top:12px">
+        Not every university needs an apostille. Check what your university asks for before you pay for one.
+      </p>
+
+      <h2 style="margin-top:48px">Official starting points</h2>
+      <ul class="stack" style="list-style:none;padding:0">
+        {
+          INDIA_OFFICIAL_LINKS.map((l) => (
+            <li class="row" style="justify-content:space-between">
+              <span>{l.topic}</span>
+              <SourceLink source={l} showTitle />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Base>

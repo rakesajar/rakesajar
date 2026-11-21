@@ -16,7 +16,36 @@ export type FactStatus = 'in_force' | 'announced' | 'proposed' | 'litigated' | '
 /** §9 freshness classes. `volatile` = items flagged ⚠️ in the seed baseline. */
 export type Volatility = 'volatile' | 'standard' | 'slow';
 
-export type Topic = 'permission' | 'work' | 'post_study' | 'fees' | 'funds' | 'tuition' | 'employment' | 'policy';
+export type Topic =
+  | 'permission'
+  | 'work'
+  | 'post_study'
+  | 'fees'
+  | 'funds'
+  | 'tuition'
+  | 'employment'
+  | 'policy'
+  /** University admissions: entry minimums, English tests, scholarships, deadlines, how to apply. */
+  | 'admissions'
+  /** India overlay: sending money abroad and tax on it. */
+  | 'remittance'
+  /** India overlay: attesting and apostilling documents. */
+  | 'documents';
+
+/** What an admissions fact is about. */
+export type AdmissionsAspect =
+  'entry_ug' | 'entry_pg' | 'entry_phd' | 'english' | 'scholarship' | 'deadline' | 'intake' | 'apply_route' | 'tuition';
+
+/**
+ * A published minimum the eligibility check compares against. Never a score or a chance: the check only says
+ * whether a figure meets the stated minimum.
+ */
+export type Minimum = { type: 'percent'; stage: 'ug' | 'pg'; min: number; max?: number } | { type: 'ielts'; min: number };
+
+export interface Institution {
+  slug: string;
+  name: string;
+}
 
 /** Rule facts (visas, fees, work rights…) need T1 (VR-1); institution facts need T2 (VR-2). */
 export type FactKind = 'rule' | 'institution';
@@ -76,7 +105,15 @@ export interface Fact {
   costStage?: 'post_study';
   /** Free-text explanation shown with non-current statuses. */
   statusNote?: string;
+  /** For admissions facts: the university the fact is about. */
+  institution?: Institution;
+  aspect?: AdmissionsAspect;
+  /** Published minimum used by the eligibility check. */
+  minimum?: Minimum;
 }
+
+/** A fact about the student's home country (India overlay), not about a destination. */
+export type OriginFact = Omit<Fact, 'destination'> & { origin: OriginSlug };
 
 /** A T3 or unconfirmed report (VR-7): shown as "reported", never as fact. */
 export interface Signal {

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
+import WaitlistForm from '../components/WaitlistForm.astro';
 import { DESTINATIONS } from '../lib/store';
 
 type Cell = boolean | string;
@@ -9,7 +10,8 @@ const features: [string, Cell, Cell, Cell][] = [
   ['Country comparison', '2 countries', '2 countries, saved', '4 countries, saved'],
   ['Cost planner with live exchange rates', true, 'Saved', true],
   ['Ask Pathfinder (cited answers)', '3 a day', '10 a day', 'Unlimited (fair use)'],
-  ['Personal shortlist', false, '1 country', 'All countries'],
+  ['Check your marks against published minimums', true, true, true],
+  ['Personal shortlist with those checks (never a score)', false, '1 country', 'All countries'],
   ['Deadline tracker and reminders', false, '1 country', 'All countries'],
   ['Document vault and checklists', false, false, true],
   ['Field-by-field form guidance', false, false, true],
@@ -45,7 +47,7 @@ const gates = [
           <p class="eyebrow">Free account</p>
           <h2 style="font-size:1.5rem">Narrowing down</h2>
           <p class="muted small">Save comparisons and costs, ask ten questions a day, and track one country.</p>
-          <span class="pill plain">Accounts open soon</span>
+          <a class="btn btn-secondary" href="#join">Join the waitlist</a>
         </div>
         <div class="card" style="border-color:var(--gold);box-shadow:var(--shadow)">
           <p class="eyebrow" style="color:var(--gold)">Premium · per application cycle</p>
@@ -54,8 +56,16 @@ const gates = [
             An assistant that searches official websites for you, plus your shortlist, deadlines, document checklist, form guidance
             and feedback on your essays, for every country you apply to.
           </p>
-          <span class="pill gold">Opening country by country</span>
+          <a class="btn btn-primary" href="#join">Join the waitlist</a>
         </div>
+      </div>
+
+      <div id="join" style="margin-top:40px;max-width:760px">
+        <WaitlistForm
+          purpose="waitlist"
+          title="Join the waitlist"
+          intro="Tell us where and when you’re thinking of studying. We’ll write when accounts and Premium open for those countries, and use your answers to decide which countries come first."
+        />
       </div>
 
       <h2 style="margin-top:56px">Compare plans</h2>

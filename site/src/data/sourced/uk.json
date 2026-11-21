@@ -1,0 +1,407 @@
+[
+  {
+    "id": "uk-manchester-entry-ug",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII (CBSE/ISC) for undergraduate entry",
+    "value": "80-95% overall, depending on the programme",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "Students completing Higher Secondary School Certificates at the end of CBSE/ISC Standard XII will usually be considered for direct entry to the first year of undergraduate courses provided they have achieved a minimum of 80-95% overall. The specified minimum requirement varies depending on the chosen programme of study.",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 80,
+      "max": 95
+    },
+    "money": null,
+    "notes": "Direct first-year entry. Same 80-95% range also stated for Maharashtra, West Bengal, Tamil Nadu, Karnataka and Gujarat state boards (not for Medicine). Subject-specific requirements may apply."
+  },
+  {
+    "id": "uk-manchester-entry-ug-state-boards",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII (listed State Boards) for undergraduate entry",
+    "value": "80-95% overall, only from Maharashtra, West Bengal, Tamil Nadu, Karnataka and Gujarat boards",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "We will also consider applications for direct entry to the first year of undergraduate programmes from the following State Boards only, provided that a minimum score of 80-95% overall is achieved:",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 80,
+      "max": 95
+    },
+    "money": null,
+    "notes": "The next line on the page lists the boards: 'Maharashtra, West Bengal, Tamil Nadu, Karnataka and Gujarat'. 'Applicants from State Boards will not be considered for Medicine.'"
+  },
+  {
+    "id": "uk-manchester-entry-ug-foundation",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII for integrated foundation year (Science and Engineering)",
+    "value": "70% overall, with 75% in Mathematics and Physics and 65% in English",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "Students achieving an overall Standard XII grade of 70% or higher (with a minimum of 75% in Mathematics and Physics and 65% in English) would be considered for the University’s Science and Engineering with an integrated foundation year programme.",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 70
+    },
+    "money": null,
+    "notes": "Foundation-year route, not direct first-year entry."
+  },
+  {
+    "id": "uk-manchester-entry-pg",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "entry_pg",
+    "label": "Indian bachelor's for taught master's",
+    "value": "Three-year degree with First Class; typically 60-80% overall depending on the university and grading scale",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "Students who have completed a minimum of a three-year degree and who have obtained First Class from a reputable university are considered for postgraduate study. The minimum requirement typically ranges from 60-80% overall, depending on the quality of the university of prior study and grading scale.",
+    "minimum": {
+      "type": "percent",
+      "stage": "pg",
+      "min": 60,
+      "max": 80
+    },
+    "money": null,
+    "notes": "Programme pre-requisites are on course pages."
+  },
+  {
+    "id": "uk-manchester-english",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "english",
+    "label": "English language evidence",
+    "value": "IELTS, TOEFL iBT and other tests accepted; Class XII English may be accepted depending on board and score; medium-of-instruction letters are not accepted",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "We accept a range of global English tests (eg IELTS, TOEFL iBT). In addition, we may be able to accept English from Indian Standard XII exams, depending on the Board and overall score achieved. Confirmation that English was the mode of instruction at your university is not accepted as evidence that you meet the requirements.",
+    "minimum": null,
+    "money": null,
+    "notes": "Minimum scores are set per programme on the course description; no IELTS figure on the India page."
+  },
+  {
+    "id": "uk-manchester-scholarship-ug",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "scholarship",
+    "label": "Global Futures Scholarship (undergraduate, South Asia)",
+    "value": "£36,000 (£12,000 per year over three years)",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "The University of Manchester is proud to offer a number of merit-based undergraduate scholarships of £36,000 (£12,000 per year over three years) to international students from a selection of countries across the globe.",
+    "minimum": null,
+    "money": {
+      "amount": 12000,
+      "currency": "GBP",
+      "per": "year"
+    },
+    "notes": "For September 2027 entrants domiciled in Bangladesh, India, Pakistan or Sri Lanka; self-funded; awarded as a tuition-fee discount; continuation needs 60% each year. Not for MBChB, BDS, Architecture or integrated foundation years. Form emailed to eligible offer-holders. effectiveFrom = start month (page says 'September 2027', no day)."
+  },
+  {
+    "id": "uk-manchester-scholarship-ug-deadline",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "deadline",
+    "label": "Global Futures Scholarship (undergraduate) form deadline",
+    "value": "Submit the online scholarship form by 30 March 2027",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "You must submit an online scholarship application form by 30 March 2027.",
+    "minimum": null,
+    "money": null,
+    "notes": "Also must make Manchester the Firm UCAS choice by 15 May 2027; successful applicants notified by 1 May 2027."
+  },
+  {
+    "id": "uk-manchester-scholarship-pg",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "scholarship",
+    "label": "Global Futures Scholarship (master's, India)",
+    "value": "£12,000, as a discount on overseas tuition fees",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "The value of The Global Futures Scholarships for Indian students is £12,000. Scholarships will be awarded as a discount on published overseas tuition fees.",
+    "minimum": null,
+    "money": {
+      "amount": 12000,
+      "currency": "GBP",
+      "per": "once"
+    },
+    "notes": "For applicants domiciled in India, self-funded, full-time on-campus master's starting September 2027. Excludes MBA, MPhil, MArch and some others."
+  },
+  {
+    "id": "uk-manchester-scholarship-pg-deadline",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "deadline",
+    "label": "Global Futures Scholarship (master's) form deadline",
+    "value": "Hold an offer and submit the scholarship form by 25 April 2027",
+    "url": "https://www.manchester.ac.uk/study/international/country-specific-information/india/",
+    "passage": "You must hold an offer (conditional or unconditional) to study a full-time master’s course at Manchester and submit an online scholarship application form by 25 April 2027.",
+    "minimum": null,
+    "money": null,
+    "notes": "Awards in two rounds: 50% by 15 March 2027, rest by 1 June 2027."
+  },
+  {
+    "id": "uk-manchester-apply-ug",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply (undergraduate)",
+    "value": "Through UCAS; Manchester's UCAS code is M20 MANU",
+    "url": "https://www.manchester.ac.uk/study/international/admissions/undergraduate-application-process/",
+    "passage": "All UK and international students must apply for undergraduate courses through UCAS. The University of Manchester's UCAS code is M20 MANU .",
+    "minimum": null,
+    "money": null,
+    "notes": "'M20' is an institution code, not a figure. UCAS charges an application fee (amount not stated here)."
+  },
+  {
+    "id": "uk-manchester-apply-pg",
+    "institution": {
+      "slug": "manchester",
+      "name": "The University of Manchester"
+    },
+    "aspect": "apply_route",
+    "label": "Taught master's closing date",
+    "value": "No official closing date for most taught courses; apply early",
+    "url": "https://www.manchester.ac.uk/study/international/admissions/postgraduate-application-process/",
+    "passage": "There is no official closing date for applications for most taught courses and research programmes but we advise you to apply as early as possible.",
+    "minimum": null,
+    "money": null,
+    "notes": "No numbers."
+  },
+  {
+    "id": "uk-edinburgh-entry-ug-cahss",
+    "institution": {
+      "slug": "edinburgh",
+      "name": "The University of Edinburgh"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII (CBSE/CISCE) for Arts, Humanities and Social Sciences",
+    "value": "80% overall with three subjects at 75%; only CBSE and CISCE accepted",
+    "url": "https://www.ed.ac.uk/studying/international/country/asia/south-asia/india",
+    "passage": "CBSE All India Senior School Certificate Examination (SSC), CISCE Indian School Certificate (ISC) Standard XII: overall 80% with three subjects at 75%.",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 80
+    },
+    "money": null,
+    "notes": "Next line: 'We currently only accept CBSE and CISCE exam boards.' Required subjects vary by degree."
+  },
+  {
+    "id": "uk-edinburgh-entry-ug-cse",
+    "institution": {
+      "slug": "edinburgh",
+      "name": "The University of Edinburgh"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII for Science and Engineering",
+    "value": "Five subjects, 80% overall average and 80% in required subjects (85% where an SQA Higher grade A is required)",
+    "url": "https://www.ed.ac.uk/studying/international/country/asia/south-asia/india",
+    "passage": "Award of Certificate with five subjects at Class XII, with an overall average of 80% or above and minimum 80% in all required subjects (or 85% where we require a grade A at SQA Higher).",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 80
+    },
+    "money": null,
+    "notes": "Same sentence applies to CBSE/CISCE and to other state boards for this College. CBSE Applied Mathematics not accepted for a Maths requirement. Year-2 entry possible with 85% (CBSE/CISCE only)."
+  },
+  {
+    "id": "uk-edinburgh-entry-ug-medicine",
+    "institution": {
+      "slug": "edinburgh",
+      "name": "The University of Edinburgh"
+    },
+    "aspect": "entry_ug",
+    "label": "Class XII (CBSE/CISCE) for Medicine",
+    "value": "85% overall average and 85% in English, Chemistry plus two of Biology, Mathematics or Physics; UCAT also required",
+    "url": "https://www.ed.ac.uk/studying/international/country/asia/south-asia/india",
+    "passage": "For Medicine, CBSE All India Senior School Certificate Examination (SSC) or CISCE Indian School Certificate (ISC) Standard XII with five subjects at Class XII, with an overall average of 85% and grades of 85% or higher in English, Chemistry plus two from Biology, Mathematics or Physics.",
+    "minimum": {
+      "type": "percent",
+      "stage": "ug",
+      "min": 85
+    },
+    "money": null,
+    "notes": "Medicine only; 'Applicants must also take the UCAT.'"
+  },
+  {
+    "id": "uk-edinburgh-english-medicine",
+    "institution": {
+      "slug": "edinburgh",
+      "name": "The University of Edinburgh"
+    },
+    "aspect": "english",
+    "label": "English test waiver (Medicine)",
+    "value": "No IELTS/TOEFL/Pearson needed for Medicine with 85% from CBSE or CISCE Standard XII",
+    "url": "https://www.ed.ac.uk/studying/international/country/asia/south-asia/india",
+    "passage": "We do not require students to take an English language test in IELTS/TOEFL/Pearson etc, if they achieve the minimum 85% from their Standard XII CBSE or CISCE examinations.",
+    "minimum": null,
+    "money": null,
+    "notes": "This sentence sits in the Medicine section; do not generalise to other programmes. General English requirements are listed by programme on study.ed.ac.uk, which was not reachable."
+  },
+  {
+    "id": "uk-edinburgh-apply-ug",
+    "institution": {
+      "slug": "edinburgh",
+      "name": "The University of Edinburgh"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply (undergraduate)",
+    "value": "Through UCAS",
+    "url": "https://www.ed.ac.uk/studying/international/applying/undergraduate",
+    "passage": "To apply for a full-time undergraduate degree programme with us you must apply through Universities and Colleges Admissions Service (UCAS).",
+    "minimum": null,
+    "money": null,
+    "notes": "No numbers."
+  },
+  {
+    "id": "uk-edinburgh-apply-pg",
+    "institution": {
+      "slug": "edinburgh",
+      "name": "The University of Edinburgh"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply (postgraduate)",
+    "value": "Edinburgh's own online application system, linked from each programme page in the degree finder",
+    "url": "https://www.ed.ac.uk/studying/international/applying/postgraduate",
+    "passage": "The University uses an online application system which can be found on the right-hand side of each programme page within the degree finder.",
+    "minimum": null,
+    "money": null,
+    "notes": "No numbers."
+  },
+  {
+    "id": "uk-kcl-entry-ug",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "entry_ug",
+    "label": "Indian Class XII boards accepted (undergraduate)",
+    "value": "Only CBSE or CISCE accepted; grades vary by course (check the course page, International Applicants, India)",
+    "url": "https://www.kcl.ac.uk/study/international/region/south-asia",
+    "passage": "For Indian high‑school qualifications, we accept only the Indian High School Leaving Certificate from the CBSE or CISCE boards.",
+    "minimum": null,
+    "money": null,
+    "notes": "No percentage on the India page; course pages hold the grades. Passage contains a non-breaking hyphen (U+2011) in 'high‑school'."
+  },
+  {
+    "id": "uk-kcl-entry-pg",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "entry_pg",
+    "label": "Indian bachelor's for taught master's",
+    "value": "Varies by programme; based on final undergraduate GPA or percentage",
+    "url": "https://www.kcl.ac.uk/study/international/region/south-asia",
+    "passage": "Entry requirements vary by programme and are typically based on your final undergraduate GPA or percentage classification.",
+    "minimum": null,
+    "money": null,
+    "notes": "No figure stated on the regional page."
+  },
+  {
+    "id": "uk-kcl-apply-ug",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply (undergraduate)",
+    "value": "Through UCAS",
+    "url": "https://www.kcl.ac.uk/study/international/region/south-asia",
+    "passage": "All undergraduate applications, including transfers, must be made via UCAS.",
+    "minimum": null,
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "uk-kcl-deadline-ug",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "deadline",
+    "label": "Undergraduate application timeline",
+    "value": "UCAS deadline in mid January (date varies each year)",
+    "url": "https://www.kcl.ac.uk/study/international/region/south-asia",
+    "passage": "Mid January: UCAS application deadline (date varies each year).",
+    "minimum": null,
+    "money": null,
+    "notes": "Adjacent lines: 'September – January: Applications open on UCAS.' and 'Early June: Offer-holder acceptance deadline (dates may vary each year).'"
+  },
+  {
+    "id": "uk-kcl-apply-pg",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "apply_route",
+    "label": "How to apply (postgraduate)",
+    "value": "Through the King's Apply Portal",
+    "url": "https://www.kcl.ac.uk/study/international/region/south-asia",
+    "passage": "All postgraduate applications must be made via the King’s Apply Portal .",
+    "minimum": null,
+    "money": null,
+    "notes": "Page text has a space before the full stop."
+  },
+  {
+    "id": "uk-kcl-english-band-b",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "english",
+    "label": "IELTS for undergraduate Band B courses (e.g. Arts & Humanities, Business, Law)",
+    "value": "IELTS (Academic) 7.0 overall with at least 6.5 in each skill",
+    "url": "https://www.kcl.ac.uk/study/undergraduate/how-to-apply/english-language-requirements",
+    "passage": "IELTS (Academic)\n7.0 overall with a minimum of 6.5 in each skill",
+    "minimum": {
+      "type": "ielts",
+      "min": 7.0
+    },
+    "money": null,
+    "notes": "Two adjacent table lines under Band B Section 1. Band B covers Arts & Humanities, Social Science & Public Policy, Nursing, IoPPN, King's Business School, Medicine/Dentistry, Law and some named courses. Test valid within two years of course start."
+  },
+  {
+    "id": "uk-kcl-english-band-d",
+    "institution": {
+      "slug": "kcl",
+      "name": "King's College London"
+    },
+    "aspect": "english",
+    "label": "IELTS for undergraduate Band D courses (Natural, Mathematical & Engineering Sciences)",
+    "value": "IELTS (Academic) 6.5 overall with at least 6.0 in each skill",
+    "url": "https://www.kcl.ac.uk/study/undergraduate/how-to-apply/english-language-requirements",
+    "passage": "IELTS (Academic)\n6.5 overall with a minimum of 6.0 in each skill",
+    "minimum": {
+      "type": "ielts",
+      "min": 6.5
+    },
+    "money": null,
+    "notes": "Two adjacent table lines under Band D Section 1 (Faculty of Natural, Mathematical & Engineering Sciences, excluding Electronic Engineering, General Engineering and Quantitative Mathematics which are Band B, plus listed courses). No India Class XII English rule found on this page."
+  }
+]

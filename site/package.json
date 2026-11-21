@@ -14,7 +14,9 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "node tests/e2e/run.mjs",
     "lint": "astro check && eslint . --max-warnings 0 && prettier --check \"src/**/*.{ts,css,mjs}\" \"tests/**/*.{ts,mjs}\" \"scripts/**/*.mjs\"",
-    "check:sources": "node scripts/check-sources.mjs"
+    "check:sources": "node scripts/check-sources.mjs",
+    "verify:passages": "node scripts/verify-passages.mjs",
+    "verify:passages:stamp": "node scripts/verify-passages.mjs --stamp"
   },
   "dependencies": {
     "astro": "7.4.13"

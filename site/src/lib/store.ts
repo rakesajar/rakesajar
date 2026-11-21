@@ -5,11 +5,12 @@
 import { CHANGES } from '../data/changes';
 import { DESTINATIONS, DESTINATION_BY_SLUG } from '../data/destinations';
 import { FACTS, SEED_DATE, SIGNALS } from '../data/facts';
+import { INDIA_FACTS } from '../data/sourced';
 import { toIsoDate } from './facts';
 import { assertValidStore } from './validate';
 
 export const BUILD_DATE = toIsoDate(new Date());
 
-assertValidStore({ facts: FACTS, signals: SIGNALS, changes: CHANGES }, BUILD_DATE);
+assertValidStore({ facts: [...FACTS, ...INDIA_FACTS], signals: SIGNALS, changes: CHANGES }, BUILD_DATE);
 
-export { CHANGES, DESTINATIONS, DESTINATION_BY_SLUG, FACTS, SEED_DATE, SIGNALS };
+export { CHANGES, DESTINATIONS, DESTINATION_BY_SLUG, FACTS, INDIA_FACTS, SEED_DATE, SIGNALS };

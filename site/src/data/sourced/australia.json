@@ -1,0 +1,264 @@
+[
+  {
+    "id": "au-uq-entry-ug",
+    "institution": {
+      "slug": "uq",
+      "name": "The University of Queensland"
+    },
+    "aspect": "entry_ug",
+    "label": "Qualification needed for undergraduate entry",
+    "value": "Queensland Year 12 or an equivalent qualification, plus the program's minimum entry score; no India-specific percentage is published as text",
+    "url": "https://study.uq.edu.au/admissions/undergraduate/review-entry-requirements",
+    "passage": "To be offered a place in an undergraduate program, you need to have successfully completed Queensland Year 12, or a qualification equivalent to Queensland Year 12, with the required minimum entry score for the program you're interested in studying.",
+    "minimum": null,
+    "money": null,
+    "notes": "India-specific (CBSE/ISC) scores appear only via a JavaScript qualification selector on program pages; not quotable."
+  },
+  {
+    "id": "au-uq-english",
+    "institution": {
+      "slug": "uq",
+      "name": "The University of Queensland"
+    },
+    "aspect": "english",
+    "label": "English requirement (most programs)",
+    "value": "IELTS overall 6.5 with 6.0 in all sub-bands, or equivalent",
+    "url": "https://study.uq.edu.au/admissions/english-language-requirements",
+    "passage": "To be eligible for entry to most UQ programs, you need to meet our minimum English language requirements (overall IELTS of 6.5 and 6.0 in all sub-bands or equivalent, including IELTS One Skill Retake).",
+    "minimum": {
+      "type": "ielts",
+      "min": 6.5
+    },
+    "money": null,
+    "notes": "Some programs differ. Same page: 'IELTS Online is not recognised by UQ.'"
+  },
+  {
+    "id": "au-uq-entry-pg-mcs",
+    "institution": {
+      "slug": "uq",
+      "name": "The University of Queensland"
+    },
+    "aspect": "entry_pg",
+    "label": "Master of Computer Science (5522): minimum GPA",
+    "value": "GPA of 5.0 on UQ's 7-point scale in the previous qualification",
+    "url": "https://study.uq.edu.au/study-options/programs/master-computer-science-5522",
+    "passage": "You must have a grade point average (GPA) of 5.0 on a 7-point scale in your previous qualification",
+    "minimum": null,
+    "money": null,
+    "notes": "Program-specific, not India-specific. The Indian-degree GPA equivalent is shown only through a JavaScript selector. General PG page: 'For most programs, you'll need to have completed an approved degree equivalent to an Australian bachelor's degree.'"
+  },
+  {
+    "id": "au-uq-tuition-mcs",
+    "institution": {
+      "slug": "uq",
+      "name": "The University of Queensland"
+    },
+    "aspect": "tuition",
+    "label": "Master of Computer Science (5522): indicative annual international fee, 2027",
+    "value": "AUD $60,952 per year (2027)",
+    "url": "https://study.uq.edu.au/study-options/programs/master-computer-science-5522",
+    "passage": "Approximate yearly cost of full-time tuition (16 units). Your fees will vary according to your study load. Fees are reviewed each year and may increase.\nAUD $60,952\n2027",
+    "minimum": null,
+    "money": {
+      "amount": 60952,
+      "currency": "AUD",
+      "per": "year"
+    },
+    "notes": "Indicative; the year '2027' appears on the adjacent line. The $9,880 figure on the same page is the domestic fee."
+  },
+  {
+    "id": "au-uq-intake-mcs",
+    "institution": {
+      "slug": "uq",
+      "name": "The University of Queensland"
+    },
+    "aspect": "intake",
+    "label": "Master of Computer Science (5522): start semesters",
+    "value": "Semester 1 (22 Feb 2027) and Semester 2 (26 Jul 2027)",
+    "url": "https://study.uq.edu.au/study-options/programs/master-computer-science-5522",
+    "passage": "Semester 1 (22 Feb, 2027), Semester 2 (26 Jul, 2027)",
+    "minimum": null,
+    "money": null,
+    "notes": "Program-specific start dates."
+  },
+  {
+    "id": "au-sydney-apply-route",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "apply_route",
+    "label": "How international students apply",
+    "value": "Apply directly from the course page or via an authorised agent, and pay the application processing fee",
+    "url": "https://www.sydney.edu.au/study/applying/how-to-apply/international-students.html",
+    "passage": "Apply directly to the University from your course page or via an authorised agent . Note that you’ll need to pay the application processing fee .",
+    "minimum": null,
+    "money": null,
+    "notes": "Applicants currently studying Australian Year 12 or an IB diploma in Australia apply through UAC instead."
+  },
+  {
+    "id": "au-sydney-coe",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "apply_route",
+    "label": "After the offer: Confirmation of Enrolment for the visa",
+    "value": "Accept the offer, pay first-semester fees, then receive an eCoE for the student visa application",
+    "url": "https://www.sydney.edu.au/study/applying/how-to-apply/international-students.html",
+    "passage": "You need to accept your offer by the deadline and pay your first semester fees to enrol. After payment, you’ll receive an electronic Confirmation of Enrolment (eCoE) for your student visa application.",
+    "minimum": null,
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "au-sydney-entry-ug",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "entry_ug",
+    "label": "Indian Class XII qualifications recognised for undergraduate entry",
+    "value": "CBSE, CISCE (ISC) and State board Higher Secondary Certificates are listed as recognised qualifications",
+    "url": "https://www.sydney.edu.au/study/applying/how-to-apply/undergraduate/recognised-qualifications.html",
+    "passage": "India\nAll India Senior School Certificate (CBSE)\nIndian School Certificate (CISCE)\nIndian Higher Secondary Certificate (State board exams)",
+    "minimum": null,
+    "money": null,
+    "notes": "No percentage stated here; the same page says to refer to the course page for the entry requirement of non-ATAR qualifications."
+  },
+  {
+    "id": "au-sydney-english",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "english",
+    "label": "Standard English requirement",
+    "value": "IELTS overall 6.5 with no band below 6.0; some courses differ",
+    "url": "https://www.sydney.edu.au/study/applying/how-to-apply/international-students/english-language-requirements.html",
+    "passage": "The University's standard English language proficiency requirement is set at an IELTS overall score of 6.5 with no band below 6.0; however, some faculties and courses have different requirements.",
+    "minimum": {
+      "type": "ielts",
+      "min": 6.5
+    },
+    "money": null,
+    "notes": "Tests must be no more than two years old at course commencement; IELTS Online not accepted."
+  },
+  {
+    "id": "au-sydney-scholarship-india",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "scholarship",
+    "label": "Sydney Scholars India Scholarship Program",
+    "value": "Up to $40,000 for Indian citizens resident in India with an unconditional offer",
+    "url": "https://www.sydney.edu.au/scholarships/e/sydney-scholars-india-scholarship-program.html",
+    "passage": "Value\nEligibility\nOpen date\nClose date\nUp to $40,000\nIndian citizen and resident\nInternational student\nReceived an unconditional offer of admission to a coursework degree\n1 April 2026\n24 May 2026",
+    "minimum": null,
+    "money": {
+      "amount": 40000,
+      "currency": "AUD",
+      "per": "once"
+    },
+    "notes": "Table cells rendered as lines. The 2026 round has closed as of Nov 2026; check for the next round. 'Up to $40,000' is the maximum. The 2026 application round (1 April to 24 May 2026) has closed; dates for the next round are not yet quoted."
+  },
+  {
+    "id": "au-sydney-scholarship-india-awards",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "scholarship",
+    "label": "Sydney Scholars India Scholarship Program: awards",
+    "value": "28 scholarships a year: 2 x 100% tuition (undergraduate), 10 x $20,000 and 16 x $10,000 first-year awards",
+    "url": "https://www.sydney.edu.au/scholarships/e/sydney-scholars-india-scholarship-program.html",
+    "passage": "A total of 28 scholarships will be awarded annually, consisting of:\n2 x 100% tuition fees for any undergraduate degree up to four years full-time study.\n10 x $20,000 first-year scholarships for undergraduate and postgraduate students.\n16 x $10,000 first-year scholarships for undergraduate and postgraduate students.",
+    "minimum": null,
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "au-sydney-scholarship-india-equity",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "scholarship",
+    "label": "Sydney Scholars India Equity Scholarship (postgraduate coursework)",
+    "value": "Up to $100,000, for one Indian student from a low socio-economic background (Delhi communities where ASHA Society works)",
+    "url": "https://www.sydney.edu.au/scholarships/e/sydney-scholars-india-equity-scholarship0.html",
+    "passage": "This scholarship is valued at up to $100,000 and will cover the cost of your tuition fees, living expenses, flights, textbooks and health cover.",
+    "minimum": null,
+    "money": {
+      "amount": 100000,
+      "currency": "AUD",
+      "per": "once"
+    },
+    "notes": "Eligibility narrow: 'be an Indian citizen and current residents of slum communities in Delhi, India where ASHA Society works'. No close date captured."
+  },
+  {
+    "id": "au-sydney-deadline-ug",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "deadline",
+    "label": "International application closing dates (undergraduate)",
+    "value": "Semester 1 (Feb): 1 December of the year prior; Semester 2 (Aug): 29 May of the commencing year",
+    "url": "https://www.sydney.edu.au/study/applying/application-dates.html",
+    "passage": "Application closing date\nSemester 1 (Feb)\n1 December of the year prior to commencement\nSemester 2 (Aug)\n29 May of the commencing year",
+    "minimum": null,
+    "money": null,
+    "notes": "Table rendered as lines. Postgraduate international closing dates on the same page are the same (1 December / 29 May); some courses (e.g. medicine, dentistry) differ."
+  },
+  {
+    "id": "au-sydney-intake-2027",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "intake",
+    "label": "2027 semester start dates",
+    "value": "Semester 1: 22 February 2027; Semester 2: 2 August 2027",
+    "url": "https://www.sydney.edu.au/study/applying/application-dates.html",
+    "passage": "2027 start dates\nSemester 1\n22 February 2027\nSemester 2\n2 August 2027",
+    "minimum": null,
+    "money": null,
+    "notes": ""
+  },
+  {
+    "id": "au-sydney-tuition-eng-ug",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "tuition",
+    "label": "Engineering and computer science, undergraduate: indicative annual international fee",
+    "value": "A$60,600 (2026 entry); A$63,600 (2027 entry), full-time",
+    "url": "https://www.sydney.edu.au/study/fees-and-loans/international-student-tuition-fees.html",
+    "passage": "Engineering and computer science\nCourse level\nFull-time fees (guide for 2026 entry)\nFull-time fees (guide for 2027 entry)\nUndergraduate\nA$60,600\nA$63,600",
+    "minimum": null,
+    "money": {
+      "amount": 63600,
+      "currency": "AUD",
+      "per": "year"
+    },
+    "notes": "Guide only, based on 48 credit points per year; course fees vary — see course page. Table rendered as lines; money uses 2027-entry figure."
+  },
+  {
+    "id": "au-sydney-tuition-eng-pg",
+    "institution": {
+      "slug": "sydney",
+      "name": "The University of Sydney"
+    },
+    "aspect": "tuition",
+    "label": "Engineering and computer science, postgraduate coursework: indicative annual international fee",
+    "value": "A$57,900 – A$63,400 (2026 entry); A$60,800 – A$64,800 (2027 entry)",
+    "url": "https://www.sydney.edu.au/study/fees-and-loans/international-student-tuition-fees.html",
+    "passage": "Engineering and computer science\nCourse level\nFull-time fees (guide for 2026 entry)\nFull-time fees (guide for 2027 entry)\nUndergraduate\nA$60,600\nA$63,600\nPostgraduate coursework\nA$57,900 – A$63,400\nA$60,800 – A$64,800",
+    "minimum": null,
+    "money": null,
+    "notes": "Range by course; guide only. Directly follows the Engineering and computer science undergraduate row."
+  }
+]

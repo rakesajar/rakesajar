@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
+import WaitlistForm from '../components/WaitlistForm.astro';
 import { HOME_CURRENCIES } from '../lib/money';
 import { DESTINATIONS } from '../lib/store';
 ---
@@ -70,6 +71,13 @@ import { DESTINATIONS } from '../lib/store';
           are your own figures. This is not a full budget. Confirm on the official page before paying or applying.
         </p>
         <a class="btn btn-secondary" data-guide-link href="/destinations/uk">Open the guide</a>
+        <div style="margin-top:24px">
+          <WaitlistForm
+            purpose="waitlist"
+            title="Want this saved and kept up to date?"
+            intro="Accounts will save your plan and tell you when an official figure in it changes. Join the waitlist to hear when they open."
+          />
+        </div>
       </div>
     </div>
   </section>

@@ -8,7 +8,10 @@ export function maxAgeDays(fact: Pick<Fact, 'topic' | 'volatility'>): number {
   if (fact.volatility === 'volatile') return 1;
   switch (fact.topic) {
     case 'tuition':
+    case 'admissions':
       return 30;
+    case 'remittance':
+    case 'documents':
     case 'permission':
     case 'work':
     case 'post_study':
@@ -106,6 +109,9 @@ export const TOPIC_LABEL: Record<Topic, string> = {
   tuition: 'Tuition',
   employment: 'Employment rules',
   policy: 'Policy',
+  admissions: 'Admissions',
+  remittance: 'Sending money from India',
+  documents: 'Documents',
 };
 
 /** Formats an ISO date as e.g. "21 Nov 2026" (UTC, locale-independent). */

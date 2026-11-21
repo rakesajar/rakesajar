@@ -1,0 +1,190 @@
+[
+  {
+    "id": "in-lrs-limit",
+    "country": "india",
+    "institution": null,
+    "aspect": "remittance",
+    "label": "Liberalised Remittance Scheme (LRS) limit per financial year",
+    "value": "Up to USD 2,50,000 per financial year (April – March) per resident individual, including minors",
+    "url": "https://www.rbi.org.in/Scripts/FAQView.aspx?Id=115",
+    "passage": "Ans. Under the Liberalised Remittance Scheme, all resident individuals, including minors, are allowed to freely remit up to USD 2,50,000 per financial year (April – March) for any permissible current or capital account transaction or a combination of both.",
+    "minimum": null,
+    "money": {
+      "amount": 250000,
+      "currency": "USD",
+      "per": "year"
+    },
+    "effectiveFrom": null,
+    "notes": "RBI FAQ page header says 'Updated as on April 06, 2023'. The limit is per individual, per financial year (April–March)."
+  },
+  {
+    "id": "in-lrs-studies-abroad",
+    "country": "india",
+    "institution": null,
+    "aspect": "remittance",
+    "label": "Studies abroad is a permitted LRS purpose",
+    "value": "Studies abroad is one of the purposes for which foreign exchange can be bought within the LRS limit of USD 2,50,000 per financial year",
+    "url": "https://www.rbi.org.in/Scripts/FAQView.aspx?Id=115",
+    "passage": "Ans. Individuals can avail of foreign exchange facility for the following purposes within the LRS limit of USD 2,50,000 on financial year basis:",
+    "minimum": null,
+    "money": {
+      "amount": 250000,
+      "currency": "USD",
+      "per": "year"
+    },
+    "effectiveFrom": null,
+    "notes": "'Studies abroad' appears as a list item a few lines below this sentence in the same answer (Q3); the list items are not adjacent to the sentence so are not merged into the passage."
+  },
+  {
+    "id": "in-lrs-pan",
+    "country": "india",
+    "institution": null,
+    "aspect": "remittance",
+    "label": "PAN required for LRS remittances",
+    "value": "PAN is mandatory for all transactions under LRS made through Authorized Persons",
+    "url": "https://www.rbi.org.in/Scripts/FAQView.aspx?Id=115",
+    "passage": "Ans. Yes, it is mandatory for the resident individual to provide his/her Permanent Account Number (PAN) for all transactions under LRS made through Authorized Persons.",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": "Q19 on the same page (documents for Schedule III para 1 purposes) also answers only: 'Permanent Account Number (PAN) is mandatory for all transactions under LRS.'"
+  },
+  {
+    "id": "in-lrs-form-a2",
+    "country": "india",
+    "institution": null,
+    "aspect": "remittance",
+    "label": "Form A2 declaration to the bank",
+    "value": "The bank (AD) goes by the purpose the remitter declares in Form A2; the remitter is ultimately responsible for FEMA compliance",
+    "url": "https://www.rbi.org.in/Scripts/FAQView.aspx?Id=115",
+    "passage": "Ans. AD will be guided by the nature of transaction as declared by the remitter in Form A2 and will thereafter certify that the remittance is in conformity with the instructions issued by the Reserve Bank in this regard from time to time. However, the ultimate responsibility is of the remitter to ensure compliance to the extant FEMA rules/regulations.",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": "Banks may ask for further documents in practice; the RBI FAQ itself names only PAN and the Form A2 declaration."
+  },
+  {
+    "id": "in-lrs-minor",
+    "country": "india",
+    "institution": null,
+    "aspect": "remittance",
+    "label": "Remittance by a minor",
+    "value": "If the remitter is a minor, the LRS declaration form must be countersigned by the minor's natural guardian",
+    "url": "https://www.rbi.org.in/Scripts/FAQView.aspx?Id=115",
+    "passage": "In case of remitter being a minor, the LRS declaration form must be countersigned by the minor’s natural guardian.",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": ""
+  },
+  {
+    "id": "in-lrs-frequency",
+    "country": "india",
+    "institution": null,
+    "aspect": "remittance",
+    "label": "How often money can be sent under LRS",
+    "value": "No limit on how often you remit, but the total from all sources in a financial year must stay within USD 2,50,000",
+    "url": "https://www.rbi.org.in/Scripts/FAQView.aspx?Id=115",
+    "passage": "Ans. There are no restrictions on the frequency of remittances under LRS. However, the total amount of foreign exchange purchased from or remitted through, all sources in India during a financial year should be within the cumulative limit of USD 2,50,000.",
+    "minimum": null,
+    "money": {
+      "amount": 250000,
+      "currency": "USD",
+      "per": "year"
+    },
+    "effectiveFrom": null,
+    "notes": ""
+  },
+  {
+    "id": "in-apostille-what",
+    "country": "india",
+    "institution": null,
+    "aspect": "attestation",
+    "label": "Apostille for educational documents",
+    "value": "MEA apostilles educational documents (degree, diploma, matriculation and secondary certificates) for use in Hague Convention member countries",
+    "url": "https://www.mea.gov.in/apostille-menu",
+    "passage": "Apostille is done for personal documents like birth/death/marriage certificates, Affidavits, Power of Attorney, etc. and educational documents like degree, diploma, matriculation and secondary level certificates etc.",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": "Same page: India has been a Hague Convention member since 2005 and Apostille is accepted in all member countries."
+  },
+  {
+    "id": "in-attestation-non-hague",
+    "country": "india",
+    "institution": null,
+    "aspect": "attestation",
+    "label": "Normal attestation for non-Hague countries",
+    "value": "Normal attestation is used for countries that are not Hague Convention members and do not accept Apostille",
+    "url": "https://www.mea.gov.in/apostille-menu",
+    "passage": "This is done for all the countries which are not a member of Hague Convention and where Apostille is not accepted.",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": "Appears under the heading 'Normal Attestation'."
+  },
+  {
+    "id": "in-apostille-process",
+    "country": "india",
+    "institution": null,
+    "aspect": "attestation",
+    "label": "How to submit documents for attestation/apostille",
+    "value": "Documents are not accepted directly at MEA; submit the original/true copy, a photocopy and a passport photocopy to an authorised outsourced service provider",
+    "url": "https://www.mea.gov.in/apostille-menu",
+    "passage": "The original document/true copy is to be submitted directly to any of the five outsourced service providers along with a photocopy of the document and a photocopy of the Passport of the applicant. It would be pertinent to point out that the Ministry does not legalize photocopies.",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": "Page is internally inconsistent: this paragraph says 'five' outsourced providers, but the fee section and step list name four (BLS International, Superb Enterprises, IVS Global, Alhind Tours & Travels). Documents not covered by e-Sanad first need authentication by the state Regional Authentication Centre (Step 1). Decentralised to Branch Secretariats/RPOs in 16 cities from 1 Jan 2019."
+  },
+  {
+    "id": "in-apostille-esanad",
+    "country": "india",
+    "institution": null,
+    "aspect": "attestation",
+    "label": "e-Sanad online verification",
+    "value": "e-Sanad is MEA's e-service for verification and attestation of Indian citizens' documents",
+    "url": "https://www.mea.gov.in/apostille-menu",
+    "passage": "A. E-sanad: e-Service for verification & attestation of documents of Indian Citizens",
+    "minimum": null,
+    "money": null,
+    "effectiveFrom": null,
+    "notes": "Details are in a linked PDF (not fetched)."
+  },
+  {
+    "id": "in-apostille-fee",
+    "country": "india",
+    "institution": null,
+    "aspect": "attestation",
+    "label": "MEA fee for apostille / attestation",
+    "value": "Rs 50 per document for Apostille; normal attestation is free",
+    "url": "https://www.mea.gov.in/apostille-menu",
+    "passage": "MEA: A fee of Rs 50 is payable for Apostille of document. (W.e.f 21 December 2016, payment by means of postal orders has been discontinued.) Normal Attestation is done free of cost.",
+    "minimum": null,
+    "money": {
+      "amount": 50,
+      "currency": "INR",
+      "per": "once"
+    },
+    "effectiveFrom": null,
+    "notes": "Per document/apostille sticker. Outsourced agency charges are extra (see in-apostille-agency-fee)."
+  },
+  {
+    "id": "in-apostille-agency-fee",
+    "country": "india",
+    "institution": null,
+    "aspect": "attestation",
+    "label": "Outsourced agency charges for apostille",
+    "value": "Rs 50 per apostille sticker (MEA) + Rs 84 per document (agency service charge) + Rs. 3 per page (scanning)",
+    "url": "https://www.mea.gov.in/apostille-menu",
+    "passage": "Apostille\nRs 50 per apostille sticker\nRs 84 per document\nRs. 3 per page",
+    "minimum": null,
+    "money": {
+      "amount": 84,
+      "currency": "INR",
+      "per": "once"
+    },
+    "effectiveFrom": null,
+    "notes": "Passage is one table row (columns: Type of Service | MEA Fee | Outsource Agency Fee Service Charge | Scanning Charge); cells appear on consecutive lines in the page text. Attestation row: Free of Cost / Rs 84 per document / Rs. 3 per page."
+  }
+]

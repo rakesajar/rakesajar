@@ -55,3 +55,16 @@ must be run where network access exists.
 
 Gate policy `.agents/gate-policy.json`: tests, secrets, lint, sast, dependencies, diff_coverage (≥ 80% lines on `src/lib`),
 knowledge. Independent branch review by a separate agent that did not author the change.
+
+## Scope amendment 1 (product owner, 21 Nov 2026: "Fix 1,4,7,8" from the Fable critique)
+
+| ID | Observable behavior / failure case | Verification evidence required |
+|---|---|---|
+| AC-12 | UK, Canada and Australia guides list universities with admissions facts (how to apply, entry minimums for Indian applicants, English tests, deadlines, tuition, scholarships), each machine-sourced with a verbatim passage | unit (validator + passage-number check), e2e, `npm run verify:passages` |
+| AC-13 | Eligibility check compares Class XII / bachelor's % and IELTS with published minimums: meets, below, within range, or not published. Never a score, chance, rank, reach/match/safe | unit + e2e |
+| AC-14 | India page with RBI (LRS) and MEA (apostille/attestation) facts, quoted; states plainly what is not verified (TCS, loans) | e2e |
+| AC-15 | Waitlist and per-country change-alert sign-up: under-18 students cannot submit, explicit consent recorded, nothing sent unless an endpoint is configured; server re-validates | unit + e2e; reference handler in `services/waitlist` |
+
+Network: a personal environment `rakesajar-pathfinder` allows the listed official hosts so pages can be fetched and quoted.
+Allowlist extended under DS-3: utoronto.ca, ubc.ca, mcgill.ca (designated learning institutions) and mohfw.gov.in.
+Reserved to the product owner: switching sign-ups on (operator, privacy contact, retention), and amending req.md FR-7/FR-12.

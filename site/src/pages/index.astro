@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import DestCard from '../components/DestCard.astro';
 import FactRow from '../components/FactRow.astro';
-import ViewFlags from '../components/ViewFlags.astro';
 import FactList from '../components/FactList.astro';
 import PilotNote from '../components/PilotNote.astro';
 import Declaration from '../components/Declaration.astro';
@@ -10,7 +9,6 @@ import { CANDOUR, PROMISES } from '../data/promises';
 import type { Fact, Stage } from '../data/types';
 import { BUILD_DATE, CHANGES, DESTINATIONS, FACTS, SIGNALS, DESTINATION_BY_SLUG } from '../lib/store';
 import { changingCount, factById, formatDate, plural, presentation } from '../lib/facts';
-import { hostOf } from '../lib/domains';
 
 const today = BUILD_DATE;
 const example = factById(FACTS, 'fr-fee-master');
@@ -37,7 +35,10 @@ const pgApplying = FACTS.filter(
 const pgAfter = FACTS.filter(
   (f) => live(f) && f.topic === 'post_study' && (f.stages?.includes('pg') || f.stages?.includes('phd')) && !f.stages?.includes('ug'),
 );
-const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f, today) === 'current');
+const tuitionFacts = FACTS.filter(
+  (f) => (f.topic === 'tuition' || (f.topic === 'admissions' && f.aspect === 'tuition')) && presentation(f, today) === 'current',
+);
+const uniCount = new Set(FACTS.filter((f) => f.institution).map((f) => f.institution!.slug)).size;
 const ukNext = factById(FACTS, 'uk-graduate-18m');
 ---
 
@@ -134,6 +135,9 @@ const ukNext = factById(FACTS, 'uk-graduate-18m');
                 <li>Shortlist countries first, then courses. Each country card below links to its official starting point.</li>
                 <li>Read the university’s entry requirements for applicants with your board (CBSE, ICSE, state board or other).</li>
                 <li>Look at what happens after the degree too. For the UK it depends on when you apply for the Graduate Route.</li>
+                <li>
+                  <a href="/eligibility">Check your Class XII percentage against the minimums {uniCount} universities publish</a>.
+                </li>
               </ul>
             </div>
             <div>
@@ -157,6 +161,7 @@ const ukNext = factById(FACTS, 'uk-graduate-18m');
                 <li>Check whether your degree is recognised for entry: the university’s admissions page will say.</li>
                 <li>For a PhD, check on the university’s page whether you need a supervisor before applying.</li>
                 <li>Compare what each country allows after a postgraduate or research degree.</li>
+                <li><a href="/eligibility">Check your bachelor’s percentage against published master’s minimums</a>.</li>
               </ul>
             </div>
             <div>
@@ -182,7 +187,10 @@ const ukNext = factById(FACTS, 'uk-graduate-18m');
                 <li>Before any money leaves your account, check the amount on the official page we link to.</li>
                 <li>Pay only on official university or government websites. We list the official domains on every country page.</li>
               </ul>
-              <a class="btn btn-secondary" href="/cost-planner">Open the cost planner</a>
+              <div class="row">
+                <a class="btn btn-secondary" href="/cost-planner">Open the cost planner</a>
+                <a class="btn btn-ghost" href="/india">Sending money from India</a>
+              </div>
             </div>
             <div>
               <p class="small subtle mono" style="margin:0 0 8px">Tuition figures we’ve verified so far</p>
