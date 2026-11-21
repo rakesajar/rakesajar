@@ -78,8 +78,8 @@ export function factById(facts: readonly Fact[], id: string): Fact {
 export const STATUS_LABEL: Record<FactStatus, string> = {
   in_force: 'In force',
   announced: 'Announced',
-  proposed: 'Proposed — not final',
-  litigated: 'In litigation',
+  proposed: 'Proposed, not final',
+  litigated: 'In court',
   superseded: 'Superseded',
   conflict: 'Being re-checked',
 };

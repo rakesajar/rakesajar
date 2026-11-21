@@ -6,7 +6,8 @@
  */
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,7 +37,9 @@ function assert(cond, msg) {
 }
 
 // Minimal static server for dist/ (directory-format pages, 404.html fallback).
-const DIST = fileURLToPath(new URL('../../dist/', import.meta.url));
+// Serve a private snapshot so a concurrent `npm run build` cannot change files under the running suite.
+const DIST = mkdtempSync(join(tmpdir(), 'pathfinder-e2e-')) + '/';
+cpSync(fileURLToPath(new URL('../../dist/', import.meta.url)), DIST, { recursive: true });
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
@@ -59,7 +62,10 @@ const server = createServer((req, res) => {
   res.end(readFileSync(file));
 });
 await new Promise((r) => server.listen(PORT, '127.0.0.1', r));
-const stop = () => server.close();
+const stop = () => {
+  server.close();
+  rmSync(DIST, { recursive: true, force: true });
+};
 
 const browser = await chromium.launch();
 async function open(path, opts = {}) {
@@ -99,7 +105,7 @@ try {
     assert(!(await row.textContent()).includes('Current'), 'conflict shown as current');
     await ctx.close();
     const us = await open('/destinations/usa');
-    assert((await us.page.locator('#fact-us-ds-rule').textContent()).includes('In litigation'), 'D/S not labelled litigated');
+    assert((await us.page.locator('#fact-us-ds-rule').textContent()).includes('In court'), 'D/S not labelled litigated');
     assert((await us.page.locator('#fact-us-opt-fee').textContent()).includes('Proposed'), 'OPT fee not labelled proposed');
     await us.ctx.close();
   });

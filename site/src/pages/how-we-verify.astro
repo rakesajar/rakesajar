@@ -7,8 +7,8 @@ import { DESTINATIONS } from '../lib/store';
 const statuses = [
   ['ok', 'Current', 'In force today, verified against an official source.'],
   ['info', 'Announced', 'Officially announced with a future start date. Shown with that date, never as today’s rule.'],
-  ['warn', 'Proposed — not final', 'A proposal only. Never shown as in force and never added to totals.'],
-  ['bad', 'In litigation', 'Blocked or challenged in court. Never shown as in force.'],
+  ['warn', 'Proposed, not final', 'A proposal only. Never shown as in force and never added to totals.'],
+  ['bad', 'In court', 'Blocked or challenged in court. Never shown as in force.'],
   ['bad', 'Being re-checked', 'Official sources disagree. The fact is quarantined and re-checked every hour until they agree.'],
   ['warn', 'Re-check due', 'Older than its freshness limit. Shown with a warning and never used in answers until verified again.'],
   ['plain', 'Reported', 'Seen in reputable news or legal alerts but not yet confirmed officially. Never shown as fact.'],
@@ -28,12 +28,12 @@ const freshness = [
   <PageHead
     eyebrow="Method"
     title="How we verify"
-    lede="Pathfinder is run by automated agents, with no human editors. That only works if the rules are strict and public, so here they are."
+    lede="Pathfinder is run by software, not by an editorial team. That only works if the rules it follows are strict and written down where you can read them. Here they are."
   />
 
   <section class="section-tight">
     <div class="container prose">
-      <h2>The short version</h2>
+      <h2>In short</h2>
       <ul class="check-list">
         <li>We only read from a published allowlist of government, regulator and official institution websites.</li>
         <li>A visa rule, fee or work right must come from a <strong>government source (T1)</strong>. University facts must come from the university’s own page (T2).</li>

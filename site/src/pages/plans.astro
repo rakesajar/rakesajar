@@ -31,30 +31,30 @@ const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Thir
 >
   <PageHead
     eyebrow="Plans"
-    title="Simple plans, no commissions"
-    lede="The guides and core tools are free for everyone. Premium adds a personal concierge and planning tools. We never earn from universities, so our only incentive is to be right."
+    title="Plans"
+    lede="The country guides, the comparison and the cost planner are free and will stay free. Premium is for the months when you are actually applying and need help keeping track."
   />
   <section class="section-tight">
     <div class="container">
       <div class="grid grid-3">
         <div class="card">
           <p class="eyebrow">Free</p>
-          <h2 style="font-size:1.5rem">Explore</h2>
+          <h2 style="font-size:1.5rem">Looking around</h2>
           <p class="muted small">Every guide, comparison of two countries, the cost planner and three questions a day.</p>
           <a class="btn btn-primary" href="/destinations">Start exploring</a>
         </div>
         <div class="card">
           <p class="eyebrow">Free account</p>
-          <h2 style="font-size:1.5rem">Plan</h2>
+          <h2 style="font-size:1.5rem">Narrowing down</h2>
           <p class="muted small">Save comparisons and costs, ask ten questions a day, and track one country.</p>
           <span class="pill plain">Accounts open soon</span>
         </div>
         <div class="card" style="border-color:var(--gold);box-shadow:var(--shadow)">
           <p class="eyebrow" style="color:var(--gold)">Premium · per application cycle</p>
-          <h2 style="font-size:1.5rem">Apply with confidence</h2>
+          <h2 style="font-size:1.5rem">Application season</h2>
           <p class="muted small">
-            A personal AI concierge that searches only official websites, plus shortlists, deadlines, documents, form guidance and
-            essay feedback for every country.
+            An assistant that searches official websites for you, plus your shortlist, deadlines, document checklist, form guidance
+            and feedback on your essays, for every country you apply to.
           </p>
           <span class="pill gold">Opening country by country</span>
         </div>
@@ -87,8 +87,8 @@ const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Thir
     <div class="container grid grid-2" style="gap:32px;align-items:start">
       <div>
         <p class="eyebrow">Release gates</p>
-        <h2>Premium opens only where it passes our quality bar</h2>
-        <p class="muted">Premium answers for a country go live only after an automated evaluation passes every gate, and they stay live only while it keeps passing. If a country falls below the bar, answers switch to official links until it recovers.</p>
+        <h2>Premium opens one country at a time</h2>
+        <p class="muted">We switch Premium on for a country only after its answers pass these tests, and we switch it back off if they stop passing. While it’s off, you get links to the official pages instead of answers.</p>
         <ul class="check-list" data-figure-ok="policy">{gates.map((g) => <li>{g}</li>)}</ul>
       </div>
       <div class="table-wrap">

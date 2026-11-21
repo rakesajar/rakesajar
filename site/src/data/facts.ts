@@ -220,7 +220,7 @@ export const FACTS: Fact[] = [
     value: 'Vacated by a court on 16 Nov 2026',
     status: 'litigated',
     volatility: 'volatile',
-    statusNote: 'In litigation. Not presented as in force. Check the official notice before relying on it.',
+    statusNote: 'Being challenged in court. We do not treat it as in force. Check the official notice before relying on it.',
     sources: [S.fedReg],
   }),
   seed({

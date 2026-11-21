@@ -2,86 +2,103 @@
 import Base from '../layouts/Base.astro';
 import DestCard from '../components/DestCard.astro';
 import FactRow from '../components/FactRow.astro';
-import { BUILD_DATE, CHANGES, DESTINATIONS, FACTS, DESTINATION_BY_SLUG } from '../lib/store';
-import { factById, formatDate } from '../lib/facts';
-import { hostOf } from '../lib/domains';
+import { BUILD_DATE, CHANGES, DESTINATIONS, FACTS, SIGNALS, DESTINATION_BY_SLUG } from '../lib/store';
+import { factById, formatDate, presentation } from '../lib/facts';
 
 const today = BUILD_DATE;
-const sourceHosts = new Set(FACTS.flatMap((f) => f.sources.map((s) => hostOf(s.url))));
-const example = [factById(FACTS, 'uk-graduate-2y'), factById(FACTS, 'uk-graduate-18m')];
+const example = factById(FACTS, 'uk-graduate-2y');
 const recent = CHANGES.filter((c) => c.destination !== 'all').slice(0, 4);
-const kindPill: Record<string, string> = {
-  announced: 'info',
-  litigated: 'bad',
-  proposed: 'warn',
-  quarantined: 'bad',
-  reported: 'plain',
-  published: 'ok',
+const KIND: Record<string, { pill: string; label: string }> = {
+  announced: { pill: 'info', label: 'Announced' },
+  litigated: { pill: 'bad', label: 'In court' },
+  proposed: { pill: 'warn', label: 'Proposed' },
+  quarantined: { pill: 'bad', label: 'Re-checking' },
+  reported: { pill: 'plain', label: 'Reported' },
+  published: { pill: 'ok', label: 'Published' },
 };
+const board = DESTINATIONS.map((d) => {
+  const facts = FACTS.filter((f) => f.destination === d.slug);
+  const changing =
+    facts.filter((f) => ['upcoming', 'not_current'].includes(presentation(f, today))).length +
+    SIGNALS.filter((s) => s.destination === d.slug).length;
+  const checked = facts.map((f) => f.verifiedAt).sort().at(-1)!;
+  return { d, changing, checked };
+});
 ---
 <Base
   title="Pathfinder"
-  description="Compare study-abroad destinations on facts cited to official government sources, with the date each fact was last verified. No commissions."
+  description="Visa, work and cost rules for 11 study-abroad destinations, taken from official government pages, with a link to each source and the date it was last checked. No commissions."
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Pathfinder',
-    description: 'Verified study-abroad guides for 11 destinations.',
+    description: 'Study-abroad rules for 11 countries, checked against official sources.',
   }}
 >
   <section class="hero">
     <div class="container grid grid-2" style="align-items:center;gap:clamp(32px,5vw,64px)">
       <div>
-        <p class="eyebrow">Study abroad, verified</p>
-        <h1>Plan your degree abroad on facts you can check.</h1>
+        <p class="eyebrow">Study abroad · 11 countries</p>
+        <h1>Before you pay a deposit, read what the government actually says.</h1>
         <p class="lede">
-          Visas, work rights, post-study options and official costs for 11 countries. Every figure links to the government or
-          official source it came from and shows the date we last checked it.
+          Visa rules, work hours, what happens after graduation and the official costs, taken from the immigration and
+          education websites of each country. Every line links to its source and shows the day we last checked it.
         </p>
         <div class="row" style="margin-top:28px">
-          <a class="btn btn-primary" href="/destinations">Explore destinations</a>
-          <a class="btn btn-secondary" href="/compare">Compare countries</a>
+          <a class="btn btn-primary" href="/destinations">Choose a country</a>
+          <a class="btn btn-secondary" href="/compare">Compare two</a>
         </div>
-        <ul class="check-list small muted" style="margin-top:28px">
-          <li>Only government and official sources. Never forums, agents or blogs.</li>
-          <li>Rules that are proposed, in court or disputed are labelled. We never present them as current.</li>
-          <li>No commissions and no paid placements, from anyone.</li>
-        </ul>
+        <p class="small muted" style="margin-top:24px;max-width:52ch">
+          We don’t take money from universities or agents, so we have no reason to nudge you towards any of them.
+        </p>
       </div>
-      <div class="card" style="box-shadow:var(--shadow-lg);padding:0;overflow:hidden">
-        <div style="padding:18px 20px;border-bottom:1px solid var(--line)" class="row">
-          <span class="code-badge" aria-hidden="true">GB</span>
-          <div>
-            <div style="font-weight:650">United Kingdom · Graduate Route</div>
-            <div class="small subtle">This is how every fact appears on Pathfinder</div>
-          </div>
+
+      <div class="board" role="region" aria-label="Destinations board">
+        <div class="board-head">
+          <span class="board-title">Departures</span>
+          <span>Status as of {formatDate(today)}</span>
         </div>
-        <div class="facts" style="border:0;border-radius:0">
-          {example.map((f) => <FactRow fact={f} today={today} />)}
+        <div style="overflow-x:auto">
+          <table>
+            <caption class="visually-hidden">Destinations with their last check date and whether rules are changing</caption>
+            <thead>
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Destination</th>
+                <th scope="col" class="col-wide">Last checked</th>
+                <th scope="col">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                board.map(({ d, changing, checked }) => (
+                  <tr>
+                    <td>
+                      <span class="flap">{d.code}</span>
+                    </td>
+                    <td>
+                      <a href={`/destinations/${d.slug}`}>{d.name}</a>
+                    </td>
+                    <td class="col-wide">{formatDate(checked)}</td>
+                    <td class={changing ? 'status-changing' : 'status-settled'}>
+                      {changing ? 'Changes ahead' : 'No changes logged'}
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section-tight" aria-label="At a glance" style="border-block:1px solid var(--line);background:var(--surface)">
-    <div class="container grid grid-4">
-      <div class="stat"><span class="stat-num">{DESTINATIONS.length}</span><span class="muted small">destinations, all live</span></div>
-      <div class="stat"><span class="stat-num">{FACTS.length}</span><span class="muted small">facts, each with a source and date</span></div>
-      <div class="stat">
-        <span class="stat-num">{sourceHosts.size}</span><span class="muted small">official domains cited</span>
-      </div>
-      <div class="stat"><span class="stat-num">0</span><span class="muted small">commissions or paid placements</span></div>
-    </div>
-  </section>
-
-  <section class="section">
+  <section class="section" style="padding-top:0">
     <div class="container">
+      <p class="eyebrow">Destinations</p>
       <div class="row" style="justify-content:space-between;align-items:end;margin-bottom:28px">
-        <div>
-          <p class="eyebrow">Destinations</p>
-          <h2 style="margin:0">Eleven countries, one standard of evidence</h2>
-        </div>
-        <a class="btn btn-ghost" href="/destinations">All destinations →</a>
+        <h2 style="margin:0;max-width:22ch">Start with the country you keep coming back to</h2>
+        <a class="btn btn-ghost" href="/destinations">See them all as a list</a>
       </div>
       <div class="grid grid-3">
         {DESTINATIONS.map((d) => <DestCard destination={d} facts={FACTS} today={today} />)}
@@ -89,28 +106,74 @@ const kindPill: Record<string, string> = {
     </div>
   </section>
 
-  <section class="section" style="background:var(--surface-2)">
-    <div class="container grid grid-2" style="gap:clamp(32px,5vw,64px)">
+  <section class="section" style="background:var(--surface-2);border-block:1px dashed var(--line-strong)">
+    <div class="container anatomy">
       <div>
-        <p class="eyebrow">What’s changing</p>
-        <h2>Rules change. We tell you when, and what it means.</h2>
-        <p class="muted">
-          Announced changes appear with their start date. Proposals and rules being challenged in court are labelled, so you
-          never plan around something that isn’t in force.
+        <p class="eyebrow">How to read this site</p>
+        <h2>Every rule comes with its paperwork</h2>
+        <p class="muted" style="margin-bottom:24px">
+          Here is one real entry from the United Kingdom page. Each part is there so you can check it yourself.
         </p>
-        <a class="btn btn-secondary" href="/changes">See all changes</a>
+        <div class="facts" style="box-shadow:var(--shadow)">
+          <FactRow fact={example} today={today} anchor={false} />
+        </div>
       </div>
-      <ol class="timeline" style="list-style:none;padding:0;margin:0">
+      <ol class="anatomy-notes">
+        <li>
+          <span>
+            <strong>The rule</strong>, in plain words, kept as close as we can to how the official page puts it.
+          </span>
+        </li>
+        <li>
+          <span>
+            <strong>The stamp.</strong> Green means in force. Blue means announced with a start date. Amber and red mean proposed,
+            in court or being re-checked, and we never present those as today’s rule.
+          </span>
+        </li>
+        <li>
+          <span>
+            <strong>The source.</strong> T1 is a government or regulator. T2 is a university or official register. Click it and you
+            land on the page we used.
+          </span>
+        </li>
+        <li>
+          <span>
+            <strong>The date we checked.</strong> When it gets too old, the entry says “re-check due” instead of hoping nobody
+            notices.
+          </span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container grid grid-2" style="gap:clamp(32px,5vw,64px);align-items:start">
+      <div>
+        <p class="eyebrow">Notice board</p>
+        <h2>What’s moving right now</h2>
+        <p class="muted">
+          Student visa rules change more often than most families expect, and usually with a few weeks’ notice. When something is
+          announced, proposed or taken to court, it goes up here first.
+        </p>
+        <p class="aside-note">
+          If you’re applying to the UK this winter, look at the Graduate Route entry. The answer depends on whether you apply
+          before or after 1 January 2027.
+        </p>
+        <a class="btn btn-secondary" href="/changes">Read the full change log</a>
+      </div>
+      <ol style="list-style:none;padding:0;margin:0">
         {
           recent.map((c) => (
-            <li class="card">
-              <div class="row" style="margin-bottom:6px">
-                <span class={`pill ${kindPill[c.kind]}`}>{c.kind[0].toUpperCase() + c.kind.slice(1)}</span>
-                <span class="small subtle">
-                  {c.destination !== 'all' && DESTINATION_BY_SLUG[c.destination].name} · logged {formatDate(c.date)}
+            <li class="notice">
+              <div class="row" style="margin-bottom:8px">
+                <span class={`pill ${KIND[c.kind].pill}`}>{KIND[c.kind].label}</span>
+                <span class="small subtle mono">
+                  {c.destination !== 'all' && DESTINATION_BY_SLUG[c.destination].code} · {formatDate(c.date)}
                 </span>
               </div>
-              <div style="font-weight:600">{c.title}</div>
+              <a href={`/destinations/${c.destination}#checks`} style="font-weight:600;color:var(--ink)">
+                {c.title}
+              </a>
             </li>
           ))
         }
@@ -118,79 +181,60 @@ const kindPill: Record<string, string> = {
     </div>
   </section>
 
-  <section class="section">
+  <section class="section" style="padding-top:0">
     <div class="container">
-      <p class="eyebrow">How it works</p>
-      <h2>Built so you don’t have to take our word for it</h2>
-      <div class="grid grid-3" style="margin-top:28px">
-        <div class="card">
-          <h3>1 · Official sources only</h3>
+      <hr class="rule-dashed" />
+      <div class="grid grid-3" style="margin-top:40px;gap:32px">
+        <div>
+          <h3>Torn between two countries?</h3>
           <p class="muted small">
-            We read government, regulator and university websites from a published allowlist. Everything else, including
-            forums, agents, blogs and social media, is blocked.
+            Put them side by side: what you can study on, how much you can work, how long you can stay after, and the official
+            costs in rupees or your own currency.
           </p>
+          <a href="/compare">Compare countries</a>
         </div>
-        <div class="card">
-          <h3>2 · Checked automatically</h3>
+        <div>
+          <h3>Someone at home is asking what it will cost</h3>
           <p class="muted small">
-            Visa rules and fees must come from a government source. If two official sources disagree, the fact is quarantined
-            and re-checked until they agree.
+            The cost planner adds the official visa fees and proof-of-funds amounts to the tuition on your offer letter, so the
+            conversation starts from real numbers.
           </p>
+          <a href="/cost-planner">Open the cost planner</a>
         </div>
-        <div class="card">
-          <h3>3 · Shown with its evidence</h3>
+        <div>
+          <h3>You have one specific question</h3>
           <p class="muted small">
-            Each fact shows its source, status and verification date. Once a fact passes its freshness limit, we mark it
-            “re-check due” until it is verified again.
+            Ask it in your own words. You get only what we’ve verified, each point with its source. If we haven’t verified it, we
+            tell you who to ask instead.
           </p>
+          <a href="/ask">Ask a question</a>
         </div>
       </div>
-      <p style="margin-top:20px"><a href="/how-we-verify">Read our full verification method →</a></p>
     </div>
   </section>
 
   <section class="section" style="padding-top:0">
-    <div class="container grid grid-3">
-      <a class="card card-link" href="/compare">
-        <p class="eyebrow">Free</p>
-        <h3>Compare countries</h3>
-        <p class="muted small">
-          Put two destinations side by side, with work rights, post-study options and official costs converted to your home
-          currency.
+    <div class="container grid grid-2" style="gap:32px;align-items:start">
+      <div class="card" style="background:var(--surface)">
+        <p class="eyebrow">For parents</p>
+        <h2 style="font-size:1.5rem">If you’re the one paying</h2>
+        <p class="muted">
+          Each country page separates the amounts set by the government, like visa fees and proof of funds, from the amounts
+          only the university can tell you, like tuition. Those two are easy to mix up, and agents don’t always make the
+          difference clear.
         </p>
-      </a>
-      <a class="card card-link" href="/cost-planner">
-        <p class="eyebrow">Free</p>
-        <h3>Cost planner</h3>
-        <p class="muted small">
-          Add your tuition from your offer letter to the official fees and proof-of-funds figures to see your first-year
-          budget.
+        <p class="muted" style="margin:0">
+          Before any money leaves your account, check the amount on the official page we link to. That is the one that counts.
         </p>
-      </a>
-      <a class="card card-link" href="/ask">
-        <p class="eyebrow">Preview · 3 free questions a day</p>
-        <h3>Ask Pathfinder</h3>
-        <p class="muted small">
-          Ask in plain English. Answers come only from verified facts, with a citation on each one. If we can’t verify it, we
-          say so.
-        </p>
-      </a>
-    </div>
-  </section>
-
-  <section class="section" style="padding-top:0">
-    <div class="container">
-      <div class="panel grid grid-2" style="align-items:center;gap:32px">
-        <div>
-          <h2>What we will never do</h2>
-          <p class="muted">Independence is the product. These lines don’t move.</p>
-        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Things we won’t do</p>
         <ul class="check-list x-list">
-          <li>Take commissions from universities, agents or lenders</li>
-          <li>Predict or guarantee admission or visa outcomes</li>
-          <li>Write your essays for you (we give feedback only)</li>
-          <li>Submit forms, pay fees or store your portal passwords</li>
-          <li>Answer rules, fees or deadlines from memory</li>
+          <li>Take a commission from a university, agent or lender</li>
+          <li>Tell you your chances of getting in or getting a visa</li>
+          <li>Write your statement of purpose for you (we’ll give feedback on yours)</li>
+          <li>Fill in or submit official forms, or ask for your portal passwords</li>
+          <li>Quote a rule or fee we haven’t checked against an official page</li>
         </ul>
       </div>
     </div>

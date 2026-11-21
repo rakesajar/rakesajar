@@ -1,7 +1,7 @@
 ---
 import type { Destination } from '../data/destinations';
 import type { Fact } from '../data/types';
-import { appliesOn } from '../lib/facts';
+import { appliesOn, presentation } from '../lib/facts';
 
 interface Props {
   destination: Destination;
@@ -9,35 +9,33 @@ interface Props {
   today: string;
 }
 const { destination: d, facts, today } = Astro.props;
-const pick = (topic: Fact['topic']) => facts.find((f) => f.destination === d.slug && f.topic === topic && appliesOn(f, today));
+const pick = (topic: Fact['topic']) =>
+  facts.find((f) => f.destination === d.slug && f.topic === topic && appliesOn(f, today) && presentation(f, today) === 'current');
 const rows = [
-  { k: 'Study', f: pick('permission') },
-  { k: 'Work', f: pick('work') },
-  { k: 'After', f: pick('post_study') },
+  { k: 'Study on', f: pick('permission') },
+  { k: 'Work while studying', f: pick('work') },
+  { k: 'After you graduate', f: pick('post_study') },
 ].filter((r) => r.f);
-const changing = facts.filter(
-  (f) => f.destination === d.slug && (f.status !== 'in_force' || f.volatility === 'volatile'),
-).length;
+const changing = facts.filter((f) => f.destination === d.slug && ['upcoming', 'not_current'].includes(presentation(f, today))).length;
 ---
-<a class="card card-link" href={`/destinations/${d.slug}`}>
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div class="row">
-      <span class="code-badge" aria-hidden="true">{d.code}</span>
-      <h3 style="margin:0">{d.name}</h3>
+<a class="visa" href={`/destinations/${d.slug}`}>
+  <div class="visa-top">
+    <div>
+      <span class="visa-code" aria-hidden="true">{d.code}</span>
+      <h3 class="visa-name">{d.name}</h3>
     </div>
     {changing > 0 && <span class="pill warn">{changing} changing</span>}
   </div>
-  <p class="small muted" style="margin-bottom:14px">{d.tagline}</p>
-  <dl style="display:grid;gap:6px;margin:0;font-size:0.9rem">
-    {
-      rows.map((r) => (
-        <div style="display:grid;grid-template-columns:52px 1fr;gap:8px">
-          <dt class="subtle">{r.k}</dt>
-          <dd style="margin:0" data-fact={r.f!.id}>
-            {r.f!.value}
-          </dd>
-        </div>
-      ))
-    }
-  </dl>
+  <div class="visa-body">
+    <dl>
+      {
+        rows.map((r) => (
+          <div>
+            <dt>{r.k}</dt>
+            <dd data-fact={r.f!.id}>{r.f!.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
 </a>
