@@ -3,6 +3,8 @@ import Base from '../layouts/Base.astro';
 import DestCard from '../components/DestCard.astro';
 import FactRow from '../components/FactRow.astro';
 import ViewFlags from '../components/ViewFlags.astro';
+import Declaration from '../components/Declaration.astro';
+import { CANDOUR, PROMISES } from '../data/promises';
 import type { Fact, Stage } from '../data/types';
 import { BUILD_DATE, CHANGES, DESTINATIONS, FACTS, SIGNALS, DESTINATION_BY_SLUG } from '../lib/store';
 import { factById, formatDate, freshAttrs, presentation } from '../lib/facts';
@@ -51,65 +53,48 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
   }}
 >
   <section class="hero">
-    <div class="container grid grid-2" style="align-items:center;gap:clamp(32px,5vw,64px)">
+    <div class="container hero-grid">
       <div>
         <p class="eyebrow">University admissions abroad · 11 countries</p>
-        <h1>Choosing where to apply is the biggest decision. Make it on the official facts.</h1>
+        <h1>Choose where to study abroad. Nobody has paid us to point you anywhere.</h1>
         <p class="lede">
-          For students finishing Class 12 or a bachelor’s, and the parents helping them decide. See where each country’s courses
-          are listed, what tuition looks like, what you’d study on and what the government expects you to show, all linked to the
-          official pages.
+          For students finishing Class 12 or a bachelor’s, and the parents helping them decide. Where each country lists its
+          courses, what tuition looks like, what you’d study on and what the government expects you to show, every figure linked
+          to the official page it came from.
         </p>
         <div class="row" style="margin-top:28px">
           <a class="btn btn-primary" href="#where-are-you">Start from where you are</a>
-          <a class="btn btn-secondary" href="/compare">Compare two countries</a>
-        </div>
-        <p class="small muted" style="margin-top:24px;max-width:52ch">
-          No university pays us, and no agent earns from your choice. We don’t rank universities and we never will.
-        </p>
-      </div>
-
-      <div class="board" role="region" aria-label="Destinations board">
-        <div class="board-head">
-          <span class="board-title">Departures</span>
-          <span>As of {formatDate(today)}</span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <caption class="visually-hidden">Destinations, where to find courses, and whether rules are changing</caption>
-            <thead>
-              <tr>
-                <th scope="col">Code</th>
-                <th scope="col">Destination</th>
-                <th scope="col" class="col-wide">Find courses via</th>
-                <th scope="col">Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                board.map(({ d, changing }, i) => (
-                  <tr>
-                    <td>
-                      <span class="flap" style={`--i:${i}`}>
-                        {d.code}
-                      </span>
-                    </td>
-                    <td>
-                      <a href={`/destinations/${d.slug}`}>{d.name}</a>
-                    </td>
-                    <td class="col-wide">{d.admissions[0].short}</td>
-                    <td class={changing ? 'status-changing' : 'status-settled'}>{changing ? 'Changing' : 'No changes'}</td>
-                  </tr>
-                ))
-              }
-            </tbody>
-          </table>
+          <a class="btn btn-secondary" href="#promises">Read our promises</a>
         </div>
       </div>
+      <Declaration />
     </div>
   </section>
 
-  <section class="section" id="where-are-you" style="padding-top:0">
+  <section class="proofs" aria-labelledby="proofs-title">
+    <div class="container">
+      <h2 class="visually-hidden" id="proofs-title">How you can check us</h2>
+      <ul class="proof-list">
+        <li>
+          <span class="proof-k mono">Check a figure</span>
+          <span>Every number links to the government or university page it came from, with the date we checked it.</span>
+          <a href="#how-to-read">See one up close</a>
+        </li>
+        <li>
+          <span class="proof-k mono">Check what changed</span>
+          <span>Announcements, proposals and court cases are stamped, and every change is logged with its date.</span>
+          <a href="/changes">Open the change log</a>
+        </li>
+        <li>
+          <span class="proof-k mono">Check everything</span>
+          <span>The full list of facts we publish is one download, so anyone can audit it, including other students.</span>
+          <a href="/facts.json">Download the facts</a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="where-are-you">
     <div class="container">
       <p class="eyebrow">Where are you right now?</p>
       <h2 style="max-width:24ch">The same country can look very different depending on what you’re applying for</h2>
@@ -253,14 +238,130 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
 
   <section class="section" style="padding-top:0">
     <div class="container">
-      <p class="eyebrow">Destinations</p>
-      <div class="row" style="justify-content:space-between;align-items:end;margin-bottom:28px">
-        <h2 style="margin:0;max-width:22ch">Start with the country you keep coming back to</h2>
-        <a class="btn btn-ghost" href="/destinations">All destinations</a>
+      <div class="grid grid-2" style="align-items:center;gap:clamp(32px,5vw,64px);margin-bottom:40px">
+        <div>
+          <p class="eyebrow">Destinations</p>
+          <h2>Start with the country you keep coming back to</h2>
+          <p class="muted">
+            Each country has the same eight sections in the same order, so once you’ve read one you know where to look in the
+            others. Countries are listed in the same order for everyone. Nobody can pay to move up.
+          </p>
+          <a class="btn btn-ghost" href="/destinations" style="padding-left:0">All destinations as a list</a>
+        </div>
+      <div class="board" role="region" aria-label="Destinations board">
+        <div class="board-head">
+          <span class="board-title">Departures</span>
+          <span>As of {formatDate(today)}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <caption class="visually-hidden">Destinations, where to find courses, and whether rules are changing</caption>
+            <thead>
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Destination</th>
+                <th scope="col" class="col-wide">Find courses via</th>
+                <th scope="col">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                board.map(({ d, changing }, i) => (
+                  <tr>
+                    <td>
+                      <span class="flap" style={`--i:${i}`}>
+                        {d.code}
+                      </span>
+                    </td>
+                    <td>
+                      <a href={`/destinations/${d.slug}`}>{d.name}</a>
+                    </td>
+                    <td class="col-wide">{d.admissions[0].short}</td>
+                    <td class={changing ? 'status-changing' : 'status-settled'}>{changing ? 'Changing' : 'No changes'}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
       </div>
       <div class="grid grid-3 cards">
         {DESTINATIONS.map((d) => <DestCard destination={d} facts={FACTS} today={today} />)}
       </div>
+    </div>
+  </section>
+
+  <section class="section promises" id="promises" aria-labelledby="promises-title">
+    <div class="container">
+      <div class="promises-intro">
+        <p class="eyebrow">Our promises</p>
+        <h2 id="promises-title">What we won’t do, and how you can hold us to it</h2>
+        <p class="lede">
+          When advice is free, it’s fair to ask who is paying for it. These are the lines we’ve drawn instead, and each one comes
+          with a way for you to check it.
+        </p>
+      </div>
+      <ol class="pledges">
+        {
+          PROMISES.map((p, i) => (
+            <li class="pledge" id={`promise-${p.id}`}>
+              <div class="pledge-top">
+                <span class="pledge-n mono">{String(i + 1).padStart(2, '0')}</span>
+                <span class="pill bad">Never</span>
+              </div>
+              <h3>{p.title}</h3>
+              <dl>
+                <dt>Why it matters to you</dt>
+                <dd>{p.why}</dd>
+                <dt>How we keep to it</dt>
+                <dd>{p.howWeKeepIt}</dd>
+              </dl>
+              <a class="pledge-check" href={p.check.href}>
+                {p.check.label}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="candour">
+        {
+          CANDOUR.map((c) => (
+            <div>
+              <h3>{c.title}</h3>
+              <p class="muted">{c.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how-to-read">
+    <div class="container anatomy">
+      <div>
+        <p class="eyebrow">How to read this site</p>
+        <h2>Every number comes with its paperwork</h2>
+        <p class="muted" style="margin-bottom:24px">This is a real entry from the France page. Each part is there so you can check it yourself.</p>
+        <div class="facts" style="box-shadow:var(--shadow)">
+          <FactRow fact={example} today={today} anchor={false} />
+        </div>
+      </div>
+      <ol class="anatomy-notes">
+        <li><span><strong>The figure</strong>, worded as closely as we can to the official page.</span></li>
+        <li>
+          <span>
+            <strong>The stamp.</strong> Green is in force, blue is announced with a start date, amber and red mean proposed, in
+            court or being re-checked. Those are never shown as today’s rule.
+          </span>
+        </li>
+        <li>
+          <span><strong>The source.</strong> T1 is a government. T2 is a university or official register. Click through to the page we used.</span>
+        </li>
+        <li>
+          <span><strong>The date we checked.</strong> When it gets old, the entry says “re-check due” instead of hoping nobody notices.</span>
+        </li>
+      </ol>
     </div>
   </section>
 
@@ -303,34 +404,6 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
     </div>
   </section>
 
-  <section class="section">
-    <div class="container anatomy">
-      <div>
-        <p class="eyebrow">How to read this site</p>
-        <h2>Every number comes with its paperwork</h2>
-        <p class="muted" style="margin-bottom:24px">This is a real entry from the France page. Each part is there so you can check it yourself.</p>
-        <div class="facts" style="box-shadow:var(--shadow)">
-          <FactRow fact={example} today={today} anchor={false} />
-        </div>
-      </div>
-      <ol class="anatomy-notes">
-        <li><span><strong>The figure</strong>, worded as closely as we can to the official page.</span></li>
-        <li>
-          <span>
-            <strong>The stamp.</strong> Green is in force, blue is announced with a start date, amber and red mean proposed, in
-            court or being re-checked. Those are never shown as today’s rule.
-          </span>
-        </li>
-        <li>
-          <span><strong>The source.</strong> T1 is a government. T2 is a university or official register. Click through to the page we used.</span>
-        </li>
-        <li>
-          <span><strong>The date we checked.</strong> When it gets old, the entry says “re-check due” instead of hoping nobody notices.</span>
-        </li>
-      </ol>
-    </div>
-  </section>
-
   <section class="section" style="padding-top:0">
     <div class="container grid grid-2" style="gap:clamp(32px,5vw,64px);align-items:start">
       <div>
@@ -359,24 +432,6 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
           ))
         }
       </ol>
-    </div>
-  </section>
-
-  <section class="section" style="padding-top:0">
-    <div class="container">
-      <div class="panel grid grid-2" style="gap:32px;align-items:center">
-        <div>
-          <p class="eyebrow">Things we won’t do</p>
-          <h2 style="font-size:1.6rem">We’re here to help you choose, not to choose for you</h2>
-        </div>
-        <ul class="check-list x-list">
-          <li>Take a commission from a university, agent or lender</li>
-          <li>Rank universities or tell you your chances of admission</li>
-          <li>Write your statement of purpose for you (we’ll give feedback on yours)</li>
-          <li>Fill in or submit applications, or ask for your portal passwords</li>
-          <li>Quote a rule, fee or deadline we haven’t checked against an official page</li>
-        </ul>
-      </div>
     </div>
   </section>
 </Base>

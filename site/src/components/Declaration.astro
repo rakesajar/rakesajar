@@ -1,0 +1,51 @@
+---
+/**
+ * The "arrival card": our promises as questions, each answered No. Accessible as a plain list:
+ * screen readers hear the question followed by "Our answer: No".
+ */
+import { PROMISES } from '../data/promises';
+
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+---
+
+<figure class:list={['declaration', { compact }]} aria-labelledby="declaration-title">
+  <div class="declaration-head">
+    <span class="mono">Arrival card · Form PF-1</span>
+    <span class="mono" aria-hidden="true">Side A</span>
+  </div>
+  <h2 class="declaration-title" id="declaration-title">Declaration by Pathfinder</h2>
+  <p class="declaration-sub">Please answer every question truthfully.</p>
+  <ol class="declaration-list">
+    {
+      PROMISES.map((p, i) => (
+        <li>
+          <span class="declaration-n mono" aria-hidden="true">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <span class="declaration-q">
+            <a href={`/#promise-${p.id}`}>{p.question}</a>
+          </span>
+          <span class="declaration-a">
+            <span class="visually-hidden">Our answer: </span>
+            <span class="box" aria-hidden="true" />
+            <span class="mono small" aria-hidden="true">
+              Yes
+            </span>
+            <span class="box ticked" aria-hidden="true" />
+            <span class="mono small">No</span>
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+  <figcaption class="declaration-foot">
+    <span class="signature">Pathfinder</span>
+    <span class="seal" aria-hidden="true">
+      <span>Nothing</span>
+      <span>to declare</span>
+    </span>
+  </figcaption>
+</figure>

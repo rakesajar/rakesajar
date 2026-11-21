@@ -270,6 +270,33 @@ try {
     }
   });
 
+  await check('Promises: declaration answers No, every promise links to a real check', async () => {
+    const { page, ctx } = await open('/');
+    const items = page.locator('.declaration-list li');
+    const n = await items.count();
+    assert(n >= 6, 'declaration has too few promises');
+    for (let i = 0; i < n; i++) {
+      // Screen readers hear "Our answer: No": the Yes box and label are aria-hidden.
+      const spoken = await items
+        .nth(i)
+        .locator('.declaration-a')
+        .evaluate((el) =>
+          [...el.childNodes]
+            .filter((n) => n.nodeType === 1 && n.getAttribute('aria-hidden') !== 'true')
+            .map((n) => n.textContent.trim())
+            .join(' '),
+        );
+      assert(spoken === 'Our answer: No', 'answer announced as: ' + spoken);
+      const href = await items.nth(i).locator('a').getAttribute('href');
+      assert((await page.locator(href.replace('/', '')).count()) === 1, 'declaration link has no target: ' + href);
+    }
+    for (const href of await page.locator('.pledge-check').evaluateAll((as) => as.map((a) => a.getAttribute('href')))) {
+      const r = await fetch(BASE + href.split('#')[0]);
+      assert(r.ok, 'promise check link broken: ' + href);
+    }
+    await ctx.close();
+  });
+
   await check('AC-10 accessibility (axe: no serious/critical), light and dark', async () => {
     const pages = [
       '/',

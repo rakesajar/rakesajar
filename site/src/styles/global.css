@@ -1654,3 +1654,302 @@ code {
     font-size: 9pt;
   }
 }
+
+/* ---------------------------------------------------------------- hero with declaration card */
+.hero-grid {
+  display: grid;
+  gap: clamp(36px, 5vw, 64px);
+  align-items: center;
+}
+@media (min-width: 960px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+}
+
+/* The arrival card. Pen-blue ticks, a red seal: filled in by hand, signed, stamped. */
+.declaration {
+  --pen: #24479a;
+  position: relative;
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 20px clamp(18px, 3vw, 28px) 24px;
+  box-shadow: var(--shadow-lg);
+  background-image:
+    linear-gradient(var(--surface), var(--surface)),
+    repeating-linear-gradient(0deg, transparent 0 27px, color-mix(in srgb, var(--line) 60%, transparent) 27px 28px);
+}
+:root[data-theme='dark'] .declaration {
+  --pen: #9ab8e6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .declaration {
+    --pen: #9ab8e6;
+  }
+}
+@media (min-width: 960px) and (prefers-reduced-motion: no-preference) {
+  .declaration {
+    transform: rotate(0.6deg);
+  }
+}
+.declaration-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line-strong);
+}
+.declaration-title {
+  font-size: 1.45rem;
+  margin: 14px 0 2px;
+}
+.declaration-sub {
+  font-size: 0.85rem;
+  color: var(--ink-3);
+  margin: 0 0 10px;
+  font-style: italic;
+}
+.declaration-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.declaration-list li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px dotted var(--line-strong);
+}
+.declaration-n {
+  font-size: 0.72rem;
+  color: var(--ink-3);
+}
+.declaration-q a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+.declaration-q a:hover {
+  text-decoration: underline;
+}
+.declaration-a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-3);
+}
+.declaration-a .mono:last-child {
+  color: var(--pen);
+  font-weight: 500;
+}
+.box {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 2px;
+  display: inline-block;
+  margin-left: 6px;
+}
+.box.ticked {
+  border-color: var(--pen);
+  background:
+    linear-gradient(45deg, transparent 44%, var(--pen) 44% 58%, transparent 58%),
+    linear-gradient(-45deg, transparent 44%, var(--pen) 44% 58%, transparent 58%);
+}
+.declaration-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+}
+.signature {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--pen);
+  padding: 0 24px 2px 2px;
+  border-bottom: 1px solid var(--ink-3);
+  transform: rotate(-2deg);
+}
+.seal {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  border: 3px double var(--bad);
+  color: var(--bad);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+  transform: rotate(-12deg);
+  margin: -24px -6px -8px 0;
+  opacity: 0.9;
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--bad) 12%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seal {
+    animation: seal-press 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) 0.9s both;
+  }
+}
+@keyframes seal-press {
+  from {
+    opacity: 0;
+    transform: rotate(-12deg) scale(1.8);
+  }
+}
+@media (max-width: 480px) {
+  .declaration-list li {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+  .declaration-a {
+    grid-column: 2;
+  }
+  .box:first-of-type {
+    margin-left: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- proofs strip */
+.proofs {
+  border-block: 1px solid var(--line);
+  background: var(--surface);
+}
+.proof-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+.proof-list li {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 24px clamp(0px, 2vw, 24px);
+  font-size: 0.93rem;
+  color: var(--ink-2);
+}
+.proof-list li + li {
+  border-top: 1px dashed var(--line-strong);
+}
+@media (min-width: 860px) {
+  .proof-list li + li {
+    border-top: 0;
+    border-left: 1px dashed var(--line-strong);
+  }
+}
+.proof-k {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ok);
+}
+
+/* ---------------------------------------------------------------- promises in full (passport-cover section) */
+.promises {
+  background: var(--cover);
+  color: var(--cover-ink);
+}
+.promises .eyebrow,
+.promises .lede,
+.promises .candour .muted {
+  color: color-mix(in srgb, var(--cover-ink) 82%, transparent);
+}
+.promises h2,
+.promises .candour h3 {
+  color: var(--cover-ink);
+}
+.promises-intro {
+  max-width: 62ch;
+  margin-bottom: 36px;
+}
+.pledges {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+.pledge {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 20px 22px 22px;
+  box-shadow: var(--shadow-lg);
+}
+.pledge-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.pledge-n {
+  font-size: 0.8rem;
+  color: var(--ink-3);
+}
+.pledge h3 {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+.pledge dl {
+  margin: 0 0 16px;
+  display: grid;
+  gap: 4px;
+}
+.pledge dt {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 8px;
+}
+.pledge dd {
+  margin: 0;
+  font-size: 0.93rem;
+  color: var(--ink-2);
+}
+.pledge-check {
+  margin-top: auto;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.pledge-check::before {
+  content: '→ ';
+}
+.pledge:target {
+  outline: 3px solid var(--board-amber);
+  outline-offset: 3px;
+}
+.candour {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px dashed rgb(239 230 210 / 25%);
+}
+.candour h3 {
+  font-size: 1.15rem;
+}
+.promises a:not(.pledge-check):not(.btn) {
+  color: var(--board-amber);
+}
