@@ -1,14 +1,17 @@
 # Progress
 
 ## Now
-Pilot website (free tier) in `site/` on branch `ccr-8f80979e-5gwduk`: travel-documents redesign done; all independent-review
-BLOCKER/MAJOR findings fixed (see `docs/reviews-pilot-website.md`). Status: candidate, awaiting delta review + final gate.
+Pilot website (free tier) complete on branch `ccr-8f80979e-5gwduk`. Status: **verified candidate, ready for product-owner
+approval**. Not merged, not deployed.
 
 ## Next
-Delta review of the fix commit → final gate run on the committed candidate → push. Merge/deploy need product-owner approval.
+Product owner decides on merge/deploy and the parked items below.
 
 ## Verified
-See latest gate receipt reported in the session. Unexecuted: `npm run check:sources` (egress to official domains blocked).
+Gate PASS 7/7 (tests, secrets, lint, sast, dependencies, diff_coverage, knowledge) on `a1ef8e0` against `origin/main`.
+Independent branch review + delta review (same model family) and a Fable design/copy review: all BLOCKER/MAJOR findings
+fixed; dispositions in `docs/reviews-pilot-website.md`. Unexecuted: `npm --prefix site run check:sources` (egress to official
+domains blocked here), print stylesheet visual check, Safari/Firefox.
 
 ## Blocked / parked
 - UCAS (UK central admissions) and other national application portals are not on the §7.2 allowlist; adding them is a
