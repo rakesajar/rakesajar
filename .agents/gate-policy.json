@@ -1,12 +1,76 @@
 {
   "version": 1,
   "checks": {
-    "tests": { "argv": ["bash", "tools/ci/site.sh", "tests"], "timeout_seconds": 900 },
-    "secrets": { "argv": ["python3", "tools/ci/scan_secrets.py"], "timeout_seconds": 120 },
-    "lint": { "argv": ["bash", "tools/ci/site.sh", "lint"], "timeout_seconds": 600 },
-    "sast": { "argv": ["bash", "tools/ci/site.sh", "sast"], "timeout_seconds": 300 },
-    "dependencies": { "argv": ["bash", "tools/ci/site.sh", "dependencies"], "timeout_seconds": 300 },
-    "diff_coverage": { "argv": ["bash", "tools/ci/site.sh", "diff_coverage"], "timeout_seconds": 300 },
-    "knowledge": { "argv": ["python3", "tools/agentic/okf_lint.py", "knowledge"], "timeout_seconds": 120 }
+    "tests": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "tests"
+      ],
+      "timeout_seconds": 900
+    },
+    "secrets": {
+      "argv": [
+        "python3",
+        "tools/ci/scan_secrets.py"
+      ],
+      "timeout_seconds": 120
+    },
+    "lint": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "lint"
+      ],
+      "timeout_seconds": 600
+    },
+    "sast": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "sast"
+      ],
+      "timeout_seconds": 300
+    },
+    "dependencies": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "dependencies"
+      ],
+      "timeout_seconds": 300
+    },
+    "diff_coverage": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "diff_coverage"
+      ],
+      "timeout_seconds": 300
+    },
+    "knowledge": {
+      "argv": [
+        "python3",
+        "tools/agentic/okf_lint.py",
+        "knowledge"
+      ],
+      "timeout_seconds": 120
+    },
+    "types": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "types"
+      ],
+      "timeout_seconds": 300
+    },
+    "critical_tests": {
+      "argv": [
+        "bash",
+        "tools/ci/site.sh",
+        "critical_tests"
+      ],
+      "timeout_seconds": 300
+    }
   }
 }
