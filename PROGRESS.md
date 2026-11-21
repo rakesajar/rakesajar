@@ -9,7 +9,8 @@ Product owner: switch sign-ups on (operator, privacy contact, retention), amend 
 portals. Schedule `npm --prefix site run verify:passages:stamp` daily in the `rakesajar-pathfinder` environment + rebuild.
 
 ## Verified
-See the latest gate receipt in the session. `verify:passages` 74/74 on 21 Nov 2026.
+Gate PASS at T2 (9 checks incl. types, critical_tests) on `e27831e`. Security review of sign-ups: all findings fixed
+(`docs/reviews-pilot-website.md`). `verify:passages` 74/74 on 21 Nov 2026. T2 merge needs product-owner approval.
 
 ## Blocked / parked
 - UCAS (UK central admissions) and other national application portals are not on the §7.2 allowlist; adding them is a
