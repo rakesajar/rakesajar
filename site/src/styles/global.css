@@ -2087,27 +2087,6 @@ code {
     color: var(--ink-3);
     margin-bottom: 4px;
   }
-  [data-planner-table] tr {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    border-top: 1px solid var(--line);
-    padding: 10px 0;
-  }
-  [data-planner-table] th,
-  [data-planner-table] td {
-    border-top: 0;
-    padding: 2px 0;
-  }
-  [data-planner-table] td.small {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-  [data-planner-table] td.num {
-    grid-column: 2;
-    grid-row: 1;
-    white-space: normal;
-    text-align: right;
-  }
 }
 
 .icon-sun {
@@ -2126,4 +2105,27 @@ code {
   :root:not([data-theme='light']) .icon-moon {
     display: none;
   }
+}
+
+/* The planner breakdown lives in a narrow card: label and amount on one line, the note beneath, at every width. */
+[data-planner-table] tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-top: 1px solid var(--line);
+  padding: 10px 0;
+}
+[data-planner-table] th,
+[data-planner-table] td {
+  border-top: 0;
+  padding: 2px 0;
+}
+[data-planner-table] td.small {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+[data-planner-table] td.num {
+  grid-column: 2;
+  grid-row: 1;
+  white-space: normal;
+  text-align: right;
 }

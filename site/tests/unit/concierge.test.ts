@@ -283,3 +283,21 @@ describe('delta review regressions', () => {
       expect(q(text), text).toMatchObject({ kind: 'refuse', reason: 'no_facts' });
   });
 });
+
+describe('level of study in the question', () => {
+  it('a master’s question gets the master’s fee, not the bachelor’s', () => {
+    const a = q('What is tuition at French public universities for a master’s?');
+    const ids = a.kind === 'answer' ? a.items.map((i) => i.factId) : [];
+    expect(ids).toContain('fr-fee-master');
+    expect(ids).not.toContain('fr-fee-bachelor');
+  });
+  it('a PhD question gets the PhD Graduate Route only', () => {
+    const a = q('UK graduate route after my PhD');
+    const ids = a.kind === 'answer' ? a.items.map((i) => i.factId) : [];
+    expect(ids).toEqual(['uk-graduate-phd']);
+  });
+  it('no level mentioned keeps every level', () => {
+    const a = q('French public university tuition');
+    expect(a.kind === 'answer' && a.items.length).toBe(2);
+  });
+});

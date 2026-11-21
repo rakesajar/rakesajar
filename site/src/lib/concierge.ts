@@ -6,7 +6,7 @@
  * stale or missing, and never answers from memory. The production concierge keeps these rules
  * and adds live domain-filtered search between "fact store" and "refuse" (CA-1).
  */
-import type { DestinationSlug, Fact, Signal, SourceRef, Topic } from '../data/types';
+import type { DestinationSlug, Fact, Signal, SourceRef, Stage, Topic } from '../data/types';
 import type { Destination } from '../data/destinations';
 import { appliesOn, isStale, NOT_CURRENT, STATUS_LABEL } from './facts';
 
@@ -190,6 +190,16 @@ export function detectTopics(q: string): Topic[] {
   return found;
 }
 
+/** Level of study mentioned in the question, if any. */
+export function detectStages(q: string): Stage[] {
+  const text = normalise(q);
+  const out: Stage[] = [];
+  if (/\b(bachelor'?s?|undergrad\w*|ug|class 12|12th|after school|first degree)\b/.test(text)) out.push('ug');
+  if (/\b(master'?s?|masters|postgrad\w*|pg|mba|msc|ma|mtech|m\.?s\.?)\b/.test(text)) out.push('pg');
+  if (/\b(phd|ph\.d|doctora\w*|research degree)\b/.test(text)) out.push('phd');
+  return out;
+}
+
 export function isFraudAdjacent(q: string): boolean {
   const text = normalise(q);
   return nearMatch(text) || FRAUD_PATTERNS.some((p) => p.test(text));
@@ -315,13 +325,16 @@ export function ask(input: AskInput, store: Store): Answer {
     const dest = store.destinations.find((d) => d.slug === slug);
     const official = dest?.portals[0];
     const text = normalise(q);
+    const stages = detectStages(q);
     const active = QUALIFIERS.filter((qq) => qq.ask.test(text));
     const candidates = store.facts.filter(
       (f) =>
         f.destination === slug &&
         topics.includes(f.topic) &&
         // A qualified work question ("during holidays") only matches facts that mention that case.
-        (f.topic !== 'work' || active.every((qq) => qq.fact.test(f.value.toLowerCase()))),
+        (f.topic !== 'work' || active.every((qq) => qq.fact.test(f.value.toLowerCase()))) &&
+        // A question about one level of study ("for a master's") skips rules for other levels.
+        (!f.stages || stages.length === 0 || f.stages.some((st) => stages.includes(st))),
     );
     for (const f of candidates) {
       // Outside the user's application date window — not the applicable rule (CA-3).
