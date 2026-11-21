@@ -69,3 +69,25 @@ Reviewer: separate agent on a different model (Fable), read-only, own build copy
 | MINOR | Plans: accuracy %, refunds line | Fixed: gates described in plain terms; refunds line removed |
 | MINOR | Steps not cited per step | Accepted for pilot (see earlier disposition) |
 | NIT | Print stylesheet, WebKit/Firefox not checked by reviewer | Open: print CSS not visually verified; cross-browser testing needs those browsers |
+
+## Security and data-protection review of the sign-up flow (8610aa4)
+
+Independent agent (same model family, did not author the code). No blockers; the static site sends nothing until an
+endpoint is configured. Fixes in the commit after `cb02a2b`.
+
+| Sev | Finding | Disposition |
+|---|---|---|
+| MAJOR | `level` free text accepted (stored XSS / minors' details) | Fixed: validated against ug/pg/phd; test |
+| MAJOR | Age question pre-answered "18 or over" | Fixed: nothing pre-selected, explicit answer required; e2e asserts it |
+| MAJOR | No rate limit / bot check / dedupe | Fixed: per-IP rate limit required (fails closed), optional Turnstile, records keyed by HMAC(contact) |
+| MAJOR | No double opt-in | Fixed: pending record + confirmation link; consent time set at confirmation; fails closed without a sender |
+| MINOR | Email pattern allowed markup, quotes, commas | Fixed: strict linear-time validator; tests |
+| MINOR | `purpose` unvalidated in shared function | Fixed; test |
+| MINOR | Non-object JSON crashed the handler | Fixed: 400; test |
+| MINOR | Size checked after full read, in UTF-16 units | Fixed: Content-Length pre-check and byte length; test |
+| MINOR | Consent wording not versioned | Fixed: `CONSENT_VERSION` sent by the form, checked by server, stored |
+| MINOR | Deletion/renewal promises not implementable | Fixed: unsubscribe link deletes; HMAC keys allow direct deletion; "renew" removed from privacy page |
+| MINOR | Privacy page overstated (source page, minors, logs) | Fixed: mentions source page, "don't knowingly", logs statement conditional on operator setting (README) |
+| MINOR | verify-passages passed unchecked URL to curl | Fixed: https-only pattern, `--proto =https`, `--` before URL |
+| NIT | Retention NaN; destinations not trimmed; +91 non-mobiles | Fixed; tests |
+| NIT | No worker tests | Fixed: 7 worker tests (opt-in, dedupe, unsubscribe, forged links, rejections, fail-closed, rate limit) |

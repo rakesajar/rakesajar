@@ -72,9 +72,15 @@ export function norm(s) {
 
 const pages = new Map();
 function page(url) {
+  // URLs come from data files; only plain https URLs are fetched, never anything curl could read as an option.
+  if (!/^https:\/\/[a-z0-9.-]+\.[a-z]{2,}(\/|\?|$)/i.test(url)) return null;
   if (!pages.has(url)) {
     try {
-      const html = execFileSync('curl', ['-sL', '--max-time', '40', '-A', UA, url], { encoding: 'utf8', maxBuffer: 50e6 });
+      const html = execFileSync(
+        'curl',
+        ['--proto', '=https', '--proto-redir', '=https', '-sL', '--max-time', '40', '-A', UA, '--', url],
+        { encoding: 'utf8', maxBuffer: 50e6 },
+      );
       pages.set(url, norm(visibleText(html)));
     } catch {
       pages.set(url, null);

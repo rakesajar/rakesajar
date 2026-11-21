@@ -11,7 +11,7 @@ case "${1:-}" in
   dependencies) npm audit --audit-level=high ;;
   types) npx tsc --noEmit -p . && npx astro check ;;
   # Invariants that protect users: personal-data validation, verification rules, refusals, sourced-passage checks.
-  critical_tests) npx vitest run tests/unit/waitlist.test.ts tests/unit/store.test.ts tests/unit/sourced.test.ts tests/unit/concierge.test.ts tests/unit/eligibility.test.ts ;;
+  critical_tests) npx vitest run tests/unit/waitlist.test.ts tests/unit/store.test.ts tests/unit/sourced.test.ts tests/unit/concierge.test.ts tests/unit/eligibility.test.ts tests/unit/worker.test.ts ;;
   diff_coverage) npx vitest run --coverage --coverage.reportsDirectory="${AGENTIC_EVIDENCE_DIR:-/tmp}/coverage" ;;
   *) echo "unknown check: ${1:-}" >&2; exit 2 ;;
 esac

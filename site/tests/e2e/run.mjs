@@ -351,6 +351,7 @@ try {
     async () => {
       const { page, ctx } = await open('/plans');
       const form = page.locator('#join [data-waitlist]');
+      assert((await form.locator('input[name=who]:checked').count()) === 0, 'age question must not be pre-answered');
       await form.locator('label.chip', { hasText: 'under 18' }).click();
       assert(await form.locator('[data-under18]').isVisible(), 'under-18 message not shown');
       assert(await form.locator('button[type=submit]').isDisabled(), 'minor can submit');
@@ -374,7 +375,7 @@ try {
       await form.evaluate((f) => (f.dataset.endpoint = 'https://waitlist.test/signup'));
       await form.locator('button[type=submit]').click();
       await page.waitForFunction(() =>
-        document.querySelector('#join [data-waitlist-status]').textContent.includes('on the list'),
+        document.querySelector('#join [data-waitlist-status]').textContent.includes('confirmation link'),
       );
       assert(
         posted && posted.who === 'parent' && posted.consent.given === true && posted.destinations[0] === 'canada',

@@ -16,6 +16,8 @@ interface Props {
 const { purpose, destination, title, intro } = Astro.props;
 const id = `wl-${purpose}-${destination ?? 'all'}`;
 const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
+// Optional bot check (Cloudflare Turnstile), only rendered when a site key is configured.
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '';
 ---
 
 <form class="card waitlist grid" style="gap:14px" data-waitlist data-endpoint={endpoint} data-purpose={purpose} novalidate>
@@ -24,7 +26,7 @@ const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
   <fieldset>
     <legend>I am</legend>
     <div class="chip-group">
-      <label class="chip"><input type="radio" name="who" value="student" checked /><span>A student, 18 or over</span></label>
+      <label class="chip"><input type="radio" name="who" value="student" required /><span>A student, 18 or over</span></label>
       <label class="chip"><input type="radio" name="who" value="parent" /><span>A parent or guardian</span></label>
       <label class="chip"><input type="radio" name="who" value="student_under_18" /><span>A student under 18</span></label>
     </div>
@@ -83,6 +85,14 @@ const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
     <input type="checkbox" name="consent" style="margin-top:4px" />
     <span>{CONSENT_TEXT} <a href="/privacy#signups">How we use it</a>.</span>
   </label>
+  {
+    turnstileKey && (
+      <>
+        <div class="cf-turnstile" data-sitekey={turnstileKey} data-contact />
+        <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+      </>
+    )
+  }
   <div class="row">
     <button class="btn btn-primary" type="submit">{purpose === 'alerts' ? 'Tell me when this changes' : 'Join the waitlist'}</button>
   </div>
@@ -90,7 +100,7 @@ const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
 </form>
 
 <script>
-  import { validateSignup, type SignupInput } from '../lib/waitlist';
+  import { CONSENT_VERSION, validateSignup, type SignupInput } from '../lib/waitlist';
   import { DESTINATIONS } from '../data/destinations';
 
   const KNOWN = DESTINATIONS.map((d) => d.slug);
@@ -113,7 +123,7 @@ const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
       e.preventDefault();
       const fd = new FormData(form);
       const input: SignupInput = {
-        who: String(fd.get('who')) as SignupInput['who'],
+        who: String(fd.get('who') ?? '') as SignupInput['who'],
         email: String(fd.get('email') ?? ''),
         whatsapp: String(fd.get('whatsapp') ?? ''),
         destinations: fd.getAll('destinations').map(String),
@@ -121,6 +131,7 @@ const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
         intake: String(fd.get('intake') ?? ''),
         purpose: form.dataset.purpose === 'alerts' ? 'alerts' : 'waitlist',
         consent: fd.get('consent') === 'on',
+        consentVersion: CONSENT_VERSION,
         source: location.pathname,
       };
       const result = validateSignup(input, KNOWN);
@@ -140,15 +151,16 @@ const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? '';
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(result.record),
+          body: JSON.stringify({
+            ...result.record,
+            turnstileToken: String(fd.get('cf-turnstile-response') ?? '') || undefined,
+          }),
           credentials: 'omit',
         });
         if (!res.ok) throw new Error(String(res.status));
         status.className = 'small callout';
         status.textContent =
-          input.purpose === 'alerts'
-            ? 'Done. We’ll tell you when a rule or figure for this country changes.'
-            : 'You’re on the list. We’ll be in touch when Premium opens for your countries.';
+          'Almost done: we’ve sent a confirmation link to the email or WhatsApp you gave. Your sign-up only counts once you confirm it, so nobody can sign you up without your say-so.';
         form.reset();
         sync();
       } catch {
