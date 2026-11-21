@@ -1,0 +1,37 @@
+---
+import type { Fact } from '../data/types';
+import { DESTINATION_BY_SLUG } from '../data/destinations';
+import { hostOf } from '../lib/domains';
+import { formatDate, freshAttrs } from '../lib/facts';
+import ViewFlags from './ViewFlags.astro';
+
+interface Props {
+  facts: Fact[];
+  empty?: string;
+}
+const { facts, empty } = Astro.props;
+---
+{
+  facts.length === 0 ? (
+    <p class="small muted">{empty}</p>
+  ) : (
+    <ul class="stage-facts">
+      {facts.map((f) => (
+        <li data-fact={f.id} {...freshAttrs([f])}>
+          <span class="stage-country mono" title={DESTINATION_BY_SLUG[f.destination].name}>
+            {DESTINATION_BY_SLUG[f.destination].code}
+          </span>
+          <span>
+            <strong>{f.label}:</strong> {f.value}
+            <span class="cite">
+              {' '}
+              · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · checked{' '}
+              {formatDate(f.verifiedAt)}
+            </span>
+            <ViewFlags />
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}

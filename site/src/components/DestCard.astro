@@ -2,7 +2,8 @@
 import type { Destination } from '../data/destinations';
 import type { Fact } from '../data/types';
 import { hostOf } from '../lib/domains';
-import { appliesOn, formatDate, freshAttrs, presentation } from '../lib/facts';
+import { appliesOn, changingCount, formatDate, freshAttrs, plural, presentation } from '../lib/facts';
+import { SIGNALS } from '../data/facts';
 import ViewFlags from './ViewFlags.astro';
 
 interface Props {
@@ -14,7 +15,7 @@ const { destination: d, facts, today } = Astro.props;
 const current = (f: Fact) => f.destination === d.slug && appliesOn(f, today) && presentation(f, today) === 'current';
 const permission = facts.find((f) => current(f) && f.topic === 'permission' && !f.stages);
 const tuition = facts.filter((f) => current(f) && f.topic === 'tuition');
-const changing = facts.filter((f) => f.destination === d.slug && ['upcoming', 'not_current'].includes(presentation(f, today))).length;
+const changing = changingCount(d.slug, facts, SIGNALS, today);
 const lead = d.admissions[0];
 ---
 <article class="visa">
@@ -25,12 +26,12 @@ const lead = d.admissions[0];
         <a class="visa-link" href={`/destinations/${d.slug}`}>{d.name}</a>
       </h3>
     </div>
-    {changing > 0 && <span class="pill warn">{changing} changing</span>}
+    {changing > 0 && <span class="pill warn">{plural(changing, 'change')}</span>}
   </div>
   <div class="visa-body">
     <dl>
       <div>
-        <dt>Find courses</dt>
+        <dt>Official starting point</dt>
         <dd>
           <a class="visa-sub" href={lead.url} rel="noopener" target="_blank">{lead.short}</a>
           <span class="subtle small"> · {hostOf(lead.url)}</span>

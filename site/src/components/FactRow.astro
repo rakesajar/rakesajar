@@ -32,7 +32,7 @@ const notCurrent = p === 'not_current' || p === 'expired';
     <StatusPill fact={fact} today={today} />
     {fact.sources.map((s) => <SourceLink source={s} />)}
     <span>
-      Verified {formatDate(fact.verifiedAt)}{fact.verification === 'seed' && <> · seed baseline</>}
+      Checked {formatDate(fact.verifiedAt)}
     </span>
     <ViewFlags />
   </div>

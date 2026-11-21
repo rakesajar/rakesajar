@@ -1,12 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
 import FactRow from '../../components/FactRow.astro';
+import StatusPill from '../../components/StatusPill.astro';
 import SourceLink from '../../components/SourceLink.astro';
 import { ALLOWLIST } from '../../data/allowlist';
 import { INDIA_OFFICIAL_LINKS, type Destination } from '../../data/destinations';
 import type { Fact, SourceRef, Stage } from '../../data/types';
 import { hostOf } from '../../lib/domains';
-import { formatDate, freshAttrs, presentation } from '../../lib/facts';
+import { changingCount, formatDate, freshAttrs, plural, presentation } from '../../lib/facts';
+import PilotNote from '../../components/PilotNote.astro';
 import ViewFlags from '../../components/ViewFlags.astro';
 import { formatMoney, upfrontEstimate } from '../../lib/money';
 import { BUILD_DATE, DESTINATIONS, FACTS, SIGNALS } from '../../lib/store';
@@ -30,7 +32,7 @@ const lastVerified = facts.map((f) => f.verifiedAt).sort().at(-1)!;
 const snapshot = facts.filter(
   (f) =>
     presentation(f, today) === 'current' &&
-    (f.topic === 'permission' || (['work', 'post_study'].includes(f.topic) && (!f.stages || f.stages.length > 1))),
+    (f.topic === 'permission' || (f.topic === 'work' && !f.stages)),
 );
 const estimate = upfrontEstimate(facts, d.currency, today);
 
@@ -53,6 +55,7 @@ const t1Domains = ALLOWLIST[d.slug].filter((e) => e.tier === 'T1').map((e) => e.
 const t2Domains = ALLOWLIST[d.slug].filter((e) => e.tier === 'T2').map((e) => e.pattern);
 
 const sections = [
+  ['courses', 'Courses and applying'],
   ['snapshot', 'Snapshot'],
   ['routes', 'Routes by stage'],
   ['steps', 'Steps'],
@@ -62,6 +65,18 @@ const sections = [
   ['checks', 'Checks'],
   ['sources', 'Sources'],
 ] as const;
+/** Labels in the sources table, disambiguated when two facts share one (e.g. two Graduate Route rules). */
+const labelCount = new Map<string, number>();
+for (const f of facts) labelCount.set(f.label, (labelCount.get(f.label) ?? 0) + 1);
+const srcLabel = (id: string) => {
+  const f = facts.find((x) => x.id === id)!;
+  return labelCount.get(f.label)! > 1 ? `${f.label} (${f.value})` : f.label;
+};
+const num = (id: string) => String(sections.findIndex(([s]) => s === id) + 1).padStart(2, '0');
+const changing = changingCount(d.slug, FACTS, SIGNALS, today);
+const tuition = facts.filter((f) => f.topic === 'tuition');
+const staged = facts.filter((f) => f.stages?.length);
+const monthlyFacts = estimate.monthly.map((m) => facts.find((f) => f.id === m.factId)!);
 ---
 <Base
   title={`Study in ${d.inName}`}
@@ -89,16 +104,16 @@ const sections = [
       </div>
       <p class="lede" style="margin-top:16px">{d.tagline}</p>
       <div class="row small" style="margin-top:8px">
-        <span class="pill ok">Free guide · live</span>
-        <span class="subtle">Facts last verified {formatDate(lastVerified)}</span>
+        <span class="subtle">Checked {formatDate(lastVerified)}</span>
         {
-          (notCurrent.length > 0 || upcoming.length > 0 || signals.length > 0) && (
+          changing > 0 && (
             <a href="#checks" class="pill warn">
-              {notCurrent.length + upcoming.length + signals.length} items changing or under review
+              {plural(changing, 'thing')} changing or under review
             </a>
           )
         }
       </div>
+      <PilotNote />
       <p class="small subtle" data-stale-summary hidden style="margin-top:10px">
         <span class="pill warn"><span data-stale-count>0</span>&nbsp;facts are due for re-checking</span> We show them with a warning
         until they are verified again.
@@ -117,48 +132,81 @@ const sections = [
     </aside>
 
     <article>
+      <section id="courses" class="guide-section" aria-labelledby="h-courses">
+        <span class="section-num">{num('courses')}</span>
+        <h2 id="h-courses">Courses and applying</h2>
+        <p class="muted">
+          Start with the official places that list courses and institutions, then go to each university’s own course page for entry
+          requirements, test scores, intakes and deadlines. We haven’t verified those yet, so we don’t show them.
+        </p>
+        <ul class="stack" style="list-style:none;padding:0">
+          {d.admissions.map((a) => <li><SourceLink source={a} showTitle /></li>)}
+        </ul>
+        {
+          tuition.length > 0 ? (
+            <>
+              <h3 style="margin-top:24px">Tuition</h3>
+              <div class="facts">
+                {tuition.map((f) => (
+                  <FactRow fact={f} today={today} />
+                ))}
+              </div>
+            </>
+          ) : (
+            <p class="small muted" style="margin-top:16px">
+              Tuition is set by each university. You’ll find it on the course page and in your offer letter.
+            </p>
+          )
+        }
+      </section>
+
       <section id="snapshot" class="guide-section" aria-labelledby="h-snapshot">
-        <span class="section-num">01</span>
+        <span class="section-num">{num('snapshot')}</span>
         <h2 id="h-snapshot">Snapshot</h2>
         <div class="facts">{snapshot.map((f) => <FactRow fact={f} today={today} anchor={f.topic === 'permission'} />)}</div>
+        <p class="small muted" style="margin-top:12px">What you can do after graduating is under <a href="#work">Work and after</a>.</p>
         <p class="small muted" style="margin-top:12px">Confirm on the official page before paying or applying.</p>
       </section>
 
       <section id="routes" class="guide-section" aria-labelledby="h-routes">
-        <span class="section-num">02</span>
+        <span class="section-num">{num('routes')}</span>
         <h2 id="h-routes">Routes by stage</h2>
-        <p class="muted">Rules that differ by level of study. Everything in the snapshot applies unless a rule below says otherwise.</p>
-        <div class="stack">
-          {
-            STAGES.map((s) => {
-              const list = facts.filter((f) => f.stages?.includes(s.key));
-              return (
-                <div>
-                  <h3>{s.label}</h3>
-                  {list.length ? (
-                    <div class="facts">
-                      {list.map((f) => (
-                        <FactRow fact={f} today={today} anchor={false} />
-                      ))}
+        {
+          staged.length === 0 ? (
+            <p class="muted">We haven’t verified any rules that differ by level of study for {d.inName}. Everything on this page applies to all levels unless the official page says otherwise.</p>
+          ) : (
+            <>
+              <p class="muted">Rules that differ by level of study. Each links to the full entry with its source.</p>
+              <dl class="stage-list">
+                {STAGES.map((st) => {
+                  const list = staged.filter((f) => f.stages!.includes(st.key));
+                  return (
+                    <div>
+                      <dt>{st.label}</dt>
+                      <dd>
+                        {list.length ? (
+                          <ul>
+                            {list.map((f) => (
+                              <li data-fact={f.id}>
+                                <a href={`#fact-${f.id}`}>{f.label}</a>: {f.value}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span class="muted">Nothing specific to this level yet.</span>
+                        )}
+                      </dd>
                     </div>
-                  ) : (
-                    <p class="small muted">
-                      No level-specific verified facts yet. Check{' '}
-                      <a href={d.portals[0].url} rel="noopener" target="_blank">
-                        {d.portals[0].title}
-                      </a>
-                      .
-                    </p>
-                  )}
-                </div>
-              );
-            })
-          }
-        </div>
+                  );
+                })}
+              </dl>
+            </>
+          )
+        }
       </section>
 
       <section id="steps" class="guide-section" aria-labelledby="h-steps">
-        <span class="section-num">03</span>
+        <span class="section-num">{num('steps')}</span>
         <h2 id="h-steps">Steps</h2>
         <p class="muted">The usual order of the official process. Your institution and the official page give the exact requirements for you.</p>
         <ol class="steps">{d.steps.map((s) => <li><span>{s}</span></li>)}</ol>
@@ -169,13 +217,14 @@ const sections = [
       </section>
 
       <section id="costs" class="guide-section" aria-labelledby="h-costs">
-        <span class="section-num">04</span>
+        <span class="section-num">{num('costs')}</span>
         <h2 id="h-costs">Costs</h2>
-        <div class="facts">{byTopic('fees', 'funds', 'tuition').map((f) => <FactRow fact={f} today={today} />)}</div>
+        <div class="facts">{byTopic('fees', 'funds').map((f) => <FactRow fact={f} today={today} />)}</div>
         {
           estimate.lines.length > 0 && (
-            <div class="card" style="margin-top:20px" data-group {...freshAttrs(facts.filter((f) => estimate.lines.some((l) => l.factId === f.id)))}>
-              <h3>Official costs for your first year, before tuition</h3>
+            <div class="card" style="margin-top:20px" data-group {...freshAttrs(facts.filter((f) => [...estimate.lines, ...estimate.monthly].some((l) => l.factId === f.id)))}>
+              <h3>The official amounts we’ve verified so far</h3>
+              <p class="small muted">Not a full budget. Other charges may apply, and tuition comes from your offer letter.</p>
               <ViewFlags />
               <div class="table-wrap" style="border:0">
                 <table>
@@ -191,12 +240,21 @@ const sections = [
                       </tr>
                     ))}
                     <tr class="total-row">
-                      <th scope="row">Total before tuition</th>
+                      <th scope="row">Total of these</th>
                       <td />
                       <td class="num" data-fact={estimate.lines.map((l) => l.factId).join(' ')}>
                         {formatMoney(estimate.total, d.currency)}
                       </td>
                     </tr>
+                    {estimate.monthly.map((m, i) => (
+                      <tr>
+                        <th scope="row">Plus {m.label.toLowerCase()}</th>
+                        <td class="subtle small">Per month. Check the official page for how many months count.</td>
+                        <td class="num" data-fact={monthlyFacts[i].id}>
+                          {formatMoney(m.amount, m.currency)} a month
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -214,14 +272,14 @@ const sections = [
         {
           estimate.lines.length === 0 && (
             <p class="small muted" style="margin-top:12px">
-              We don’t yet have enough verified figures to total the official costs for {d.inName}.
+              We don’t yet have enough verified figures to add up the official costs for {d.inName}.
             </p>
           )
         }
       </section>
 
       <section id="funding" class="guide-section" aria-labelledby="h-funding">
-        <span class="section-num">05</span>
+        <span class="section-num">{num('funding')}</span>
         <h2 id="h-funding">Funding</h2>
         <div class="callout info">
           <p>
@@ -235,13 +293,13 @@ const sections = [
       </section>
 
       <section id="work" class="guide-section" aria-labelledby="h-work">
-        <span class="section-num">06</span>
+        <span class="section-num">{num('work')}</span>
         <h2 id="h-work">Work and after graduation</h2>
         <div class="facts">{byTopic('work', 'post_study', 'employment').map((f) => <FactRow fact={f} today={today} />)}</div>
       </section>
 
       <section id="checks" class="guide-section" aria-labelledby="h-checks">
-        <span class="section-num">07</span>
+        <span class="section-num">{num('checks')}</span>
         <h2 id="h-checks">Checks before you pay or apply</h2>
         <ul class="check-list">
           <li>Confirm every fee and requirement on the official page on the day you pay or apply.</li>
@@ -257,11 +315,19 @@ const sections = [
           (notCurrent.length > 0 || upcoming.length > 0) && (
             <>
               <h3 style="margin-top:28px">Changing or under review</h3>
-              <div class="facts">
-                {[...upcoming, ...notCurrent].map((f) => (
-                  <FactRow fact={f} today={today} anchor={f.topic === 'policy'} />
-                ))}
-              </div>
+              <ul class="change-links">
+                {[...upcoming, ...notCurrent].map((f) =>
+                  f.topic === 'policy' ? (
+                    <li class="facts" style="display:block">
+                      <FactRow fact={f} today={today} />
+                    </li>
+                  ) : (
+                    <li data-fact={f.id}>
+                      <StatusPill fact={f} today={today} /> <a href={`#fact-${f.id}`}>{f.label}</a>: {f.value}
+                    </li>
+                  ),
+                )}
+              </ul>
             </>
           )
         }
@@ -313,7 +379,7 @@ const sections = [
       </section>
 
       <section id="sources" class="guide-section" aria-labelledby="h-sources">
-        <span class="section-num">08</span>
+        <span class="section-num">{num('sources')}</span>
         <h2 id="h-sources">Sources</h2>
         <p class="muted">Every page this guide relies on. T1 = government or regulator. T2 = official institution or statutory body.</p>
         <div class="table-wrap">
@@ -336,8 +402,7 @@ const sections = [
                     <td class="small">
                       {ids.map((id, i) => (
                         <>
-                          <a href={`#fact-${id}`}>{facts.find((f) => f.id === id)!.label}</a>
-                          {i < ids.length - 1 ? ', ' : ''}
+                          <a href={`#fact-${id}`} data-fact={id}>{srcLabel(id)}</a>{i < ids.length - 1 ? ', ' : ''}
                         </>
                       ))}
                     </td>

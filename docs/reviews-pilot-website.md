@@ -41,3 +41,31 @@ Fixes are in the commit after `879fa8b`. Delta review requested on the fix commi
 | NIT | Stale count included totals | Fixed: `data-group` excluded from count |
 | NIT | Converted total had no freshness flag | Fixed |
 | NIT | BUILD_DATE uses real clock at build | Accepted: view-time flags cover date transitions; rebuild daily recommended in PROGRESS |
+
+## Fable design, copy and UX review of 3b21e3e
+
+Reviewer: separate agent on a different model (Fable), read-only, own build copy. Fixes in the commit after `9be0caa`
+(which had already rebuilt the home page around our promises).
+
+| Sev | Finding | Disposition |
+|---|---|---|
+| MAJOR | "Verified" vs "no human review" contradiction; "seed baseline" on every row | Fixed: one plain pilot notice (home + every guide); rows say "Checked <date>"; method page leads with "Where the pilot is today" and describes re-checking as not yet running |
+| MAJOR | No admissions content on country pages | Fixed: new first section "Courses and applying" (official starting points, tuition, what we haven't verified); steps start with shortlisting |
+| MAJOR | Class 12 / bachelor's panels led with work rights | Fixed: tuition and entry rules first, post-study rules under "After the degree" |
+| MAJOR | "Find courses via" targets aren't all course listings | Relabelled "Official starting point". UCAS is not on the allowlist; adding it is a product-owner decision (parked) |
+| MAJOR | Board "Changing" noise; inconsistent counts | Fixed: one `changingCount` rule for board, cards, guide and compare; board shows "N changes" linking to the checks |
+| MAJOR | Taglines visa/work-led | Fixed: rewritten around where to start and how you'd study |
+| MAJOR | "× 12 months" assumption inflated totals | Fixed: monthly amounts are shown per month and never multiplied; planner lets the user choose months; totals renamed "official amounts we've verified" with "not a full budget" |
+| MAJOR | Costs card implied completeness | Fixed: retitled, "Other charges may apply" |
+| MAJOR | Planner and compare clipped at 390px | Fixed: both tables become labelled stacked rows under 640px; e2e overflow check passes |
+| MAJOR | Rupees in Western grouping | Fixed: `en-IN` (₹20,22,502) plus "about ₹20.2 lakh" |
+| MINOR | Jargon: "Free guide · live", "Release gates", "in evaluation", change-log titles | Fixed: plain wording throughout |
+| MINOR | Graduate Route repeated five times; empty routes blocks | Fixed: snapshot excludes post-study; routes are one compact list with links, or one sentence when empty; checks list links instead of repeating rows |
+| MINOR | Compare omitted the announced 18-month UK rule | Fixed: upcoming rules shown with their start-date stamp |
+| MINOR | Card/board order followed internal waves | Fixed: alphabetical, same for everyone (supports the no-ranking promise) |
+| MINOR | Compare chips disabled at the limit | Fixed: a third pick replaces the oldest |
+| MINOR | Sticky header see-through; dark selected tab; Ask alignment; tap targets; FX date format; duplicate SG labels; "1 items"; em-dash separators; road numerals; theme icon | Fixed |
+| MINOR | Hand-written Graduate Route date on home | Fixed: rendered from the fact and bound with `data-fact` (the figure checker caught the first attempt) |
+| MINOR | Plans: accuracy %, refunds line | Fixed: gates described in plain terms; refunds line removed |
+| MINOR | Steps not cited per step | Accepted for pilot (see earlier disposition) |
+| NIT | Print stylesheet, WebKit/Firefox not checked by reviewer | Open: print CSS not visually verified; cross-browser testing needs those browsers |

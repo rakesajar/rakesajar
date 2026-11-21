@@ -17,13 +17,11 @@ const features: [string, Cell, Cell, Cell][] = [
   ['Policy-change alerts', 'Weekly digest', true, 'Real-time'],
 ];
 const gates = [
-  'Factual accuracy of at least 98%',
-  'Citation precision of at least 95%: the cited passage really contains the claim',
-  'Zero uncited figures',
-  '100% correct refusals on disputed, proposed or court-blocked rules',
-  'A legal check that guidance is permitted in that country',
+  'We test its answers against the official pages, question by question',
+  'Every number in an answer has to point to the page it came from',
+  'It must decline, every time, when a rule is proposed, disputed or in court',
+  'A lawyer in that country confirms the guidance is allowed there',
 ];
-const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Third wave' } as const;
 ---
 <Base
   title="Plans"
@@ -41,7 +39,7 @@ const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Thir
           <p class="eyebrow">Free</p>
           <h2 style="font-size:1.5rem">Looking around</h2>
           <p class="muted small">Every guide, comparison of two countries, the cost planner and three questions a day.</p>
-          <a class="btn btn-primary" href="/destinations">Start exploring</a>
+          <a class="btn btn-primary" href="/destinations">Read the country guides</a>
         </div>
         <div class="card">
           <p class="eyebrow">Free account</p>
@@ -71,7 +69,7 @@ const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Thir
                 <tr>
                   <th scope="row" style="white-space:normal">{name}</th>
                   {cells.map((c) => (
-                    <td>{c === true ? <span aria-label="Included">✓</span> : c === false ? <span class="subtle" aria-label="Not included">—</span> : c}</td>
+                    <td>{c === true ? <span aria-label="Included">✓</span> : c === false ? <span class="subtle small">Not included</span> : c}</td>
                   ))}
                 </tr>
               ))
@@ -79,14 +77,14 @@ const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Thir
           </tbody>
         </table>
       </div>
-      <p class="small muted" style="margin-top:12px">Pricing will be announced at launch and adjusted by region. Refunds follow fixed, published rules.</p>
+      <p class="small muted" style="margin-top:12px">Pricing will be announced at launch and adjusted by region.</p>
     </div>
   </section>
 
   <section class="section-tight">
     <div class="container grid grid-2" style="gap:32px;align-items:start">
       <div>
-        <p class="eyebrow">Release gates</p>
+        <p class="eyebrow">Before Premium opens</p>
         <h2>Premium opens one country at a time</h2>
         <p class="muted">We switch Premium on for a country only after its answers pass these tests, and we switch it back off if they stop passing. While it’s off, you get links to the official pages instead of answers.</p>
         <ul class="check-list" data-figure-ok="policy">{gates.map((g) => <li>{g}</li>)}</ul>
@@ -94,14 +92,14 @@ const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Thir
       <div class="table-wrap">
         <table>
           <caption class="visually-hidden">Premium status by destination</caption>
-          <thead><tr><th scope="col">Destination</th><th scope="col">Free guide</th><th scope="col">Premium</th></tr></thead>
+          <thead><tr><th scope="col">Destination</th><th scope="col">Country guide</th><th scope="col">Premium</th></tr></thead>
           <tbody>
             {
               DESTINATIONS.map((d) => (
                 <tr>
                   <th scope="row">{d.name}</th>
-                  <td><span class="pill ok">Live</span></td>
-                  <td><span class="pill plain">{waveLabel[d.wave]} · in evaluation</span></td>
+                  <td><span class="pill ok">Free</span></td>
+                  <td><span class="pill plain">Not open yet</span></td>
                 </tr>
               ))
             }

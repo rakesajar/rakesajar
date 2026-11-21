@@ -132,3 +132,21 @@ export function freshAttrs(facts: readonly Fact[]): Record<string, string> {
   if (starts.length) attrs['data-effective-from'] = starts.sort()[0];
   return attrs;
 }
+
+/**
+ * What a visitor should look at for a destination: rules that are upcoming or not in force, plus reports.
+ * One rule for every place that shows a "changing" count (board, cards, guide header, compare).
+ */
+export function changingCount(
+  destination: string,
+  facts: readonly Fact[],
+  signals: readonly { destination: string }[],
+  today: string,
+): number {
+  return (
+    facts.filter((f) => f.destination === destination && ['upcoming', 'not_current'].includes(presentation(f, today))).length +
+    signals.filter((s) => s.destination === destination).length
+  );
+}
+
+export const plural = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;

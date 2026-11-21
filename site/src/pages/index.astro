@@ -3,11 +3,13 @@ import Base from '../layouts/Base.astro';
 import DestCard from '../components/DestCard.astro';
 import FactRow from '../components/FactRow.astro';
 import ViewFlags from '../components/ViewFlags.astro';
+import FactList from '../components/FactList.astro';
+import PilotNote from '../components/PilotNote.astro';
 import Declaration from '../components/Declaration.astro';
 import { CANDOUR, PROMISES } from '../data/promises';
 import type { Fact, Stage } from '../data/types';
 import { BUILD_DATE, CHANGES, DESTINATIONS, FACTS, SIGNALS, DESTINATION_BY_SLUG } from '../lib/store';
-import { factById, formatDate, freshAttrs, presentation } from '../lib/facts';
+import { changingCount, factById, formatDate, plural, presentation } from '../lib/facts';
 import { hostOf } from '../lib/domains';
 
 const today = BUILD_DATE;
@@ -21,25 +23,22 @@ const KIND: Record<string, { pill: string; label: string }> = {
   reported: { pill: 'plain', label: 'Reported' },
   published: { pill: 'ok', label: 'Published' },
 };
-const board = DESTINATIONS.map((d) => {
-  const facts = FACTS.filter((f) => f.destination === d.slug);
-  const changing =
-    facts.filter((f) => ['upcoming', 'not_current'].includes(presentation(f, today))).length +
-    SIGNALS.filter((s) => s.destination === d.slug).length;
-  return { d, changing };
-});
+const board = DESTINATIONS.map((d) => ({ d, changing: changingCount(d.slug, FACTS, SIGNALS, today) }));
 
-// Facts that differ by level of study, grouped for the "where are you now" panels.
-const byStage = (stage: Stage): Fact[] =>
-  FACTS.filter((f) => f.stages?.includes(stage) && ['current', 'upcoming'].includes(presentation(f, today)));
-const ug = byStage('ug');
-const pg = FACTS.filter(
-  (f) =>
-    (f.stages?.includes('pg') || f.stages?.includes('phd')) &&
-    !f.stages?.includes('ug') &&
-    ['current', 'upcoming'].includes(presentation(f, today)),
+// Audience panels lead with what matters when applying (tuition, how you'd study), and keep post-study rules
+// in a separate "after the degree" list.
+const live = (f: Fact) => ['current', 'upcoming'].includes(presentation(f, today));
+const forStage = (f: Fact, stage: Stage) => !f.stages || f.stages.includes(stage);
+const ugApplying = FACTS.filter((f) => live(f) && f.topic === 'tuition' && forStage(f, 'ug'));
+const ugAfter = FACTS.filter((f) => live(f) && f.topic === 'post_study' && f.stages?.includes('ug'));
+const pgApplying = FACTS.filter(
+  (f) => live(f) && ['tuition', 'permission'].includes(f.topic) && (f.stages?.includes('pg') || f.stages?.includes('phd') || (f.topic === 'tuition' && !f.stages)),
+);
+const pgAfter = FACTS.filter(
+  (f) => live(f) && f.topic === 'post_study' && (f.stages?.includes('pg') || f.stages?.includes('phd')) && !f.stages?.includes('ug'),
 );
 const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f, today) === 'current');
+const ukNext = factById(FACTS, 'uk-graduate-18m');
 ---
 
 <Base
@@ -66,6 +65,10 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
           <a class="btn btn-primary" href="#where-are-you">Start from where you are</a>
           <a class="btn btn-secondary" href="#promises">Read our promises</a>
         </div>
+        <p class="small" style="margin-top:18px">
+          Parents: <a href="/cost-planner">see what the first year’s official costs come to in rupees</a>.
+        </p>
+        <PilotNote />
       </div>
       <Declaration />
     </div>
@@ -128,30 +131,16 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
                 final word.
               </p>
               <ul class="check-list small">
-                <li>Shortlist countries first, then courses. The official course listings are on each country card below.</li>
+                <li>Shortlist countries first, then courses. Each country card below links to its official starting point.</li>
                 <li>Read the university’s entry requirements for applicants with your board (CBSE, ICSE, state board or other).</li>
-                <li>Note what happens after the degree. It changes for some countries depending on when you apply.</li>
+                <li>Look at what happens after the degree too. For the UK it depends on when you apply for the Graduate Route.</li>
               </ul>
             </div>
             <div>
-              <p class="small subtle mono" style="margin:0 0 8px">Rules that apply to undergraduates</p>
-              <ul class="stage-facts">
-                {
-                  ug.map((f) => (
-                    <li data-fact={f.id} {...freshAttrs([f])}>
-                      <span class="stage-country mono">{DESTINATION_BY_SLUG[f.destination].code}</span>
-                      <span>
-                        <strong>{f.label}:</strong> {f.value}
-                        <span class="cite">
-                          {' '}
-                          · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · {formatDate(f.verifiedAt)}
-                        </span>
-                        <ViewFlags />
-                      </span>
-                    </li>
-                  ))
-                }
-              </ul>
+              <p class="small subtle mono" style="margin:0 0 8px">Tuition we’ve verified for undergraduates</p>
+              <FactList facts={ugApplying} empty="No undergraduate tuition verified yet. It’s on each course page." />
+              <p class="small subtle mono" style="margin:20px 0 8px">After the degree</p>
+              <FactList facts={ugAfter} />
             </div>
           </div>
         </div>
@@ -166,29 +155,15 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
               </p>
               <ul class="check-list small">
                 <li>Check whether your degree is recognised for entry: the university’s admissions page will say.</li>
-                <li>For a PhD, find the supervisor or research group before you apply.</li>
+                <li>For a PhD, check on the university’s page whether you need a supervisor before applying.</li>
                 <li>Compare what each country allows after a postgraduate or research degree.</li>
               </ul>
             </div>
             <div>
-              <p class="small subtle mono" style="margin:0 0 8px">Rules specific to master’s and PhD</p>
-              <ul class="stage-facts">
-                {
-                  pg.map((f) => (
-                    <li data-fact={f.id} {...freshAttrs([f])}>
-                      <span class="stage-country mono">{DESTINATION_BY_SLUG[f.destination].code}</span>
-                      <span>
-                        <strong>{f.label}:</strong> {f.value}
-                        <span class="cite">
-                          {' '}
-                          · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · {formatDate(f.verifiedAt)}
-                        </span>
-                        <ViewFlags />
-                      </span>
-                    </li>
-                  ))
-                }
-              </ul>
+              <p class="small subtle mono" style="margin:0 0 8px">Tuition and entry rules for master’s and PhD</p>
+              <FactList facts={pgApplying} />
+              <p class="small subtle mono" style="margin:20px 0 8px">After a postgraduate or research degree</p>
+              <FactList facts={pgAfter} />
             </div>
           </div>
         </div>
@@ -211,23 +186,7 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
             </div>
             <div>
               <p class="small subtle mono" style="margin:0 0 8px">Tuition figures we’ve verified so far</p>
-              <ul class="stage-facts">
-                {
-                  tuitionFacts.map((f) => (
-                    <li data-fact={f.id} {...freshAttrs([f])}>
-                      <span class="stage-country mono">{DESTINATION_BY_SLUG[f.destination].code}</span>
-                      <span>
-                        <strong>{f.label}:</strong> {f.value}
-                        <span class="cite">
-                          {' '}
-                          · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · {formatDate(f.verifiedAt)}
-                        </span>
-                        <ViewFlags />
-                      </span>
-                    </li>
-                  ))
-                }
-              </ul>
+              <FactList facts={tuitionFacts} />
               <p class="small muted">For other countries, tuition is set by each university. It will be on the course page and your offer letter.</p>
             </div>
           </div>
@@ -277,7 +236,15 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
                       <a href={`/destinations/${d.slug}`}>{d.name}</a>
                     </td>
                     <td class="col-wide">{d.admissions[0].short}</td>
-                    <td class={changing ? 'status-changing' : 'status-settled'}>{changing ? 'Changing' : 'No changes'}</td>
+                    <td class={changing ? 'status-changing' : 'status-settled'}>
+                      {changing ? (
+                        <a href={`/destinations/${d.slug}#checks`} class="board-remark">
+                          {plural(changing, 'change')}
+                        </a>
+                      ) : (
+                        'Nothing logged'
+                      )}
+                    </td>
                   </tr>
                 ))
               }
@@ -288,6 +255,11 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
       </div>
       <div class="grid grid-3 cards">
         {DESTINATIONS.map((d) => <DestCard destination={d} facts={FACTS} today={today} />)}
+        <a class="visa visa-cta" href="/compare">
+          <span class="eyebrow">Can’t decide?</span>
+          <span class="visa-name">Put two countries side by side</span>
+          <span class="small muted">Courses, tuition, fees and proof of funds, with every figure sourced.</span>
+        </a>
       </div>
     </div>
   </section>
@@ -410,8 +382,8 @@ const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f
         <p class="eyebrow">Notice board</p>
         <h2>Changes that could affect this year’s applicants</h2>
         <p class="aside-note">
-          Applying to the UK? What you can do after graduating depends on when you apply for the Graduate Route, before or after 1
-          January 2027.
+          Finishing a UK degree around the turn of the year? The Graduate Route is <span data-fact={ukNext.id}>{ukNext.value.toLowerCase()}</span>, so the date you
+          apply for it matters. <a href="/destinations/uk#work">See both rules</a>
         </p>
         <a class="btn btn-secondary" href="/changes">Read the full change log</a>
       </div>

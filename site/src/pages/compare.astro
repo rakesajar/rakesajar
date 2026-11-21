@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
 import type { Fact } from '../data/types';
 import { hostOf } from '../lib/domains';
-import { formatDate, freshAttrs, presentation, STATUS_LABEL } from '../lib/facts';
+import { changingCount, formatDate, freshAttrs, plural, presentation, STATUS_LABEL } from '../lib/facts';
 import ViewFlags from '../components/ViewFlags.astro';
 import { formatMoney, HOME_CURRENCIES, upfrontEstimate } from '../lib/money';
 import { FX_SOURCE_LABEL } from '../lib/fx';
@@ -14,25 +14,25 @@ const FREE_LIMIT = 2;
 const DEFAULT = ['uk', 'canada'];
 
 type Row = { key: string; label: string; pick: (slug: string) => Fact[] };
-const of = (slug: string, topics: Fact['topic'][], opts: { includeNonCurrent?: boolean } = {}) =>
+const of = (slug: string, topics: Fact['topic'][], opts: { includeNonCurrent?: boolean; includeUpcoming?: boolean } = {}) =>
   FACTS.filter(
     (f) =>
       f.destination === slug &&
       topics.includes(f.topic) &&
-      (presentation(f, today) === 'current' || (opts.includeNonCurrent && presentation(f, today) === 'not_current')),
+      (presentation(f, today) === 'current' ||
+        (opts.includeNonCurrent && presentation(f, today) === 'not_current') ||
+        (opts.includeUpcoming && presentation(f, today) === 'upcoming')),
   );
 const rows: Row[] = [
   { key: 'permission', label: 'Study permission', pick: (s) => of(s, ['permission']) },
   { key: 'work', label: 'Work during studies', pick: (s) => of(s, ['work']) },
-  { key: 'post', label: 'After graduation', pick: (s) => of(s, ['post_study']) },
+  { key: 'post', label: 'After graduation', pick: (s) => of(s, ['post_study'], { includeUpcoming: true }) },
   { key: 'fees', label: 'Visa and application fees', pick: (s) => of(s, ['fees'], { includeNonCurrent: true }) },
   { key: 'funds', label: 'Proof of funds', pick: (s) => of(s, ['funds'], { includeNonCurrent: true }) },
   { key: 'tuition', label: 'Tuition', pick: (s) => of(s, ['tuition']) },
 ];
 const estimates = Object.fromEntries(DESTINATIONS.map((d) => [d.slug, upfrontEstimate(FACTS.filter((f) => f.destination === d.slug), d.currency, today)]));
-const changing = (slug: string) =>
-  FACTS.filter((f) => f.destination === slug && ['upcoming', 'not_current'].includes(presentation(f, today))).length +
-  SIGNALS.filter((s) => s.destination === slug).length;
+const changing = (slug: string) => changingCount(slug, FACTS, SIGNALS, today);
 ---
 <Base
   title="Compare countries"
@@ -46,7 +46,7 @@ const changing = (slug: string) =>
 
   <section class="section-tight">
     <div class="container">
-      <form class="card grid" style="gap:20px" data-compare-form onsubmit="return false">
+      <form class="card grid" style="gap:20px" data-compare-form data-default={DEFAULT.join(',')} onsubmit="return false">
         <fieldset>
           <legend>Destinations <span class="hint">(up to {FREE_LIMIT} on the free plan)</span></legend>
           <div class="chip-group">
@@ -65,7 +65,7 @@ const changing = (slug: string) =>
             }
           </div>
           <p class="small muted" data-limit-note style="margin:10px 0 0" aria-live="polite">
-            <span class="lock">★ Premium</span> compares up to 4 countries at once. <a href="/plans">See plans</a>
+            Picking a third replaces the first. <span class="lock">Premium</span> will compare up to 4 at once. <a href="/plans">See plans</a>
           </p>
         </fieldset>
         <div class="grid grid-3" style="align-items:end">
@@ -106,7 +106,7 @@ const changing = (slug: string) =>
                   {DESTINATIONS.map((d) => {
                     const list = r.pick(d.slug);
                     return (
-                      <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)}>
+                      <td data-col={d.slug} data-label={d.name} hidden={!DEFAULT.includes(d.slug)}>
                         {list.length === 0 ? (
                           <span class="subtle small">No verified figure yet</span>
                         ) : (
@@ -120,6 +120,7 @@ const changing = (slug: string) =>
                                     {p === 'not_current' ? <s>{f.value}</s> : f.value}
                                   </div>
                                   {p === 'not_current' && <span class={`pill ${f.status === 'proposed' ? 'warn' : 'bad'}`}>{STATUS_LABEL[f.status]}</span>}
+                                  {p === 'upcoming' && <span class="pill info">From {formatDate(f.effectiveFrom!)}</span>}
                                   {f.estimate && <span class="pill gold">Indicative</span>}
                                   <div class="cite">
                                     <a href={f.sources[0].url} rel="noopener" target="_blank">
@@ -143,10 +144,10 @@ const changing = (slug: string) =>
               <th scope="row">Changing or under review</th>
               {
                 DESTINATIONS.map((d) => (
-                  <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)}>
+                  <td data-col={d.slug} data-label={d.name} hidden={!DEFAULT.includes(d.slug)}>
                     {changing(d.slug) ? (
                       <a class="pill warn" href={`/destinations/${d.slug}#checks`}>
-                        {changing(d.slug)} item{changing(d.slug) > 1 ? 's' : ''}
+                        {plural(changing(d.slug), 'change')}
                       </a>
                     ) : (
                       <span class="subtle small">None recorded</span>
@@ -156,18 +157,23 @@ const changing = (slug: string) =>
               }
             </tr>
             <tr class="total-row">
-              <th scope="row">Official costs, first year<br /><span class="hint">Before tuition, local currency</span></th>
+              <th scope="row">Official amounts we’ve verified<br /><span class="hint">Fees and yearly funds, before tuition</span></th>
               {
                 DESTINATIONS.map((d) => {
                   const e = estimates[d.slug];
                   return (
-                    <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)} data-group {...freshAttrs(FACTS.filter((f) => e.lines.some((l) => l.factId === f.id)))}>
+                    <td data-col={d.slug} data-label={d.name} hidden={!DEFAULT.includes(d.slug)} data-group {...freshAttrs(FACTS.filter((f) => e.lines.some((l) => l.factId === f.id)))}>
                       {e.lines.length ? (
                         <>
                           <div data-fact={e.lines.map((l) => l.factId).join(' ')} data-total={e.total} data-ccy={d.currency}>
                             {formatMoney(e.total, d.currency)}
                           </div>
-                          <div class="cite">{[...new Set(e.lines.map((l) => l.label))].join(' + ')}</div>
+                          <div class="cite">{[...new Set(e.lines.map((l) => l.label.replace(/ \(\d of \d\)$/, '')))].join(' + ')}</div>
+                          {e.monthly.map((m) => (
+                            <div class="small" data-fact={m.factId}>
+                              plus {formatMoney(m.amount, m.currency)} a month ({m.label.toLowerCase()})
+                            </div>
+                          ))}
                           {e.excluded.length > 0 && <div class="cite">Excludes: {e.excluded.map((x) => x.label).join(', ')}</div>}
                           <ViewFlags />
                         </>
@@ -186,7 +192,7 @@ const changing = (slug: string) =>
               <th scope="row">In your currency</th>
               {
                 DESTINATIONS.map((d) => (
-                  <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)} data-group {...freshAttrs(FACTS.filter((f) => estimates[d.slug].lines.some((l) => l.factId === f.id)))}>
+                  <td data-col={d.slug} data-label={d.name} hidden={!DEFAULT.includes(d.slug)} data-group {...freshAttrs(FACTS.filter((f) => estimates[d.slug].lines.some((l) => l.factId === f.id)))}>
                     <span data-converted={d.slug} data-fact={estimates[d.slug].lines.map((l) => l.factId).join(' ') || 'none'}>—</span>
                     <ViewFlags />
                   </td>
@@ -197,14 +203,15 @@ const changing = (slug: string) =>
         </table>
       </div>
       <p class="small muted" style="margin-top:12px">
-        Monthly funds figures are multiplied by 12 as a planning assumption. Official requirement periods vary, so check the
-        official page. Exchange rates: <span data-fx-label>{FX_SOURCE_LABEL}</span>.
+        These are the official amounts we’ve verified, not a full budget. Monthly amounts are shown per month because the number
+        of months that counts is set by each country’s rules. Exchange rates: <span data-fx-label>{FX_SOURCE_LABEL}</span>.
       </p>
     </div>
   </section>
 
   <script>
-    import { convert, formatMoney, type EurRates } from '../lib/money';
+    import { convert, formatMoney, inrInWords, type EurRates } from '../lib/money';
+    import { formatDate } from '../lib/facts';
     import { fetchFx, FX_SOURCE_LABEL } from '../lib/fx';
 
     const FREE_LIMIT = 2;
@@ -222,13 +229,29 @@ const changing = (slug: string) =>
     const fromUrl = new URLSearchParams(location.search).get('d')?.split(',').filter(Boolean) ?? [];
     if (fromUrl.length) boxes.forEach((b) => (b.checked = fromUrl.slice(0, FREE_LIMIT).includes(b.value)));
 
+    // Selection order, oldest first: picking a third country replaces the oldest instead of locking the chips.
+    const initial = fromUrl.length ? fromUrl : (form.dataset.default ?? '').split(',');
+    let order = initial.filter((v) => boxes.some((b) => b.value === v && b.checked)).slice(0, FREE_LIMIT);
+    const note = form.querySelector<HTMLElement>('[data-limit-note]')!;
+
     function selected(): string[] {
-      return boxes.filter((b) => b.checked).map((b) => b.value);
+      return order;
+    }
+
+    function onToggle(box: HTMLInputElement): void {
+      if (box.checked) {
+        order = [...order.filter((v) => v !== box.value), box.value];
+        if (order.length > FREE_LIMIT) {
+          const dropped = order.shift()!;
+          boxes.find((b) => b.value === dropped)!.checked = false;
+          note.dataset.replaced = dropped;
+        }
+      } else order = order.filter((v) => v !== box.value);
+      applySelection();
     }
 
     function applySelection(): void {
       const sel = selected();
-      boxes.forEach((b) => (b.disabled = !b.checked && sel.length >= FREE_LIMIT));
       document.querySelectorAll<HTMLElement>('[data-compare-table] [data-col]').forEach((cell) => {
         cell.hidden = !sel.includes(cell.dataset.col!);
       });
@@ -270,7 +293,10 @@ const changing = (slug: string) =>
         if (value === null) {
           out.textContent = 'Rate needed';
           if (!cell.hidden) missing.add(from);
-        } else out.textContent = '≈ ' + formatMoney(value, to);
+        } else {
+          const words = inrInWords(value, to);
+          out.textContent = '≈ ' + formatMoney(value, to) + (words ? ` (${words})` : '');
+        }
       });
       if (rebuildInputs) {
         manualInputs.replaceChildren(...[...missing].map((from) => manualField(from, to)));
@@ -278,14 +304,14 @@ const changing = (slug: string) =>
       }
     }
 
-    boxes.forEach((b) => b.addEventListener('change', applySelection));
+    boxes.forEach((b) => b.addEventListener('change', () => onToggle(b)));
     home.addEventListener('change', () => renderTotals());
     applySelection();
 
     fetchFx().then((fx) => {
       if (fx) {
         rates = fx.rates;
-        status.textContent = `${FX_SOURCE_LABEL}, ${fx.date}. Indicative only.`;
+        status.textContent = `${FX_SOURCE_LABEL}, ${formatDate(fx.date)}. Indicative only.`;
       } else {
         status.textContent = 'Live rates unavailable. Enter a rate to see totals in your currency.';
       }

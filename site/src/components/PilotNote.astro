@@ -1,0 +1,12 @@
+---
+import { formatDate } from '../lib/facts';
+import { SEED_DATE } from '../lib/store';
+---
+<p class="pilot-note">
+  <span class="pill plain">Pilot</span>
+  <span>
+    These figures were taken from official government and university pages on {formatDate(SEED_DATE)}. Automatic re-checking
+    hasn’t started yet, so each figure shows the date it was checked and says “re-check due” when it gets old.
+    <a href="/how-we-verify">How this works</a>
+  </span>
+</p>

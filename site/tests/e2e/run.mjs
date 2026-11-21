@@ -117,7 +117,7 @@ try {
   await check('AC-1 every guide renders the 8 sections', async () => {
     for (const s of SLUGS) {
       const { page, ctx, errors } = await open(`/destinations/${s}`);
-      for (const id of ['snapshot', 'routes', 'steps', 'costs', 'funding', 'work', 'checks', 'sources'])
+      for (const id of ['courses', 'snapshot', 'routes', 'steps', 'costs', 'funding', 'work', 'checks', 'sources'])
         assert((await page.locator(`section#${id} h2`).count()) === 1, `${s}: missing section ${id}`);
       assert((await page.locator('[data-fact]').count()) > 3, `${s}: too few facts`);
       assert(errors.length === 0, `${s}: JS errors ${errors}`);
@@ -157,18 +157,21 @@ try {
 
   await check('AC-6 compare: 2-country limit, totals, quarantined exclusion, URL state', async () => {
     const { page, ctx, errors } = await open('/compare');
-    assert(await page.locator('input[value="usa"]').isDisabled(), 'third country should be locked on free plan');
-    await page.locator('label.chip', { hasText: 'Canada' }).click();
+    // Default UK + Canada. Picking a third replaces the oldest (UK), never more than two on the free plan.
     await page.locator('label.chip', { hasText: 'Germany' }).click();
+    assert((await page.locator('input[name="d"]:checked').count()) === 2, 'more than two countries selected');
     assert(await page.locator('th[data-col="germany"]').isVisible(), 'Germany column hidden');
-    assert(!(await page.locator('th[data-col="canada"]').isVisible()), 'Canada column still visible');
-    await page.locator('label.chip', { hasText: 'Germany' }).click();
+    assert(!(await page.locator('th[data-col="uk"]').isVisible()), 'oldest choice (UK) was not replaced');
+    assert(
+      page.url().includes('d=canada%2Cgermany') || page.url().includes('d=canada,germany'),
+      'URL not updated: ' + page.url(),
+    );
+    const caTotal = await page.locator('[data-converted="canada"]').textContent();
+    assert(/₹\d{1,2},\d{2},\d{3}/.test(caTotal) && /lakh/.test(caTotal), 'Canada total not in Indian format: ' + caTotal);
     await page.locator('label.chip', { hasText: 'France' }).click();
-    const frTotal = await page.locator('td[data-col="france"]').last().textContent();
+    const frTotal = await page.locator('[data-converted="france"]').textContent();
     assert(/₹/.test(frTotal), 'no INR total for France: ' + frTotal);
-    await page.locator('label.chip', { hasText: 'France' }).click();
-    await page.locator('label.chip', { hasText: 'Germany' }).click();
-    assert(page.url().includes('d=uk%2Cgermany') || page.url().includes('d=uk,germany'), 'URL not updated: ' + page.url());
+    assert(await page.locator('th[data-col="germany"]').isVisible(), 'Germany dropped instead of Canada');
     const excl = await page.locator('tr.total-row td[data-col="germany"]').first().textContent();
     assert(excl.includes('Excludes'), 'Germany total should state the exclusion');
     assert(errors.length === 0, 'JS errors ' + errors);
@@ -188,7 +191,11 @@ try {
     const { page, ctx, errors } = await open('/cost-planner?d=uk');
     await page.fill('#p-tuition', '20000');
     const text = await page.locator('[data-lines]').textContent();
-    assert(text.includes('£20,000') && text.includes('£38,906'), 'unexpected planner output: ' + text);
+    assert(text.includes('£20,000') && text.includes('£20,558'), 'unexpected planner output: ' + text);
+    assert(text.includes('a month') && text.includes('not in the total'), 'monthly maintenance not shown per month: ' + text);
+    await page.fill('#p-months', '9');
+    const withMonths = await page.locator('[data-lines]').textContent();
+    assert(withMonths.includes('× 9 months') && withMonths.includes('£34,319'), 'months not applied: ' + withMonths);
     assert(text.includes('In INR'), 'no home-currency line');
     await page.selectOption('#p-dest', 'germany');
     assert((await page.locator('[data-excluded]').textContent()).includes('Blocked account'), 'Germany exclusion not explained');

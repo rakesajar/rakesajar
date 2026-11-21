@@ -29,58 +29,58 @@ const src = (url: string, title: string, tier: SourceRef['tier'] = 'T1'): Source
 
 // ---- Source pages (one place to fix a URL) ---------------------------------------------------
 const S = {
-  icaStp: src('https://www.ica.gov.sg/reside/STP', 'ICA — Student’s Pass'),
-  icaLtvp: src('https://www.ica.gov.sg/reside/LTVP', 'ICA — Long-Term Visit Pass'),
-  momPasses: src('https://www.mom.gov.sg/passes-and-permits', 'MOM — Passes and permits'),
-  momEp: src('https://www.mom.gov.sg/passes-and-permits/employment-pass', 'MOM — Employment Pass'),
+  icaStp: src('https://www.ica.gov.sg/reside/STP', 'ICA: Student’s Pass'),
+  icaLtvp: src('https://www.ica.gov.sg/reside/LTVP', 'ICA: Long-Term Visit Pass'),
+  momPasses: src('https://www.mom.gov.sg/passes-and-permits', 'MOM: Passes and permits'),
+  momEp: src('https://www.mom.gov.sg/passes-and-permits/employment-pass', 'MOM: Employment Pass'),
 
   usStudentVisa: src(
     'https://travel.state.gov/content/travel/en/us-visas/study/student-visa.html',
-    'U.S. Department of State — Student visa',
+    'U.S. Department of State: Student visa',
   ),
   usFees: src(
     'https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/fees/fees-visa-services.html',
-    'U.S. Department of State — Visa fees',
+    'U.S. Department of State: Visa fees',
   ),
-  iceSevis: src('https://www.ice.gov/sevis/i901', 'ICE — I-901 SEVIS fee'),
-  sitsWork: src('https://studyinthestates.dhs.gov', 'DHS — Study in the States'),
+  iceSevis: src('https://www.ice.gov/sevis/i901', 'ICE: I-901 SEVIS fee'),
+  sitsWork: src('https://studyinthestates.dhs.gov', 'DHS: Study in the States'),
   uscisOpt: src(
     'https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students',
-    'USCIS — Optional Practical Training (OPT)',
+    'USCIS: Optional Practical Training (OPT)',
   ),
   uscisStemOpt: src(
     'https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-extension-for-stem-students-stem-opt',
-    'USCIS — STEM OPT extension',
+    'USCIS: STEM OPT extension',
   ),
   fedReg: src('https://www.federalregister.gov', 'Federal Register'),
 
-  ukStudent: src('https://www.gov.uk/student-visa', 'GOV.UK — Student visa'),
-  ukMoney: src('https://www.gov.uk/student-visa/money', 'GOV.UK — Student visa: money you need'),
-  ukGraduate: src('https://www.gov.uk/graduate-visa', 'GOV.UK — Graduate visa'),
+  ukStudent: src('https://www.gov.uk/student-visa', 'GOV.UK: Student visa'),
+  ukMoney: src('https://www.gov.uk/student-visa/money', 'GOV.UK: Student visa: money you need'),
+  ukGraduate: src('https://www.gov.uk/graduate-visa', 'GOV.UK: Graduate visa'),
 
   caPermit: src(
     'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html',
-    'IRCC — Study permit',
+    'IRCC: Study permit',
   ),
   caWork: src(
     'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/work-off-campus.html',
-    'IRCC — Work off campus',
+    'IRCC: Work off campus',
   ),
   caPgwp: src(
     'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/after-graduation.html',
-    'IRCC — Work after graduation',
+    'IRCC: Work after graduation',
   ),
 
   au500: src(
     'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500',
-    'Home Affairs — Student visa (subclass 500)',
+    'Home Affairs: Student visa (subclass 500)',
   ),
   au485: src(
     'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/temporary-graduate-485',
-    'Home Affairs — Temporary Graduate visa (subclass 485)',
+    'Home Affairs: Temporary Graduate visa (subclass 485)',
   ),
 
-  deVisa: src('https://www.auswaertiges-amt.de/en/visa-service', 'Federal Foreign Office — Visa'),
+  deVisa: src('https://www.auswaertiges-amt.de/en/visa-service', 'Federal Foreign Office: Visa'),
   deMiig: src('https://www.make-it-in-germany.com/en/', 'Make it in Germany'),
 
   frVisas: src('https://france-visas.gouv.fr', 'France-Visas'),

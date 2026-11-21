@@ -5,11 +5,11 @@ import { FREE_DAILY_QUESTIONS } from '../lib/concierge';
 import { DESTINATIONS } from '../lib/store';
 
 const examples = [
-  'How many hours can I work in Canada?',
-  'UK Graduate Route after my master’s',
-  'How much is the blocked account for Germany?',
-  'Visa fees for the USA',
+  'What is tuition at French public universities for a master’s?',
+  'Where do I start looking for courses in Germany?',
   'Tell me about studying in Japan',
+  'Visa fees for the USA',
+  'UK Graduate Route after my master’s',
 ];
 ---
 <Base
@@ -19,7 +19,7 @@ const examples = [
   <PageHead
     eyebrow="Preview"
     title="Ask Pathfinder"
-    lede="Ask the way you’d ask a friend who has read the visa pages. You’ll only get back what we’ve checked, each point with its source and date. If we haven’t checked it, we’ll say so and point you to the right office."
+    lede="Ask the way you’d ask a friend who has read the official pages. You’ll only get back what we’ve checked, each point with its source and date. If we haven’t checked it, we’ll say so and point you to the right office."
   >
     <p class="small subtle" style="margin:0">
       You are talking to an automated AI service, not a person. It is not legal or immigration advice.
@@ -33,7 +33,7 @@ const examples = [
           <label for="q">Your question</label>
           <textarea id="q" name="q" rows="3" maxlength="500" required placeholder="e.g. How many hours can I work in Canada?"></textarea>
         </div>
-        <div class="grid grid-2" style="gap:16px">
+        <div class="grid grid-2" style="gap:16px;align-items:start">
           <div class="field">
             <label for="ask-dest">Destination</label>
             <select id="ask-dest" name="dest">
@@ -145,7 +145,7 @@ const examples = [
         for (const it of a.items) {
           const value = h('span', {}, it.value);
           value.dataset.fact = it.factId;
-          const li = h('li', {}, h('strong', {}, (multi ? destName(it.destination) + ' — ' : '') + it.label + ': '), value);
+          const li = h('li', {}, h('strong', {}, (multi ? destName(it.destination) + ': ' : '') + it.label + ': '), value);
           if (it.conditions) li.append(' ', h('span', { className: 'muted' }, it.conditions));
           li.append(h('div', { className: 'cite' }, link(it.citation.source), ` · verified ${formatDate(it.citation.verifiedAt)}`));
           ul.append(li);
@@ -156,7 +156,7 @@ const examples = [
         box.append(h('p', { className: 'small answer-sub' }, 'Not stated, so you can check it yourself:'));
         const ul = h('ul');
         for (const w of a.withheld)
-          ul.append(h('li', { className: 'small' }, h('strong', {}, (multi ? destName(w.destination) + ' — ' : '') + w.label + ': '), w.reason + ' ', link(w.officialPage)));
+          ul.append(h('li', { className: 'small' }, h('strong', {}, (multi ? destName(w.destination) + ': ' : '') + w.label + ': '), w.reason + ' ', link(w.officialPage)));
         box.append(ul);
       }
       if (a.reported.length) {

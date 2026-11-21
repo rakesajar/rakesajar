@@ -28,14 +28,31 @@ describe('currency conversion', () => {
 });
 
 describe('upfront official costs (FR-3 totals)', () => {
-  it('UK: visa fee + 12 × London maintenance', () => {
+  it('UK: monthly maintenance is shown per month, never multiplied by a guessed period', () => {
     const uk = upfrontEstimate(
       FACTS.filter((f) => f.destination === 'uk'),
       'GBP',
       '2026-11-21',
     );
-    expect(uk.total).toBe(558 + 1529 * 12);
-    expect(uk.lines.find((l) => l.factId === 'uk-maintenance-london')?.basis).toMatch(/planning assumption/);
+    expect(uk.total).toBe(558);
+    expect(uk.monthly).toMatchObject([{ factId: 'uk-maintenance-london', amount: 1529 }]);
+  });
+  it('labels multi-part fees distinctly', () => {
+    const sg = upfrontEstimate(
+      FACTS.filter((f) => f.destination === 'singapore'),
+      'SGD',
+      '2026-11-21',
+    );
+    expect(new Set(sg.lines.map((l) => l.label)).size).toBe(2);
+  });
+  it('formats rupees the Indian way, with lakh and crore', async () => {
+    const { inrInWords } = await import('../../src/lib/money');
+    expect(formatMoney(2022502, 'INR')).toBe('₹20,22,502');
+    expect(inrInWords(2022502, 'INR')).toBe('about ₹20.2 lakh');
+    expect(inrInWords(350000, 'INR')).toBe('about ₹3.5 lakh');
+    expect(inrInWords(23400000, 'INR')).toBe('about ₹2.3 crore');
+    expect(inrInWords(50000, 'INR')).toBe('');
+    expect(inrInWords(2022502, 'USD')).toBe('');
   });
   it('Singapore: sums multi-part fees', () => {
     expect(
@@ -100,6 +117,6 @@ describe('first-year totals: timing and freshness', () => {
       new Date('2026-12-05T00:00:00Z'),
     );
     expect(later.anyStale).toBe(true);
-    expect(later.lines.every((l) => l.stale)).toBe(true);
+    expect([...later.lines, ...later.monthly].every((l) => l.stale)).toBe(true);
   });
 });

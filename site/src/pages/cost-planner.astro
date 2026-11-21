@@ -30,6 +30,10 @@ import { DESTINATIONS } from '../lib/store';
           <label for="p-other">Other costs you expect <span class="hint">(flights, deposits; optional, in <span data-local-ccy>GBP</span>)</span></label>
           <input id="p-other" name="other" type="number" min="0" step="any" inputmode="decimal" />
         </div>
+        <div class="field" data-months-field hidden>
+          <label for="p-months">Months of funds to plan for <span class="hint">(your choice; the official page says how many months count)</span></label>
+          <input id="p-months" name="months" type="number" min="0" max="24" step="1" inputmode="numeric" />
+        </div>
         <div class="field">
           <label for="p-date">Application date</label>
           <input id="p-date" name="asOf" type="date" />
@@ -52,9 +56,9 @@ import { DESTINATIONS } from '../lib/store';
         <div class="card" data-result>
           <h2 style="font-size:1.3rem">Your first-year estimate</h2>
           <noscript><p class="muted">The planner needs JavaScript. Each destination guide lists the official costs.</p></noscript>
-          <div class="table-wrap" style="border:0">
-            <table>
-              <caption class="visually-hidden">First-year cost breakdown</caption>
+          <div class="table-wrap" style="border:0;overflow:visible">
+            <table data-planner-table>
+              <caption class="visually-hidden">Cost breakdown</caption>
               <tbody data-lines></tbody>
             </table>
           </div>
@@ -62,8 +66,8 @@ import { DESTINATIONS } from '../lib/store';
           <p class="small muted" data-nofunds hidden style="margin-top:12px"></p>
         </div>
         <p class="small muted" style="margin-top:12px">
-          Official figures are from our verified fact store. Monthly funds figures are multiplied by 12 as a planning
-          assumption. Tuition and other costs are your own figures. Confirm on the official page before paying or applying.
+          Official figures come from the pages we link to on each country guide. Tuition, other costs and the number of months
+          are your own figures. This is not a full budget. Confirm on the official page before paying or applying.
         </p>
         <a class="btn btn-secondary" data-guide-link href="/destinations/uk">Open the guide</a>
       </div>
@@ -73,7 +77,7 @@ import { DESTINATIONS } from '../lib/store';
   <script>
     import { DESTINATIONS } from '../data/destinations';
     import { FACTS } from '../data/facts';
-    import { convert, formatMoney, upfrontEstimate, type EurRates } from '../lib/money';
+    import { convert, formatMoney, inrInWords, upfrontEstimate, type EurRates } from '../lib/money';
     import { fetchFx, FX_SOURCE_LABEL } from '../lib/fx';
     import { formatDate } from '../lib/facts';
 
@@ -129,12 +133,24 @@ import { DESTINATIONS } from '../lib/store';
           ),
         );
       }
+      const monthsInput = form.elements.namedItem('months') as HTMLInputElement;
+      el<HTMLElement>('[data-months-field]').hidden = est.monthly.length === 0;
+      const months = Math.min(24, Math.max(0, Math.round(Number(monthsInput.value) || 0)));
+      let monthlyTotal = 0;
+      for (const m of est.monthly) {
+        const f = facts.find((x) => x.id === m.factId)!;
+        const note = `Per month · verified ${formatDate(f.verifiedAt)}${m.stale ? ' · re-check due' : ''}`;
+        if (months) {
+          monthlyTotal += m.amount * months;
+          lines.append(row(`${m.label} × ${months} months`, `${note} · months are your choice`, formatMoney(m.amount * months, ccy), m.factId));
+        } else lines.append(row(m.label, `${note} · not in the total until you choose months`, `${formatMoney(m.amount, ccy)} a month`, m.factId));
+      }
       const t = Math.max(0, Number(tuition.value) || 0);
       const o = Math.max(0, Number(other.value) || 0);
       if (t) lines.append(row('Tuition', 'Your figure', formatMoney(t, ccy), 'user-input'));
       if (o) lines.append(row('Other costs', 'Your figure', formatMoney(o, ccy), 'user-input'));
-      const total = est.total + t + o;
-      const totalRow = row('Total', 'First year', formatMoney(total, ccy), 'computed');
+      const total = est.total + monthlyTotal + t + o;
+      const totalRow = row('Total', 'Of the amounts above', formatMoney(total, ccy), 'computed');
       totalRow.className = 'total-row';
       lines.append(totalRow);
 
@@ -143,7 +159,14 @@ import { DESTINATIONS } from '../lib/store';
       el<HTMLElement>('[data-manual-ccy]').textContent = home.value;
       el<HTMLElement>('[data-manual]').hidden = converted !== null || home.value === ccy;
       if (home.value !== ccy) {
-        const hr = row(`In ${home.value}`, 'Indicative exchange rate', converted === null ? 'Enter a rate' : '≈ ' + formatMoney(converted, home.value), 'computed');
+        const hr = row(
+          `In ${home.value}`,
+          'Indicative exchange rate',
+          converted === null
+            ? 'Enter a rate'
+            : '≈ ' + formatMoney(converted, home.value) + (inrInWords(converted, home.value) ? ` (${inrInWords(converted, home.value)})` : ''),
+          'computed',
+        );
         hr.className = 'total-row';
         lines.append(hr);
       }
@@ -165,7 +188,7 @@ import { DESTINATIONS } from '../lib/store';
     fetchFx().then((fx) => {
       if (fx) {
         rates = fx.rates;
-        el<HTMLElement>('[data-fx-status]').textContent = `${FX_SOURCE_LABEL}, ${fx.date}. Indicative only.`;
+        el<HTMLElement>('[data-fx-status]').textContent = `${FX_SOURCE_LABEL}, ${formatDate(fx.date)}. Indicative only.`;
       } else el<HTMLElement>('[data-fx-status]').textContent = 'Live rates unavailable. Enter a rate to convert.';
       render();
     });

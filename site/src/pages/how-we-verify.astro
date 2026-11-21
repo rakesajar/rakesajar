@@ -33,9 +33,20 @@ const freshness = [
 
   <section class="section-tight">
     <div class="container prose">
+      <h2>Where the pilot is today</h2>
+      <p>
+        This is a pilot. Every fact here comes from a baseline checked on 21 November 2026 and is marked <em>seed baseline</em>.
+        The automated monitoring that will re-read the official pages on the schedule above, and record the exact sentence each
+        fact came from, is still being built.
+      </p>
+      <p>
+        Until it is running, facts are not re-checked automatically. Once a fact passes its freshness limit, it says “re-check due”
+        and Ask Pathfinder stops quoting it. We would rather show you an honest warning than a date that looks fresher than it is.
+      </p>
+
       <h2>In short</h2>
       <ul class="check-list">
-        <li>We only read from a published allowlist of government, regulator and official institution websites.</li>
+        <li>Every figure comes from a page on a published list of government, regulator and official university websites.</li>
         <li>A visa rule, fee or work right must come from a <strong>government source (T1)</strong>. University facts must come from the university’s own page (T2).</li>
         <li>If two official sources disagree, the fact is <strong>quarantined</strong> and re-checked until they agree.</li>
         <li>Future, proposed and court-blocked rules carry a status and are <strong>never shown as current</strong>.</li>
@@ -73,24 +84,13 @@ const freshness = [
       </dl>
 
       <h2 id="freshness">Freshness policy</h2>
-      <p class="muted">A fact past its limit is marked “re-check due” and won’t be stated in answers until it is verified again.</p>
+      <p class="muted">Once monitoring is running, each kind of fact will be re-read at least this often. Until then, a fact past its limit is marked “re-check due”, and Ask Pathfinder won’t quote it.</p>
       <div class="table-wrap">
         <table data-figure-ok="policy">
-          <thead><tr><th scope="col">Content</th><th scope="col">Re-checked at least every</th><th scope="col">Extra triggers</th></tr></thead>
+          <thead><tr><th scope="col">Content</th><th scope="col">Re-check limit</th><th scope="col">Extra triggers</th></tr></thead>
           <tbody>{freshness.map(([a, b, c]) => <tr><th scope="row">{a}</th><td>{b}</td><td class="muted">{c}</td></tr>)}</tbody>
         </table>
       </div>
-
-      <h2>Where the pilot is today</h2>
-      <p>
-        This is a pilot. Every fact here comes from a baseline checked on 21 November 2026 and is marked <em>seed baseline</em>.
-        The automated monitoring that will re-read the official pages on the schedule above, and record the exact sentence each
-        fact came from, is still being built.
-      </p>
-      <p>
-        Until it is running, facts are not re-checked automatically. Once a fact passes its freshness limit, it says “re-check due”
-        and Ask Pathfinder stops quoting it. We would rather show you an honest warning than a date that looks fresher than it is.
-      </p>
 
       <h2>When something is wrong</h2>
       <p>
