@@ -6,7 +6,8 @@ import { ALLOWLIST } from '../../data/allowlist';
 import { INDIA_OFFICIAL_LINKS, type Destination } from '../../data/destinations';
 import type { Fact, SourceRef, Stage } from '../../data/types';
 import { hostOf } from '../../lib/domains';
-import { formatDate, presentation } from '../../lib/facts';
+import { formatDate, freshAttrs, presentation } from '../../lib/facts';
+import ViewFlags from '../../components/ViewFlags.astro';
 import { formatMoney, upfrontEstimate } from '../../lib/money';
 import { BUILD_DATE, DESTINATIONS, FACTS, SIGNALS } from '../../lib/store';
 
@@ -173,8 +174,9 @@ const sections = [
         <div class="facts">{byTopic('fees', 'funds', 'tuition').map((f) => <FactRow fact={f} today={today} />)}</div>
         {
           estimate.lines.length > 0 && (
-            <div class="card" style="margin-top:20px">
+            <div class="card" style="margin-top:20px" {...freshAttrs(facts.filter((f) => estimate.lines.some((l) => l.factId === f.id)))}>
               <h3>Official costs for your first year, before tuition</h3>
+              <ViewFlags />
               <div class="table-wrap" style="border:0">
                 <table>
                   <caption class="visually-hidden">First-year official costs in {d.currency}</caption>
@@ -349,8 +351,9 @@ const sections = [
           Also on the allowlist for {d.inName}: {[...t1Domains, ...t2Domains].join(', ')}. <a href="/how-we-verify#sources">How sources are chosen</a>.
         </p>
         <p class="small muted">
-          Seed facts were verified on {formatDate(lastVerified)}. Automated monitoring captures the exact source passage for each fact
-          and re-checks it on the schedule in our <a href="/how-we-verify#freshness">freshness policy</a>.
+          These facts come from our seed baseline, checked on {formatDate(lastVerified)}. Automatic re-checking is not running yet
+          in this pilot, so each fact says “re-check due” once it passes the limits in our
+          <a href="/how-we-verify#freshness">freshness policy</a>.
         </p>
       </section>
     </article>

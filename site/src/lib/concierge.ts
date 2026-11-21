@@ -44,6 +44,8 @@ export type Answer =
       items: AnswerItem[];
       withheld: Withheld[];
       reported: Signal[];
+      /** True when an item has a start or end date, so the answer depends on which application the date means. */
+      dateSensitive: boolean;
       safePhrase: string;
     }
   | { kind: 'refuse'; reason: 'no_destination' | 'no_facts' | 'fraud' | 'empty'; message: string; links: SourceRef[] }
@@ -53,7 +55,7 @@ export type Answer =
 
 const DESTINATION_ALIASES: Record<DestinationSlug, string[]> = {
   singapore: ['singapore', 'sg', 'nus', 'ntu'],
-  usa: ['usa', 'u.s.', 'u.s.a.', 'america', 'united states', 'american', 'f-1', 'f1', 'opt'],
+  usa: ['usa', 'u.s.', 'u.s.a.', 'america', 'united states', 'american', 'f-1', 'f1', 'in the us', 'the us', 'stem opt'],
   uk: ['uk', 'u.k.', 'united kingdom', 'britain', 'england', 'scotland', 'wales', 'london', 'graduate route'],
   canada: ['canada', 'canadian', 'pgwp', 'toronto', 'vancouver'],
   australia: ['australia', 'australian', 'aus', 'sydney', 'melbourne', 'subclass 500', '485'],
@@ -85,7 +87,6 @@ const TOPIC_KEYWORDS: Record<Topic, string[]> = {
     'job-search',
     'stamp 1g',
     'golden visa',
-    'aps',
   ],
   fees: ['fee', 'fees', 'cost of visa', 'visa cost', 'sevis', 'charge', 'pay'],
   funds: ['funds', 'fund', 'bank', 'balance', 'maintenance', 'blocked account', 'living', 'proof of', 'money'],
@@ -95,25 +96,47 @@ const TOPIC_KEYWORDS: Record<Topic, string[]> = {
 };
 
 const FRAUD_PATTERNS = [
-  /fake (bank|document|degree|certificate|transcript|statement|letter|offer)/,
-  /forge|forged|forging/,
-  /(edit|alter|photoshop|tamper).{0,20}(statement|transcript|certificate|document|passport)/,
-  /borrow.{0,25}(money|funds).{0,40}(show|visa).{0,40}(return|(give|pay|send) (it |them )?back)/,
-  /(show|park).{0,15}(money|funds).{0,30}(temporar|just for (the )?visa)/,
-  /(hide|lie about|lie on|misrepresent|conceal).{0,30}(refusal|rejection|visa|funds|income|history)/,
-  /(overstay|work more than|work illegally|cash in hand|without (a )?permit)/,
-  /(write|draft) (my|the|an?) (entire |whole |full )?(essay|sop|statement of purpose|personal statement) for me/,
-  /write (my|the) (entire |whole )?(essay|sop|statement of purpose|personal statement)/,
-  /buy (a )?(degree|admission|visa)/,
+  // Borrowing only counts when the money is to be shown and then handed back; a real loan or sponsor is legitimate.
+  /\b(borrow|lend|lent)\b.{0,80}\b(show|visa|bank|statement)\b.{0,60}\b(return|then (give|send|pay|transfer)|(give|pay|send) (it |them )?back)/,
+  /\bborrowed (bank )?(balance|funds|money)\b/,
+  /\b(show|park|deposit|put)\b.{0,30}\b(money|funds|balance)\b.{0,60}\b(temporar|just for (the )?visa|then (return|give|send|pay|transfer)|give (it |them )?back|return (it|them))/,
+  /\b(hide|lie about|lie on|lie to|misrepresent|conceal|not mention|not disclose|don'?t (mention|disclose))\b.{0,40}\b(refusal|refused|rejection|rejected|visa|funds|income|history|gap|criminal|record|embassy|officer)/,
+  /\b(overstay|work more than (allowed|permitted|the limit)|work illegally|cash in hand|without (a )?(work )?permit|work off the books)/,
+  /\b(write|draft|do)\b (my|the|an?) (entire |whole |full |complete )?(essay|sop|statement of purpose|personal statement|lor|recommendation letter)\b.{0,20}(for me)?/,
+  /\b(buy|purchase)\b (a |an )?(degree|admission|visa|seat|certificate)/,
 ];
+
+/** Word-proximity rules: a misrepresentation verb within a few words of a document or money noun. */
+const FRAUD_NEAR: { verbs: RegExp; nouns: RegExp; gap: number }[] = [
+  {
+    verbs: /^(fake|faking|faked|forge|forged|forging|fabricate|fabricated|counterfeit|doctor|doctored)$/,
+    nouns:
+      /^(bank|documents?|degrees?|certificates?|transcripts?|statements?|letters?|offers?|marksheets?|payslips?|sponsors?|itr|passports?|visas?)$/,
+    gap: 5,
+  },
+  {
+    verbs: /^(edit|edited|alter|altered|photoshop|photoshopped|tamper|tampered|change|modify|modified|inflate|inflated)$/,
+    nouns: /^(statements?|transcripts?|certificates?|documents?|passports?|marksheets?|grades|marks|balance|payslips?)$/,
+    gap: 5,
+  },
+];
+
+function nearMatch(text: string): boolean {
+  const words = text.split(/[^a-z0-9']+/).filter(Boolean);
+  return FRAUD_NEAR.some(({ verbs, nouns, gap }) =>
+    words.some((w, i) => verbs.test(w) && words.slice(i + 1, i + 1 + gap).some((n) => nouns.test(n))),
+  );
+}
 
 const DISTRESS_PATTERNS = [
-  /kill myself|end my life|suicid|want to die|self[- ]harm|hurt myself|no reason to live/,
-  /(can'?t|cannot) (cope|go on|take it)|hopeless|worthless|panic attack|breaking down/,
-  /(parents|family).{0,30}(will|would) (kill|disown|never forgive)/,
+  /kill myself|end my life|end it all|suicid|want to die|wanna die|self[- ]harm|hurt myself|no reason to live|better off dead/,
+  /(can'?t|cannot) (cope|go on|take it|do this|handle (this|it))|hopeless|worthless|panic attacks?|breaking down|falling apart/,
+  /\b(i'?m|i am|i feel( like)?) (a )?(failure|useless|a burden|so ashamed|ashamed|disappointment)/,
+  /(parents|family|dad|mum|mom|father|mother).{0,40}(disappointed|kill|disown|never forgive|ashamed of me|hate me)/,
+  /everything is (ruined|over)|my life is (ruined|over)|ruined my life/,
 ];
 
-const WELLBEING_LINKS: SourceRef[] = [
+export const WELLBEING_LINKS: SourceRef[] = [
   { url: 'https://telemanas.mohfw.gov.in', tier: 'T1', title: 'Tele-MANAS (Government of India mental health helpline)' },
 ];
 
@@ -134,9 +157,12 @@ function containsTerm(text: string, term: string): boolean {
 
 export function detectDestinations(q: string): DestinationSlug[] {
   const text = normalise(q);
-  return (Object.keys(DESTINATION_ALIASES) as DestinationSlug[]).filter((slug) =>
+  const found = (Object.keys(DESTINATION_ALIASES) as DestinationSlug[]).filter((slug) =>
     DESTINATION_ALIASES[slug].some((alias) => containsTerm(text, alias)),
   );
+  // Upper-case "US" is the country; lower-case "us" is the pronoun.
+  if (!found.includes('usa') && /(^|[^A-Za-z])US([^A-Za-z]|$)/.test(q)) found.push('usa');
+  return found;
 }
 
 export function detectTopics(q: string): Topic[] {
@@ -152,7 +178,7 @@ export function detectTopics(q: string): Topic[] {
 
 export function isFraudAdjacent(q: string): boolean {
   const text = normalise(q);
-  return FRAUD_PATTERNS.some((p) => p.test(text));
+  return nearMatch(text) || FRAUD_PATTERNS.some((p) => p.test(text));
 }
 
 export function isDistress(q: string): boolean {
@@ -165,13 +191,27 @@ export function isDistress(q: string): boolean {
 const OVERVIEW = /\b(tell me about|overview|summary|summarise|summarize|basics|what about|how about|studying in|study in)\b/;
 /** Subjects with no verified facts in the pilot store: never answered with an adjacent snapshot. */
 const UNSUPPORTED =
-  /\b(scholarships?|deadlines?|rankings?|ranked|ielts|toefl|pte|gre|gmat|intakes?|loans?|accommodation|insurance|acceptance rate)\b/;
+  /\b(scholarships?|deadlines?|rankings?|ranked|ielts|toefl|pte|duolingo|gre|gmat|intakes?|loans?|accommodation|housing|insurance|acceptance rate|wife|husband|spouse|partner|dependants?|dependents?|children|kids|family visa|refund|refundable|ihs|health surcharge|nhs|permanent residen\w*|pr|citizenship|interview|refusal rate|success rate|chances?|wait(ing)? time|processing time|how long does it take|biometrics?|medical|police|aps|apostille)\b/;
+
+/**
+ * Qualifiers that narrow a question to a case our facts may not cover. Items in the topic are kept only if
+ * the fact text mentions the qualifier; otherwise we refuse rather than answer the general rule.
+ */
+const QUALIFIERS: { ask: RegExp; fact: RegExp }[] = [
+  { ask: /\b(breaks?|holidays?|vacations?|summer|winter break)\b/, fact: /holiday|vacation|break/ },
+  { ask: /\b(off[- ]campus)\b/, fact: /off campus|off-campus/ },
+  { ask: /\b(on[- ]campus)\b/, fact: /on campus|on-campus/ },
+];
+
+/** True when the question is about a subject the pilot fact store does not cover. */
+export function isUnsupportedSubject(q: string): boolean {
+  return UNSUPPORTED.test(normalise(q));
+}
 const FILLER = new Set(['and', 'the', 'for', 'vs', 'versus', 'compare', 'what', 'about']);
 
 /** True for broad questions where a snapshot (permission, work, after graduation) is the right answer. */
 export function isGenericOverview(q: string): boolean {
   const text = normalise(q);
-  if (UNSUPPORTED.test(text)) return false;
   if (OVERVIEW.test(text)) return true;
   let rest = text;
   for (const aliases of Object.values(DESTINATION_ALIASES))
@@ -225,7 +265,7 @@ export function ask(input: AskInput, store: Store): Answer {
       kind: 'refuse',
       reason: 'fraud',
       message:
-        'I can’t help with that. Misrepresenting documents, funds or history can lead to visa refusal and long-term bans. I can explain the official requirements so you can plan legitimately — for example, how much proof of funds a destination asks for, or what an essay should cover so you can write it yourself.',
+        'I can’t help with that. Misrepresenting documents, funds or history can lead to visa refusal and long-term bans. I can explain the official requirements so you can plan legitimately: for example, how much proof of funds a destination asks for, or what an essay should cover so you can write it yourself.',
       links: [],
     };
   }
@@ -239,6 +279,10 @@ export function ask(input: AskInput, store: Store): Answer {
       links: [],
     };
   }
+
+  // A specific subject we hold no facts on (spouse visas, refunds, IELTS…) is refused before topic matching,
+  // so a keyword like "visa" or "work" can't pull in a neighbouring fact as if it answered the question.
+  if (isUnsupportedSubject(q)) return noFacts(dests, store);
 
   let topics = detectTopics(q);
   if (topics.length === 0) {
@@ -254,7 +298,15 @@ export function ask(input: AskInput, store: Store): Answer {
   for (const slug of dests) {
     const dest = store.destinations.find((d) => d.slug === slug);
     const official = dest?.portals[0];
-    const candidates = store.facts.filter((f) => f.destination === slug && topics.includes(f.topic));
+    const text = normalise(q);
+    const active = QUALIFIERS.filter((qq) => qq.ask.test(text));
+    const candidates = store.facts.filter(
+      (f) =>
+        f.destination === slug &&
+        topics.includes(f.topic) &&
+        // A qualified work question ("during holidays") only matches facts that mention that case.
+        (f.topic !== 'work' || active.every((qq) => qq.fact.test(f.value.toLowerCase()))),
+    );
     for (const f of candidates) {
       // Outside the user's application date window — not the applicable rule (CA-3).
       if ((f.status === 'in_force' || f.status === 'announced') && !appliesOn(f, input.asOf)) continue;
@@ -293,7 +345,7 @@ export function ask(input: AskInput, store: Store): Answer {
 
   if (items.length === 0 && withheld.length === 0) return noFacts(dests, store);
 
-  const reported = store.signals.filter((s) => dests.includes(s.destination));
+  const reported = store.signals.filter((s) => dests.includes(s.destination) && s.topics.some((t) => topics.includes(t)));
   return {
     kind: 'answer',
     destinations: dests,
@@ -302,6 +354,10 @@ export function ask(input: AskInput, store: Store): Answer {
     items,
     withheld,
     reported,
+    dateSensitive: items.some((i) => {
+      const f = store.facts.find((x) => x.id === i.factId);
+      return !!(f?.effectiveFrom || f?.effectiveTo);
+    }),
     safePhrase: SAFE_PHRASE,
   };
 }

@@ -181,7 +181,71 @@ describe('overview fallback', () => {
     expect(isGenericOverview('Canada')).toBe(true);
     expect(isGenericOverview('UK vs Australia')).toBe(true);
     expect(isGenericOverview('Tell me about studying in Japan')).toBe(true);
-    expect(isGenericOverview('Tell me about scholarships in Japan')).toBe(false);
     expect(isGenericOverview('Japan engineering programmes')).toBe(false);
+  });
+});
+
+describe('review findings: no adjacent answers, no false triggers', () => {
+  it.each([
+    'I will fake my bank statement for Canada',
+    'Can I use a borrowed bank balance for my Canada visa?',
+    'my dad will lend me money to show in the bank for the visa then I give it back',
+    'Can I change the balance on my bank statement for the UK visa?',
+    'Should I not mention my previous visa refusal to the embassy?',
+  ])('refuses fraud phrasing: %s', (text) => {
+    expect(q(text)).toMatchObject({ kind: 'refuse', reason: 'fraud' });
+  });
+
+  it.each([
+    'my parents would be so disappointed, I feel like a failure, UK visa refused',
+    'I can’t do this anymore, everything is ruined',
+    'I am a burden to my family after the rejection',
+  ])('responds with care: %s', (text) => {
+    expect(q(text).kind).toBe('care');
+  });
+
+  it.each([
+    'UK IHS fee',
+    'Is the UK student visa fee refundable?',
+    'Can my wife work in Australia?',
+    'Does PGWP need IELTS?',
+    'Tell me about scholarships in Japan',
+    'Do I need APS for Germany?',
+    'Canada PR after study',
+  ])('refuses subjects we hold no facts on: %s', (text) => {
+    expect(q(text)).toMatchObject({ kind: 'refuse', reason: 'no_facts' });
+  });
+
+  it('refuses a qualified work question when no fact covers that case', () => {
+    expect(q('Can I work 40 hours in Canada during breaks?')).toMatchObject({ kind: 'refuse', reason: 'no_facts' });
+    const ie = q('Can I work during holidays in Ireland?');
+    expect(ie.kind === 'answer' && ie.items.map((i) => i.factId)).toContain('ie-work');
+  });
+
+  it('does not treat "opt" as the USA, and recognises upper-case US', () => {
+    expect(detectDestinations('I opt for Canada, how many hours can I work?')).toEqual(['canada']);
+    expect(detectDestinations('Can I work off-campus in the US?')).toEqual(['usa']);
+    expect(detectDestinations('US visa fee')).toEqual(['usa']);
+    expect(detectDestinations('tell us about Japan')).toEqual(['japan']);
+  });
+
+  it('only attaches reports related to the question topic', () => {
+    const work = q('How many hours can I work in the UK?');
+    expect(work.kind === 'answer' && work.reported).toEqual([]);
+  });
+
+  it('wellbeing links are on the official allowlist', async () => {
+    const { WELLBEING_LINKS } = await import('../../src/lib/concierge');
+    const { classifyUrl } = await import('../../src/lib/domains');
+    for (const l of WELLBEING_LINKS) expect(classifyUrl(l.url, ['india']).allowed).toBe(true);
+  });
+});
+
+describe('date-sensitive answers', () => {
+  it('flags answers whose rule has a start or end date', () => {
+    const a = q('UK graduate route');
+    expect(a.kind === 'answer' && a.dateSensitive).toBe(true);
+    const b = q('How many hours can I work in Japan?');
+    expect(b.kind === 'answer' && b.dateSensitive).toBe(false);
   });
 });

@@ -115,12 +115,19 @@ import { DESTINATIONS } from '../lib/store';
       el<HTMLAnchorElement>('[data-guide-link]').textContent = `Open the ${d.name} guide`;
       const date = asOf.value || new Date().toISOString().slice(0, 10);
       const facts = FACTS.filter((f) => f.destination === d.slug);
-      const est = upfrontEstimate(facts, ccy, date);
+      const est = upfrontEstimate(facts, ccy, date, new Date());
       const lines = el<HTMLElement>('[data-lines]');
       lines.replaceChildren();
       for (const l of est.lines) {
         const f = facts.find((x) => x.id === l.factId)!;
-        lines.append(row(l.label, `${l.basis} · verified ${formatDate(f.verifiedAt)}`, formatMoney(l.amount, ccy), l.factId));
+        lines.append(
+          row(
+            l.label,
+            `${l.basis} · verified ${formatDate(f.verifiedAt)}${l.stale ? ' · re-check due, confirm on the official page' : ''}`,
+            formatMoney(l.amount, ccy),
+            l.factId,
+          ),
+        );
       }
       const t = Math.max(0, Number(tuition.value) || 0);
       const o = Math.max(0, Number(other.value) || 0);

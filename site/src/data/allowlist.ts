@@ -92,6 +92,7 @@ export const ALLOWLIST: Record<DestinationSlug | OriginSlug, AllowEntry[]> = {
     { pattern: 'incometax.gov.in', tier: 'T1' },
     { pattern: 'mea.gov.in', tier: 'T1' },
     { pattern: 'pib.gov.in', tier: 'T1' },
+    { pattern: 'mohfw.gov.in', tier: 'T1', note: 'Ministry of Health (Tele-MANAS helpline)' },
   ],
 };
 

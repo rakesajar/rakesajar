@@ -31,6 +31,9 @@ export const FIGURE = new RegExp(
     String.raw`\b(?:AUD|NZD|AED|SGD|USD|GBP|CAD|EUR|JPY|INR)\s?\d`,
     String.raw`\b\d+(?:[.,]\d+)?[\s-]?(?:hours?|hrs?|h|months?|mo|years?|yrs?|days?|weeks?|wks?)\b`,
     String.raw`\b\d+(?:\.\d+)?\s?%`,
+    // Bare large numbers (caps, amounts without a symbol) and spelled-out durations.
+    String.raw`\b\d{1,3}(?:,\d{3})+\b`,
+    String.raw`\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|eighteen|twenty|thirty|forty|forty-eight)[\s-](?:hours?|days?|weeks?|months?|years?)\b`,
   ].join('|'),
   'i',
 );

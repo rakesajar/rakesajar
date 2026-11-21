@@ -72,6 +72,8 @@ export interface Fact {
   volatility: Volatility;
   /** True for indicative ranges that are not an official fee. */
   estimate?: boolean;
+  /** `post_study` for fees paid after graduation, which are not part of first-year costs. */
+  costStage?: 'post_study';
   /** Free-text explanation shown with non-current statuses. */
   statusNote?: string;
 }
@@ -85,6 +87,8 @@ export interface Signal {
   /** Official page the Monitor agent re-checks for confirmation. */
   watch: SourceRef;
   volatility: Volatility;
+  /** Topics the report concerns, so it is only shown with related answers. */
+  topics: Topic[];
 }
 
 export interface ChangeEntry {

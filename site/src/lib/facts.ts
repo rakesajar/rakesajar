@@ -114,3 +114,21 @@ export function formatDate(iso: string): string {
   const d = parseDate(iso);
   return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
+
+/**
+ * Data attributes that let the browser re-check freshness and effective dates at view time (site.ts),
+ * so an old static build never presents an expired verification or a replaced rule as current.
+ * For a group (e.g. a total) the oldest verification and the strictest max age win.
+ */
+export function freshAttrs(facts: readonly Fact[]): Record<string, string> {
+  if (facts.length === 0) return {};
+  const attrs: Record<string, string> = {
+    'data-verified': facts.map((f) => f.verifiedAt).sort()[0],
+    'data-max-age': String(Math.min(...facts.map(maxAgeDays))),
+  };
+  const ends = facts.map((f) => f.effectiveTo).filter(Boolean) as string[];
+  const starts = facts.map((f) => f.effectiveFrom).filter(Boolean) as string[];
+  if (ends.length) attrs['data-effective-to'] = ends.sort()[0];
+  if (starts.length) attrs['data-effective-from'] = starts.sort()[0];
+  return attrs;
+}

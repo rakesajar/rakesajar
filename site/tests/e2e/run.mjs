@@ -23,6 +23,23 @@ const FX = {
   rates: { INR: 92, USD: 1.08, GBP: 0.86, CAD: 1.5, AUD: 1.65, SGD: 1.45, NZD: 1.8, JPY: 165 },
 };
 
+// The suite runs on a pinned clock: freshness and effective dates depend on "today", and the gate must not turn red
+// just because time passed. Tests that need another date pass { now }.
+const PINNED_NOW = '2026-11-21T12:00:00Z';
+const pinClock = (iso) => {
+  const fixed = Date.parse(iso);
+  const RealDate = Date;
+  class PinnedDate extends RealDate {
+    constructor(...a) {
+      super(...(a.length ? a : [fixed]));
+    }
+    static now() {
+      return fixed;
+    }
+  }
+  globalThis.Date = PinnedDate;
+};
+
 const results = [];
 async function check(name, fn) {
   try {
@@ -73,6 +90,7 @@ async function open(path, opts = {}) {
     viewport: { width: opts.width ?? 1280, height: 900 },
     colorScheme: opts.scheme ?? 'light',
   });
+  await ctx.addInitScript(pinClock, opts.now ?? PINNED_NOW);
   await ctx.route(/frankfurter/, (r) => (opts.fxDown ? r.abort() : r.fulfill({ json: FX })));
   const page = await ctx.newPage();
   const errors = [];
@@ -194,21 +212,38 @@ try {
     await c.ctx.close();
   });
 
-  await check('AC-8 stale facts flagged at view time', async () => {
-    const ctx = await browser.newContext();
-    await ctx.addInitScript(() => {
-      const future = Date.parse('2027-06-01T00:00:00Z');
-      Date.now = () => future;
-    });
-    const page = await ctx.newPage();
-    await page.goto(BASE + '/destinations/uk', { waitUntil: 'networkidle' });
-    assert(await page.locator('#fact-uk-visa-fee .stale-flag').isVisible(), 'stale flag not shown');
+  await check('AC-8 stale facts flagged at view time, everywhere figures appear', async () => {
+    const fresh = await open('/destinations/uk');
+    assert((await fresh.page.locator('.stale-flag:visible').count()) === 0, 'flags visible within max age');
+    await fresh.ctx.close();
+    for (const path of ['/destinations/uk', '/compare', '/']) {
+      const { page, ctx } = await open(path, { now: '2026-12-15T12:00:00Z' });
+      assert((await page.locator('.stale-flag:visible').count()) > 0, `no stale flags on ${path} after max age`);
+      await ctx.close();
+    }
+    const { page, ctx } = await open('/destinations/uk', { now: '2026-12-15T12:00:00Z' });
+    assert(await page.locator('#fact-uk-visa-fee .stale-flag').isVisible(), 'UK visa fee not flagged');
     assert(await page.locator('[data-stale-summary]').isVisible(), 'stale summary not shown');
     await ctx.close();
-    const fresh = await open('/destinations/uk');
-    // On a fresh build the flag is hidden only if within max age; this asserts the mechanism toggles, not the date.
-    assert((await fresh.page.locator('.stale-flag').count()) > 0, 'no stale flags rendered');
-    await fresh.ctx.close();
+  });
+
+  await check('CA-3 effective-date changes are flagged on an old build', async () => {
+    const { page, ctx } = await open('/destinations/uk', { now: '2027-01-05T12:00:00Z' });
+    assert(await page.locator('#fact-uk-graduate-2y .date-flag[data-when="ended"]').isVisible(), 'ended rule not flagged');
+    assert(await page.locator('#fact-uk-graduate-18m .date-flag[data-when="started"]').isVisible(), 'started rule not flagged');
+    await ctx.close();
+  });
+
+  await check('Planner and concierge flag or withhold stale figures', async () => {
+    const { page, ctx } = await open('/cost-planner?d=uk', { now: '2026-12-15T12:00:00Z' });
+    assert((await page.locator('[data-lines]').textContent()).includes('re-check due'), 'planner does not flag stale lines');
+    await ctx.close();
+    const a = await open('/ask', { now: '2026-12-15T12:00:00Z' });
+    await a.page.fill('#q', 'UK visa fee');
+    await a.page.click('button[type=submit]');
+    const t = await a.page.locator('[data-answers] article').first().textContent();
+    assert(t.includes('Not stated') && !t.includes('£558'), 'stale fee was stated: ' + t.slice(0, 200));
+    await a.ctx.close();
   });
 
   await check('AC-10 accessibility (axe: no serious/critical), light and dark', async () => {
@@ -251,11 +286,11 @@ try {
     const { page, ctx } = await open('/');
     const footer = (await page.locator('footer').textContent()).replace(/\s+/g, ' ');
     for (const s of [
-      'AI-generated',
-      'no human review',
+      'AI-generated information service',
+      'with no human review',
       'not legal, immigration or financial advice',
-      'no commissions',
-      'guarantee',
+      'we do not predict or guarantee admission or visa outcomes',
+      'We take no commissions',
     ])
       assert(footer.includes(s), 'footer missing: ' + s);
     await ctx.close();

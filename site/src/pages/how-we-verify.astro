@@ -9,7 +9,7 @@ const statuses = [
   ['info', 'Announced', 'Officially announced with a future start date. Shown with that date, never as today’s rule.'],
   ['warn', 'Proposed, not final', 'A proposal only. Never shown as in force and never added to totals.'],
   ['bad', 'In court', 'Blocked or challenged in court. Never shown as in force.'],
-  ['bad', 'Being re-checked', 'Official sources disagree. The fact is quarantined and re-checked every hour until they agree.'],
+  ['bad', 'Being re-checked', 'Official sources disagree. We keep the figure out of totals and answers until they agree.'],
   ['warn', 'Re-check due', 'Older than its freshness limit. Shown with a warning and never used in answers until verified again.'],
   ['plain', 'Reported', 'Seen in reputable news or legal alerts but not yet confirmed officially. Never shown as fact.'],
 ];
@@ -81,17 +81,21 @@ const freshness = [
         </table>
       </div>
 
-      <h2>About the seed baseline</h2>
+      <h2>Where the pilot is today</h2>
       <p>
-        Pathfinder launched from a baseline of facts verified on 21 November 2026. Those facts are marked <em>seed baseline</em>.
-        Automated monitoring is now capturing the exact source passage for each fact and re-verifying it on the schedule above.
-        Until a fact is re-verified, it shows “re-check due” once its freshness limit passes, so you can always tell how current it is.
+        This is a pilot. Every fact here comes from a baseline checked on 21 November 2026 and is marked <em>seed baseline</em>.
+        The automated monitoring that will re-read the official pages on the schedule above, and record the exact sentence each
+        fact came from, is still being built.
+      </p>
+      <p>
+        Until it is running, facts are not re-checked automatically. Once a fact passes its freshness limit, it says “re-check due”
+        and Ask Pathfinder stops quoting it. We would rather show you an honest warning than a date that looks fresher than it is.
       </p>
 
       <h2>When something is wrong</h2>
       <p>
-        If a fact is wrong, re-verification runs straight away. A wrong published fact is rolled back automatically when a later
-        check contradicts it, and the correction appears in the change log.
+        When monitoring is live, a fact that a later check contradicts will be withdrawn and the correction will appear in the
+        change log. For now, if something looks wrong, trust the official page we link to over us.
       </p>
     </div>
   </section>

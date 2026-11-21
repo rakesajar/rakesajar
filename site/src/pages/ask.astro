@@ -42,9 +42,9 @@ const examples = [
             </select>
           </div>
           <div class="field">
-            <label for="ask-date">When will you apply?</label>
+            <label for="ask-date">When will you apply for it?</label>
             <input id="ask-date" name="asOf" type="date" />
-            <span class="hint">Rules can change. We answer for this date.</span>
+            <span class="hint">We use the rules for this date. For visas after graduation, that’s when you’ll apply for that visa, usually after your course ends.</span>
           </div>
         </div>
         <div class="row" style="justify-content:space-between">
@@ -166,6 +166,14 @@ const examples = [
       }
       box.append(
         h('p', { className: 'small muted answer-foot' }, `Rules applied for an application on ${formatDate(a.asOf)}. ${a.safePhrase}`),
+      );
+      if (a.dateSensitive)
+        box.append(
+          h(
+            'p',
+            { className: 'small muted answer-foot' },
+            'This rule changes on a set date. For a visa you apply for after graduating, use the date you expect to apply for that visa, not your student visa.',
+          ),
       );
       return box;
     }

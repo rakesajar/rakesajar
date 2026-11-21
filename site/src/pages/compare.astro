@@ -3,7 +3,8 @@ import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
 import type { Fact } from '../data/types';
 import { hostOf } from '../lib/domains';
-import { formatDate, presentation, STATUS_LABEL } from '../lib/facts';
+import { formatDate, freshAttrs, presentation, STATUS_LABEL } from '../lib/facts';
+import ViewFlags from '../components/ViewFlags.astro';
 import { formatMoney, HOME_CURRENCIES, upfrontEstimate } from '../lib/money';
 import { FX_SOURCE_LABEL } from '../lib/fx';
 import { BUILD_DATE, DESTINATIONS, FACTS, SIGNALS } from '../lib/store';
@@ -113,7 +114,7 @@ const changing = (slug: string) =>
                             {list.map((f) => {
                               const p = presentation(f, today);
                               return (
-                                <li>
+                                <li {...freshAttrs([f])}>
                                   {list.length > 1 && <div class="small subtle">{f.label}</div>}
                                   <div style="font-weight:600" data-fact={f.id}>
                                     {p === 'not_current' ? <s>{f.value}</s> : f.value}
@@ -126,6 +127,7 @@ const changing = (slug: string) =>
                                     </a>{' '}
                                     · {formatDate(f.verifiedAt)}
                                   </div>
+                                  <ViewFlags />
                                 </li>
                               );
                             })}
@@ -159,7 +161,7 @@ const changing = (slug: string) =>
                 DESTINATIONS.map((d) => {
                   const e = estimates[d.slug];
                   return (
-                    <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)}>
+                    <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)} {...freshAttrs(FACTS.filter((f) => e.lines.some((l) => l.factId === f.id)))}>
                       {e.lines.length ? (
                         <>
                           <div data-fact={e.lines.map((l) => l.factId).join(' ')} data-total={e.total} data-ccy={d.currency}>
@@ -167,6 +169,7 @@ const changing = (slug: string) =>
                           </div>
                           <div class="cite">{[...new Set(e.lines.map((l) => l.label))].join(' + ')}</div>
                           {e.excluded.length > 0 && <div class="cite">Excludes: {e.excluded.map((x) => x.label).join(', ')}</div>}
+                          <ViewFlags />
                         </>
                       ) : (
                         <>

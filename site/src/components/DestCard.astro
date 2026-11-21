@@ -1,7 +1,8 @@
 ---
 import type { Destination } from '../data/destinations';
 import type { Fact } from '../data/types';
-import { appliesOn, presentation } from '../lib/facts';
+import { appliesOn, freshAttrs, presentation } from '../lib/facts';
+import ViewFlags from './ViewFlags.astro';
 
 interface Props {
   destination: Destination;
@@ -32,7 +33,9 @@ const changing = facts.filter((f) => f.destination === d.slug && ['upcoming', 'n
         rows.map((r) => (
           <div>
             <dt>{r.k}</dt>
-            <dd data-fact={r.f!.id}>{r.f!.value}</dd>
+            <dd data-fact={r.f!.id} {...freshAttrs([r.f!])}>
+              {r.f!.value} <ViewFlags />
+            </dd>
           </div>
         ))
       }

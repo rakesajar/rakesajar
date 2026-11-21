@@ -1,10 +1,11 @@
 # Progress
 
 ## Now
-Pilot website (free tier) implemented in `site/` on branch `ccr-8f80979e-5gwduk`. Status: candidate, awaiting independent review.
+Pilot website (free tier) in `site/` on branch `ccr-8f80979e-5gwduk`: travel-documents redesign done; all independent-review
+BLOCKER/MAJOR findings fixed (see `docs/reviews-pilot-website.md`). Status: candidate, awaiting delta review + final gate.
 
 ## Next
-Independent branch review → fix findings → final gate run on the committed candidate → push.
+Delta review of the fix commit → final gate run on the committed candidate → push. Merge/deploy need product-owner approval.
 
 ## Verified
 See latest gate receipt reported in the session. Unexecuted: `npm run check:sources` (egress to official domains blocked).

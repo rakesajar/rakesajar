@@ -431,6 +431,7 @@ export const FACTS: Fact[] = [
     destination: 'australia',
     topic: 'fees',
     label: 'Temporary Graduate visa (485) fee',
+    costStage: 'post_study',
     value: 'AUD 5,750',
     money: { amount: 5750, currency: 'AUD', per: 'once' },
     volatility: 'volatile',
@@ -720,6 +721,7 @@ export const SIGNALS: Signal[] = [
     loggedAt: SEED_DATE,
     watch: S.ukGraduate,
     volatility: 'volatile',
+    topics: ['post_study'],
   },
   {
     id: 'au-fees-caps',
@@ -728,6 +730,7 @@ export const SIGNALS: Signal[] = [
     loggedAt: SEED_DATE,
     watch: S.au500,
     volatility: 'volatile',
+    topics: ['fees', 'permission', 'policy'],
   },
   {
     id: 'fr-fee-waivers',
@@ -736,6 +739,7 @@ export const SIGNALS: Signal[] = [
     loggedAt: SEED_DATE,
     watch: S.frMesr,
     volatility: 'volatile',
+    topics: ['tuition'],
   },
   {
     id: 'ie-vetting',
@@ -744,6 +748,7 @@ export const SIGNALS: Signal[] = [
     loggedAt: SEED_DATE,
     watch: S.ieImm,
     volatility: 'standard',
+    topics: ['funds', 'permission'],
   },
   {
     id: 'nz-short-graduate-visa',
@@ -752,6 +757,7 @@ export const SIGNALS: Signal[] = [
     loggedAt: SEED_DATE,
     watch: S.nzImm,
     volatility: 'standard',
+    topics: ['post_study'],
   },
 ];
 

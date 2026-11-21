@@ -1,6 +1,7 @@
 ---
 import type { Fact } from '../data/types';
-import { formatDate, maxAgeDays, presentation } from '../lib/facts';
+import { formatDate, freshAttrs, presentation } from '../lib/facts';
+import ViewFlags from './ViewFlags.astro';
 import SourceLink from './SourceLink.astro';
 import StatusPill from './StatusPill.astro';
 
@@ -18,8 +19,7 @@ const notCurrent = p === 'not_current' || p === 'expired';
 ---
 <div
   class:list={['fact', { 'not-current': notCurrent }]}
-  data-verified={fact.verifiedAt}
-  data-max-age={maxAgeDays(fact)}
+  {...freshAttrs([fact])}
   id={anchor ? `fact-${fact.id}` : undefined}
 >
   <div class="fact-label">{label ?? fact.label}</div>
@@ -34,6 +34,6 @@ const notCurrent = p === 'not_current' || p === 'expired';
     <span>
       Verified {formatDate(fact.verifiedAt)}{fact.verification === 'seed' && <> · seed baseline</>}
     </span>
-    <span class="pill warn stale-flag" hidden>Re-check due: confirm on the official page</span>
+    <ViewFlags />
   </div>
 </div>

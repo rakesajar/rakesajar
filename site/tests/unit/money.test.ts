@@ -74,3 +74,32 @@ describe('upfront official costs (FR-3 totals)', () => {
     ).toBe(0);
   });
 });
+
+describe('first-year totals: timing and freshness', () => {
+  it('Australia: the post-study 485 fee is not a first-year cost', () => {
+    const au = upfrontEstimate(
+      FACTS.filter((f) => f.destination === 'australia'),
+      'AUD',
+      '2026-11-21',
+    );
+    expect(au.lines.map((l) => l.factId)).not.toContain('au-485-fee');
+    expect(au.total).toBe(2500 + 29710);
+  });
+  it('flags lines past their freshness limit at the viewer’s time', () => {
+    const fresh = upfrontEstimate(
+      FACTS.filter((f) => f.destination === 'uk'),
+      'GBP',
+      '2026-11-21',
+      new Date('2026-11-22T00:00:00Z'),
+    );
+    expect(fresh.anyStale).toBe(false);
+    const later = upfrontEstimate(
+      FACTS.filter((f) => f.destination === 'uk'),
+      'GBP',
+      '2026-11-21',
+      new Date('2026-12-05T00:00:00Z'),
+    );
+    expect(later.anyStale).toBe(true);
+    expect(later.lines.every((l) => l.stale)).toBe(true);
+  });
+});

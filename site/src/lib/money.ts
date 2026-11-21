@@ -4,7 +4,7 @@
  * facts are excluded and reported so the UI can say why.
  */
 import type { Fact, Money, Period } from '../data/types';
-import { appliesOn, NOT_CURRENT } from './facts';
+import { appliesOn, isStale, NOT_CURRENT } from './facts';
 
 export const HOME_CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'SGD', 'AUD', 'CAD', 'NZD', 'JPY', 'AED'] as const;
 export type HomeCurrency = (typeof HOME_CURRENCIES)[number];
@@ -43,6 +43,9 @@ export interface CostLine {
   amount: number;
   currency: string;
   basis: string;
+  /** Past its freshness limit at `now`: still shown, but flagged "re-check due". */
+  stale: boolean;
+  verifiedAt: string;
 }
 
 export interface Exclusion {
@@ -56,6 +59,8 @@ export interface UpfrontEstimate {
   lines: CostLine[];
   excluded: Exclusion[];
   total: number;
+  /** True when any line in the total is due for re-checking. */
+  anyStale: boolean;
 }
 
 function moneyOf(f: Fact): Money[] {
@@ -65,21 +70,30 @@ function moneyOf(f: Fact): Money[] {
 /**
  * First-year official costs: one-off visa/application fees + one year of required funds.
  * Tuition is user-entered (from the offer letter) because it varies by institution.
+ * Fees paid after graduation (`costStage: 'post_study'`) are not first-year costs and are left out.
+ * `now` (the viewer's clock) marks lines past their freshness limit so the UI can flag them.
  */
-export function upfrontEstimate(facts: readonly Fact[], currency: string, asOf: string): UpfrontEstimate {
+export function upfrontEstimate(
+  facts: readonly Fact[],
+  currency: string,
+  asOf: string,
+  now: Date = new Date(asOf + 'T00:00:00Z'),
+): UpfrontEstimate {
   const lines: CostLine[] = [];
   const excluded: Exclusion[] = [];
   for (const f of facts) {
     if (f.topic !== 'fees' && f.topic !== 'funds') continue;
-    if (f.estimate) continue;
+    if (f.estimate || f.costStage === 'post_study') continue;
     if (NOT_CURRENT.has(f.status)) {
       excluded.push({ factId: f.id, label: f.label, reason: f.statusNote ?? 'Not in force' });
       continue;
     }
     if (!appliesOn(f, asOf)) continue;
+    const stale = isStale(f, now);
+    const meta = { stale, verifiedAt: f.verifiedAt };
     for (const m of moneyOf(f)) {
       if (m.currency !== currency) continue;
-      if (m.per === 'once') lines.push({ factId: f.id, label: f.label, amount: m.amount, currency, basis: 'One-off' });
+      if (m.per === 'once') lines.push({ factId: f.id, label: f.label, amount: m.amount, currency, basis: 'One-off', ...meta });
       else
         lines.push({
           factId: f.id,
@@ -87,8 +101,15 @@ export function upfrontEstimate(facts: readonly Fact[], currency: string, asOf: 
           amount: annualise(m),
           currency,
           basis: m.per === 'year' ? 'Per year' : `Monthly figure × 12 (planning assumption)`,
+          ...meta,
         });
     }
   }
-  return { currency, lines, excluded, total: lines.reduce((s, l) => s + l.amount, 0) };
+  return {
+    currency,
+    lines,
+    excluded,
+    total: lines.reduce((s, l) => s + l.amount, 0),
+    anyStale: lines.some((l) => l.stale),
+  };
 }
