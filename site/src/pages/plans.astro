@@ -1,0 +1,113 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { DESTINATIONS } from '../lib/store';
+
+type Cell = boolean | string;
+const features: [string, Cell, Cell, Cell][] = [
+  ['11 verified destination guides', true, true, true],
+  ['Country comparison', '2 countries', '2 countries, saved', '4 countries, saved'],
+  ['Cost planner with live exchange rates', true, 'Saved', true],
+  ['Ask Pathfinder (cited answers)', '3 a day', '10 a day', 'Unlimited (fair use)'],
+  ['Personal shortlist', false, '1 country', 'All countries'],
+  ['Deadline tracker and reminders', false, '1 country', 'All countries'],
+  ['Document vault and checklists', false, false, true],
+  ['Field-by-field form guidance', false, false, true],
+  ['Essay and SOP feedback', false, false, true],
+  ['Policy-change alerts', 'Weekly digest', true, 'Real-time'],
+];
+const gates = [
+  'Factual accuracy of at least 98%',
+  'Citation precision of at least 95%: the cited passage really contains the claim',
+  'Zero uncited figures',
+  '100% correct refusals on disputed, proposed or court-blocked rules',
+  'A legal check that guidance is permitted in that country',
+];
+const waveLabel = { 0: 'First wave', 1: 'First wave', 2: 'Second wave', 3: 'Third wave' } as const;
+---
+<Base
+  title="Plans"
+  description="Pathfinder plans: free verified guides and tools, with Premium adding a personal concierge, shortlists, deadlines, documents and form guidance."
+>
+  <PageHead
+    eyebrow="Plans"
+    title="Simple plans, no commissions"
+    lede="The guides and core tools are free for everyone. Premium adds a personal concierge and planning tools. We never earn from universities, so our only incentive is to be right."
+  />
+  <section class="section-tight">
+    <div class="container">
+      <div class="grid grid-3">
+        <div class="card">
+          <p class="eyebrow">Free</p>
+          <h2 style="font-size:1.5rem">Explore</h2>
+          <p class="muted small">Every guide, comparison of two countries, the cost planner and three questions a day.</p>
+          <a class="btn btn-primary" href="/destinations">Start exploring</a>
+        </div>
+        <div class="card">
+          <p class="eyebrow">Free account</p>
+          <h2 style="font-size:1.5rem">Plan</h2>
+          <p class="muted small">Save comparisons and costs, ask ten questions a day, and track one country.</p>
+          <span class="pill plain">Accounts open soon</span>
+        </div>
+        <div class="card" style="border-color:var(--gold);box-shadow:var(--shadow)">
+          <p class="eyebrow" style="color:var(--gold)">Premium · per application cycle</p>
+          <h2 style="font-size:1.5rem">Apply with confidence</h2>
+          <p class="muted small">
+            A personal AI concierge that searches only official websites, plus shortlists, deadlines, documents, form guidance and
+            essay feedback for every country.
+          </p>
+          <span class="pill gold">Opening country by country</span>
+        </div>
+      </div>
+
+      <h2 style="margin-top:56px">Compare plans</h2>
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">Features by plan</caption>
+          <thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Free account</th><th scope="col">Premium</th></tr></thead>
+          <tbody>
+            {
+              features.map(([name, ...cells]) => (
+                <tr>
+                  <th scope="row" style="white-space:normal">{name}</th>
+                  {cells.map((c) => (
+                    <td>{c === true ? <span aria-label="Included">✓</span> : c === false ? <span class="subtle" aria-label="Not included">—</span> : c}</td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted" style="margin-top:12px">Pricing will be announced at launch and adjusted by region. Refunds follow fixed, published rules.</p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container grid grid-2" style="gap:32px;align-items:start">
+      <div>
+        <p class="eyebrow">Release gates</p>
+        <h2>Premium opens only where it passes our quality bar</h2>
+        <p class="muted">Premium answers for a country go live only after an automated evaluation passes every gate, and they stay live only while it keeps passing. If a country falls below the bar, answers switch to official links until it recovers.</p>
+        <ul class="check-list" data-figure-ok="policy">{gates.map((g) => <li>{g}</li>)}</ul>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">Premium status by destination</caption>
+          <thead><tr><th scope="col">Destination</th><th scope="col">Free guide</th><th scope="col">Premium</th></tr></thead>
+          <tbody>
+            {
+              DESTINATIONS.map((d) => (
+                <tr>
+                  <th scope="row">{d.name}</th>
+                  <td><span class="pill ok">Live</span></td>
+                  <td><span class="pill plain">{waveLabel[d.wave]} · in evaluation</span></td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</Base>

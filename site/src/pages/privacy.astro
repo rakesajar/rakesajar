@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+---
+<Base title="Privacy" description="How the Pathfinder pilot handles your data: no accounts, no tracking, and preferences stored only in your browser.">
+  <PageHead eyebrow="Legal" title="Privacy" lede="The pilot collects as little as possible. Here is exactly what happens to your data." />
+  <section class="section-tight">
+    <div class="container prose">
+      <h2>What the pilot stores</h2>
+      <ul class="check-list">
+        <li>No accounts, no sign-up, no analytics or advertising trackers.</li>
+        <li>Your theme choice and daily question count are stored only in your own browser and never sent to us.</li>
+        <li>Questions you ask are answered inside your browser from our published fact store. They are not sent to a server.</li>
+        <li>The comparison and cost tools fetch public exchange rates from the European Central Bank feed (via Frankfurter), with no personal data attached.</li>
+      </ul>
+      <h2>When accounts launch</h2>
+      <p>
+        Accounts will come with consent capture, data export and deletion you can do yourself, and verifiable parental consent for
+        users under 18. We are designing them to India’s Digital Personal Data Protection Act and Rules, GDPR and UK GDPR, and
+        Singapore’s PDPA, among others. This page will be updated before any personal data is collected.
+      </p>
+    </div>
+  </section>
+</Base>

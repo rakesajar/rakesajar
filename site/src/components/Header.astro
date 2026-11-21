@@ -1,0 +1,44 @@
+---
+import Logo from './Logo.astro';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const links = [
+  { href: '/destinations', label: 'Destinations' },
+  { href: '/compare', label: 'Compare' },
+  { href: '/cost-planner', label: 'Cost planner' },
+  { href: '/ask', label: 'Ask' },
+  { href: '/changes', label: 'What’s changed' },
+  { href: '/how-we-verify', label: 'How we verify' },
+];
+const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="Pathfinder home">
+      <Logo />
+      <span>Pathfinder</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      {links.map((l) => <a href={l.href} aria-current={current(l.href)}>{l.label}</a>)}
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-secondary" href="/plans" aria-current={current('/plans')}>Plans</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"></path>
+        </svg>
+      </button>
+      <details class="menu">
+        <summary class="theme-toggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"></path>
+          </svg>
+        </summary>
+        <nav class="menu-panel" aria-label="Main (mobile)">
+          {links.map((l) => <a href={l.href} aria-current={current(l.href)}>{l.label}</a>)}
+          <a href="/plans">Plans</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

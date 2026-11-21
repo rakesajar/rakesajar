@@ -1,0 +1,72 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { CHANGES, DESTINATION_BY_SLUG, DESTINATIONS } from '../lib/store';
+import { formatDate } from '../lib/facts';
+
+const sorted = [...CHANGES].sort((a, b) => b.date.localeCompare(a.date));
+const KIND: Record<string, { pill: string; label: string }> = {
+  announced: { pill: 'info', label: 'Announced' },
+  litigated: { pill: 'bad', label: 'In litigation' },
+  proposed: { pill: 'warn', label: 'Proposed' },
+  quarantined: { pill: 'bad', label: 'Quarantined' },
+  reported: { pill: 'plain', label: 'Reported' },
+  published: { pill: 'ok', label: 'Published' },
+};
+---
+<Base
+  title="What’s changed"
+  description="Public change log: every rule change, announcement, quarantine and correction across 11 study destinations, with dates and sources."
+>
+  <PageHead
+    eyebrow="Change log"
+    title="What’s changed"
+    lede="Every change to a published fact appears here with the old and new value, the date and the source. Nothing is edited silently."
+  />
+  <section class="section-tight">
+    <div class="container" style="max-width:860px">
+      <div class="field" style="max-width:320px;margin-bottom:24px">
+        <label for="filter">Show changes for</label>
+        <select id="filter" data-change-filter>
+          <option value="">All destinations</option>
+          {DESTINATIONS.map((d) => <option value={d.slug}>{d.name}</option>)}
+        </select>
+      </div>
+      <ol style="list-style:none;padding:0;margin:0;display:grid;gap:16px" aria-live="polite">
+        {
+          sorted.map((c) => (
+            <li class="card" data-change={c.destination}>
+              <div class="row" style="margin-bottom:8px">
+                <span class={`pill ${KIND[c.kind].pill}`}>{KIND[c.kind].label}</span>
+                <span class="small subtle">
+                  {c.destination === 'all' ? 'All destinations' : DESTINATION_BY_SLUG[c.destination].name} · logged{' '}
+                  <time datetime={c.date}>{formatDate(c.date)}</time>
+                </span>
+              </div>
+              <h2 style="font-size:1.15rem;margin-bottom:6px" data-figure-ok={c.kind === 'reported' ? 'signal' : undefined} data-fact={c.kind === 'reported' ? undefined : c.facts.join(' ') || undefined}>
+                {c.title}
+              </h2>
+              <p class="muted" style="margin:0" data-fact={c.facts.length ? c.facts.join(' ') : undefined} data-figure-ok={c.facts.length ? undefined : 'signal'}>
+                {c.detail}
+              </p>
+              {c.destination !== 'all' && (
+                <p class="small" style="margin:10px 0 0">
+                  <a href={`/destinations/${c.destination}#checks`}>See in the {DESTINATION_BY_SLUG[c.destination].name} guide →</a>
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+  <script>
+    const select = document.querySelector<HTMLSelectElement>('[data-change-filter]');
+    select?.addEventListener('change', () => {
+      document.querySelectorAll<HTMLElement>('[data-change]').forEach((el) => {
+        const d = el.dataset.change;
+        el.hidden = !!select.value && d !== select.value && d !== 'all';
+      });
+    });
+  </script>
+</Base>

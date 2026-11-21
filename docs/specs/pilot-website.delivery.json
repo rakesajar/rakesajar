@@ -1,0 +1,9 @@
+{
+  "id": "pilot-website",
+  "tier": "T1",
+  "spec": "docs/specs/pilot-website.md",
+  "authorization_reference": "Product owner session instruction 2026-11-21: build pilot website using agentic delivery; push to ccr-8f80979e-5gwduk",
+  "acceptance": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-5", "AC-6", "AC-7", "AC-8", "AC-9", "AC-10", "AC-11"],
+  "required_reviews": ["independent_branch"],
+  "note": "Complete and review this metadata; it is not itself approval. The runner reads tier and hashes this tracked file."
+}

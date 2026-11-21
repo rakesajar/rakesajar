@@ -1,0 +1,358 @@
+---
+import Base from '../../layouts/Base.astro';
+import FactRow from '../../components/FactRow.astro';
+import SourceLink from '../../components/SourceLink.astro';
+import { ALLOWLIST } from '../../data/allowlist';
+import { INDIA_OFFICIAL_LINKS, type Destination } from '../../data/destinations';
+import type { Fact, SourceRef, Stage } from '../../data/types';
+import { hostOf } from '../../lib/domains';
+import { formatDate, presentation } from '../../lib/facts';
+import { formatMoney, upfrontEstimate } from '../../lib/money';
+import { BUILD_DATE, DESTINATIONS, FACTS, SIGNALS } from '../../lib/store';
+
+export function getStaticPaths() {
+  return DESTINATIONS.map((d) => ({ params: { slug: d.slug }, props: { d } }));
+}
+
+interface Props {
+  d: Destination;
+}
+const { d } = Astro.props;
+const today = BUILD_DATE;
+const facts = FACTS.filter((f) => f.destination === d.slug);
+const byTopic = (...topics: Fact['topic'][]) => facts.filter((f) => topics.includes(f.topic));
+const signals = SIGNALS.filter((s) => s.destination === d.slug);
+const notCurrent = facts.filter((f) => presentation(f, today) === 'not_current');
+const upcoming = facts.filter((f) => presentation(f, today) === 'upcoming');
+const lastVerified = facts.map((f) => f.verifiedAt).sort().at(-1)!;
+// Headline facts: all permission facts, plus work/post-study rules that are not specific to one level.
+const snapshot = facts.filter(
+  (f) =>
+    presentation(f, today) === 'current' &&
+    (f.topic === 'permission' || (['work', 'post_study'].includes(f.topic) && (!f.stages || f.stages.length > 1))),
+);
+const estimate = upfrontEstimate(facts, d.currency, today);
+
+const policy = facts.filter((f) => f.topic === 'policy' && presentation(f, today) === 'current');
+
+const STAGES: { key: Stage; label: string }[] = [
+  { key: 'ug', label: 'Undergraduate (after Class 12)' },
+  { key: 'pg', label: 'Master’s and other postgraduate' },
+  { key: 'phd', label: 'PhD and research' },
+];
+
+const sources = new Map<string, { source: SourceRef; ids: string[] }>();
+for (const f of facts)
+  for (const s of f.sources) {
+    const entry = sources.get(s.url) ?? { source: s, ids: [] };
+    entry.ids.push(f.id);
+    sources.set(s.url, entry);
+  }
+const t1Domains = ALLOWLIST[d.slug].filter((e) => e.tier === 'T1').map((e) => e.pattern);
+const t2Domains = ALLOWLIST[d.slug].filter((e) => e.tier === 'T2').map((e) => e.pattern);
+
+const sections = [
+  ['snapshot', 'Snapshot'],
+  ['routes', 'Routes by stage'],
+  ['steps', 'Steps'],
+  ['costs', 'Costs'],
+  ['funding', 'Funding'],
+  ['work', 'Work and after'],
+  ['checks', 'Checks'],
+  ['sources', 'Sources'],
+] as const;
+---
+<Base
+  title={`Study in ${d.inName}`}
+  description={`Study in ${d.inName}: study permission, work rights, post-study options and official costs, each cited to an official source with its verification date.`}
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: `Study in ${d.inName}: verified guide`,
+    dateModified: lastVerified,
+    isBasedOn: [...sources.keys()],
+  }}
+>
+  <header class="page-head">
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li><a href="/destinations">Destinations</a></li>
+          <li aria-current="page">{d.name}</li>
+        </ol>
+      </nav>
+      <div class="row" style="gap:16px;align-items:center">
+        <span class="code-badge lg" aria-hidden="true">{d.code}</span>
+        <h1 style="margin:0">Study in {d.inName}</h1>
+      </div>
+      <p class="lede" style="margin-top:16px">{d.tagline}</p>
+      <div class="row small" style="margin-top:8px">
+        <span class="pill ok">Free guide · live</span>
+        <span class="subtle">Facts last verified {formatDate(lastVerified)}</span>
+        {
+          (notCurrent.length > 0 || upcoming.length > 0 || signals.length > 0) && (
+            <a href="#checks" class="pill warn">
+              {notCurrent.length + upcoming.length + signals.length} items changing or under review
+            </a>
+          )
+        }
+      </div>
+      <p class="small subtle" data-stale-summary hidden style="margin-top:10px">
+        <span class="pill warn"><span data-stale-count>0</span>&nbsp;facts are due for re-checking</span> We show them with a warning
+        until they are verified again.
+      </p>
+    </div>
+  </header>
+
+  <div class="container guide">
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-inner">
+        <p class="small subtle" style="margin:0 0 6px 10px;font-weight:600">On this page</p>
+        <ol>
+          {sections.map(([id, label]) => <li><a href={`#${id}`}>{label}</a></li>)}
+        </ol>
+      </div>
+    </aside>
+
+    <article>
+      <section id="snapshot" class="guide-section" aria-labelledby="h-snapshot">
+        <span class="section-num">01</span>
+        <h2 id="h-snapshot">Snapshot</h2>
+        <div class="facts">{snapshot.map((f) => <FactRow fact={f} today={today} anchor={f.topic === 'permission'} />)}</div>
+        <p class="small muted" style="margin-top:12px">Confirm on the official page before paying or applying.</p>
+      </section>
+
+      <section id="routes" class="guide-section" aria-labelledby="h-routes">
+        <span class="section-num">02</span>
+        <h2 id="h-routes">Routes by stage</h2>
+        <p class="muted">Rules that differ by level of study. Everything in the snapshot applies unless a rule below says otherwise.</p>
+        <div class="stack">
+          {
+            STAGES.map((s) => {
+              const list = facts.filter((f) => f.stages?.includes(s.key));
+              return (
+                <div>
+                  <h3>{s.label}</h3>
+                  {list.length ? (
+                    <div class="facts">
+                      {list.map((f) => (
+                        <FactRow fact={f} today={today} anchor={false} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p class="small muted">
+                      No level-specific verified facts yet. Check{' '}
+                      <a href={d.portals[0].url} rel="noopener" target="_blank">
+                        {d.portals[0].title}
+                      </a>
+                      .
+                    </p>
+                  )}
+                </div>
+              );
+            })
+          }
+        </div>
+      </section>
+
+      <section id="steps" class="guide-section" aria-labelledby="h-steps">
+        <span class="section-num">03</span>
+        <h2 id="h-steps">Steps</h2>
+        <p class="muted">The usual order of the official process. Your institution and the official page give the exact requirements for you.</p>
+        <ol class="steps">{d.steps.map((s) => <li><span>{s}</span></li>)}</ol>
+        <h3 style="margin-top:28px">Start from the official pages</h3>
+        <ul class="stack" style="list-style:none;padding:0">
+          {d.portals.map((p) => <li><SourceLink source={p} showTitle /></li>)}
+        </ul>
+      </section>
+
+      <section id="costs" class="guide-section" aria-labelledby="h-costs">
+        <span class="section-num">04</span>
+        <h2 id="h-costs">Costs</h2>
+        <div class="facts">{byTopic('fees', 'funds', 'tuition').map((f) => <FactRow fact={f} today={today} />)}</div>
+        {
+          estimate.lines.length > 0 && (
+            <div class="card" style="margin-top:20px">
+              <h3>Official costs for your first year, before tuition</h3>
+              <div class="table-wrap" style="border:0">
+                <table>
+                  <caption class="visually-hidden">First-year official costs in {d.currency}</caption>
+                  <tbody>
+                    {estimate.lines.map((l) => (
+                      <tr>
+                        <th scope="row">{l.label}</th>
+                        <td class="subtle small">{l.basis}</td>
+                        <td class="num" data-fact={l.factId}>
+                          {formatMoney(l.amount, l.currency)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr class="total-row">
+                      <th scope="row">Total before tuition</th>
+                      <td />
+                      <td class="num" data-fact={estimate.lines.map((l) => l.factId).join(' ')}>
+                        {formatMoney(estimate.total, d.currency)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              {estimate.excluded.length > 0 && (
+                <p class="small muted" style="margin-top:12px">
+                  Not included: {estimate.excluded.map((x) => x.label).join(', ')} (not in force or being re-checked).
+                </p>
+              )}
+              <a class="btn btn-secondary" style="margin-top:8px" href={`/cost-planner?d=${d.slug}`}>
+                Add your tuition in the cost planner
+              </a>
+            </div>
+          )
+        }
+        {
+          estimate.lines.length === 0 && (
+            <p class="small muted" style="margin-top:12px">
+              We don’t yet have enough verified figures to total the official costs for {d.inName}.
+            </p>
+          )
+        }
+      </section>
+
+      <section id="funding" class="guide-section" aria-labelledby="h-funding">
+        <span class="section-num">05</span>
+        <h2 id="h-funding">Funding</h2>
+        <div class="callout info">
+          <p>
+            We only publish a scholarship once it is verified on the provider’s own official page. None for {d.inName} have been
+            verified yet, so start with these official databases.
+          </p>
+        </div>
+        <ul class="stack" style="list-style:none;padding:0;margin-top:16px">
+          {d.funding.map((p) => <li><SourceLink source={p} showTitle /></li>)}
+        </ul>
+      </section>
+
+      <section id="work" class="guide-section" aria-labelledby="h-work">
+        <span class="section-num">06</span>
+        <h2 id="h-work">Work and after graduation</h2>
+        <div class="facts">{byTopic('work', 'post_study', 'employment').map((f) => <FactRow fact={f} today={today} />)}</div>
+      </section>
+
+      <section id="checks" class="guide-section" aria-labelledby="h-checks">
+        <span class="section-num">07</span>
+        <h2 id="h-checks">Checks before you pay or apply</h2>
+        <ul class="check-list">
+          <li>Confirm every fee and requirement on the official page on the day you pay or apply.</li>
+          <li>Check the effective date: rules for your application date may differ from today’s.</li>
+          <li>
+            Only pay on official government domains for {d.inName}:{' '}
+            {t1Domains.map((h, i) => <><code>{h}</code>{i < t1Domains.length - 1 ? ', ' : ''}</>)}. Watch for look-alike addresses.
+          </li>
+          <li>Never pay anyone who promises a guaranteed visa or admission.</li>
+        </ul>
+
+        {
+          (notCurrent.length > 0 || upcoming.length > 0) && (
+            <>
+              <h3 style="margin-top:28px">Changing or under review</h3>
+              <div class="facts">
+                {[...upcoming, ...notCurrent].map((f) => (
+                  <FactRow fact={f} today={today} anchor={f.topic === 'policy'} />
+                ))}
+              </div>
+            </>
+          )
+        }
+        {
+          policy.length > 0 && (
+            <>
+              <h3 style="margin-top:28px">Policy context</h3>
+              <div class="facts">
+                {policy.map((f) => (
+                  <FactRow fact={f} today={today} />
+                ))}
+              </div>
+            </>
+          )
+        }
+        {
+          signals.length > 0 && (
+            <>
+              <h3 style="margin-top:28px">Reported, not yet confirmed officially</h3>
+              <ul class="stack" style="list-style:none;padding:0">
+                {signals.map((s) => (
+                  <li class="callout warn">
+                    <p style="margin-bottom:6px" data-figure-ok="signal">{s.summary}</p>
+                    <p class="small muted">
+                      Logged {formatDate(s.loggedAt)}. Not a fact yet. We are watching <SourceLink source={s.watch} showTitle /> for
+                      confirmation.
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+
+        <div class="card" style="margin-top:28px">
+          <h3>Applying from India?</h3>
+          <p class="small muted">Official starting points. We will add verified figures here as they are checked.</p>
+          <ul class="stack" style="list-style:none;padding:0">
+            {
+              INDIA_OFFICIAL_LINKS.map((l) => (
+                <li class="row" style="justify-content:space-between">
+                  <span>{l.topic}</span>
+                  <SourceLink source={l} showTitle />
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section id="sources" class="guide-section" aria-labelledby="h-sources">
+        <span class="section-num">08</span>
+        <h2 id="h-sources">Sources</h2>
+        <p class="muted">Every page this guide relies on. T1 = government or regulator. T2 = official institution or statutory body.</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="visually-hidden">Sources for {d.name}</caption>
+            <thead>
+              <tr><th scope="col">Source</th><th scope="col">Tier</th><th scope="col">Facts</th></tr>
+            </thead>
+            <tbody>
+              {
+                [...sources.values()].map(({ source, ids }) => (
+                  <tr>
+                    <td>
+                      <a href={source.url} rel="noopener" target="_blank">
+                        {source.title}
+                      </a>
+                      <div class="small subtle">{hostOf(source.url)}</div>
+                    </td>
+                    <td><span class="tier">{source.tier}</span></td>
+                    <td class="small">
+                      {ids.map((id, i) => (
+                        <>
+                          <a href={`#fact-${id}`}>{facts.find((f) => f.id === id)!.label}</a>
+                          {i < ids.length - 1 ? ', ' : ''}
+                        </>
+                      ))}
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted" style="margin-top:12px">
+          Also on the allowlist for {d.inName}: {[...t1Domains, ...t2Domains].join(', ')}. <a href="/how-we-verify#sources">How sources are chosen</a>.
+        </p>
+        <p class="small muted">
+          Seed facts were verified on {formatDate(lastVerified)}. Automated monitoring captures the exact source passage for each fact
+          and re-checks it on the schedule in our <a href="/how-we-verify#freshness">freshness policy</a>.
+        </p>
+      </section>
+    </article>
+  </div>
+</Base>

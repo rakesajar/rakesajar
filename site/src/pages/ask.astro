@@ -1,0 +1,203 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { FREE_DAILY_QUESTIONS } from '../lib/concierge';
+import { DESTINATIONS } from '../lib/store';
+
+const examples = [
+  'How many hours can I work in Canada?',
+  'UK Graduate Route after my master’s',
+  'How much is the blocked account for Germany?',
+  'Visa fees for the USA',
+  'Tell me about studying in Japan',
+];
+---
+<Base
+  title="Ask Pathfinder"
+  description="Ask study-abroad questions and get answers only from verified official facts, each with a citation and verification date."
+>
+  <PageHead
+    eyebrow="Preview"
+    title="Ask Pathfinder"
+    lede="Ask in plain English. Answers come only from our verified fact store, with a source and date on every point. If we can’t verify something, we say so and send you to the official page."
+  >
+    <p class="small subtle" style="margin:0">
+      You are talking to an automated AI service, not a person. It is not legal or immigration advice.
+    </p>
+  </PageHead>
+
+  <section class="section-tight">
+    <div class="container" style="max-width:860px">
+      <form class="card grid" style="gap:16px" data-ask-form>
+        <div class="field">
+          <label for="q">Your question</label>
+          <textarea id="q" name="q" rows="3" maxlength="500" required placeholder="e.g. How many hours can I work in Canada?"></textarea>
+        </div>
+        <div class="grid grid-2" style="gap:16px">
+          <div class="field">
+            <label for="ask-dest">Destination</label>
+            <select id="ask-dest" name="dest">
+              <option value="">Detect from my question</option>
+              {DESTINATIONS.map((d) => <option value={d.slug}>{d.name}</option>)}
+            </select>
+          </div>
+          <div class="field">
+            <label for="ask-date">When will you apply?</label>
+            <input id="ask-date" name="asOf" type="date" />
+            <span class="hint">Rules can change. We answer for this date.</span>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <button class="btn btn-primary" type="submit">Ask</button>
+          <span class="small subtle" data-quota aria-live="polite">{FREE_DAILY_QUESTIONS} free questions a day</span>
+        </div>
+        <div>
+          <p class="small subtle" style="margin:0 0 8px">Try one of these:</p>
+          <div class="chip-group">
+            {examples.map((e) => <button type="button" class="btn btn-secondary" style="min-height:36px;padding:6px 12px;font-size:0.85rem;font-weight:500" data-example={e}>{e}</button>)}
+          </div>
+        </div>
+      </form>
+
+      <div data-answers style="margin-top:24px" aria-live="polite"></div>
+      <noscript><div class="callout warn"><p>Ask Pathfinder needs JavaScript. Every destination guide shows the same verified facts.</p></div></noscript>
+
+      <details class="card" style="margin-top:32px">
+        <summary style="cursor:pointer;font-weight:600">How answers work</summary>
+        <ul class="check-list small muted" style="margin-top:14px">
+          <li>We answer only from facts verified against government or official sources. Never from memory.</li>
+          <li>Every point shows its source and the date we verified it.</li>
+          <li>Proposed rules, rules in court, disputed figures and facts due for re-checking are not stated. We link the official page instead.</li>
+          <li>We apply the rules in force on your application date.</li>
+          <li>We won’t help with fake documents, misrepresenting funds, or writing essays for you.</li>
+          <li>Premium adds live search across official websites, unlimited questions and answers for every destination that passes our quality checks.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <script>
+    import { DESTINATIONS } from '../data/destinations';
+    import { FACTS, SIGNALS } from '../data/facts';
+    import type { DestinationSlug, SourceRef } from '../data/types';
+    import { ask, consumeQuota, FREE_DAILY_QUESTIONS, type Answer, type QuotaState } from '../lib/concierge';
+    import { formatDate } from '../lib/facts';
+    import { hostOf } from '../lib/domains';
+
+    const QUOTA_KEY = 'pf-ask-quota';
+    const form = document.querySelector<HTMLFormElement>('[data-ask-form]')!;
+    const out = document.querySelector<HTMLElement>('[data-answers]')!;
+    const quotaEl = document.querySelector<HTMLElement>('[data-quota]')!;
+    const q = form.elements.namedItem('q') as HTMLTextAreaElement;
+    const dest = form.elements.namedItem('dest') as HTMLSelectElement;
+    const asOf = form.elements.namedItem('asOf') as HTMLInputElement;
+    const today = () => new Date().toISOString().slice(0, 10);
+    asOf.value = today();
+
+    function readQuota(): QuotaState | null {
+      try {
+        const raw = localStorage.getItem(QUOTA_KEY);
+        const v = raw ? JSON.parse(raw) : null;
+        return v && typeof v.day === 'string' && typeof v.used === 'number' ? v : null;
+      } catch {
+        return null;
+      }
+    }
+    function writeQuota(s: QuotaState): void {
+      try {
+        localStorage.setItem(QUOTA_KEY, JSON.stringify(s));
+      } catch {
+        /* storage blocked: quota is per page view */
+      }
+    }
+    function showQuota(): void {
+      const s = readQuota();
+      const used = s && s.day === today() ? s.used : 0;
+      const left = Math.max(0, FREE_DAILY_QUESTIONS - used);
+      quotaEl.textContent = `${left} of ${FREE_DAILY_QUESTIONS} free questions left today`;
+    }
+
+    const h = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...kids: (Node | string)[]) => {
+      const node = Object.assign(document.createElement(tag), props);
+      node.append(...kids);
+      return node;
+    };
+    const link = (s: SourceRef) =>
+      h('a', { href: s.url, rel: 'noopener', target: '_blank' }, s.tier === 'T1' ? 'Official: ' : 'Institution: ', hostOf(s.url));
+    const destName = (slug: DestinationSlug) => DESTINATIONS.find((d) => d.slug === slug)!.name;
+
+    function renderAnswer(question: string, a: Answer): HTMLElement {
+      const box = h('article', { className: 'answer' });
+      box.append(h('p', { className: 'answer-q' }, question));
+      if (a.kind === 'care') {
+        box.classList.add('callout', 'info');
+        box.append(h('p', {}, a.message), ...a.links.map((l) => h('p', { className: 'small' }, link(l))));
+        return box;
+      }
+      if (a.kind === 'refuse') {
+        box.append(h('p', {}, a.message));
+        if (a.links.length) box.append(h('p', { className: 'small' }, ...a.links.flatMap((l, i) => (i ? [' · ', link(l)] : [link(l)]))));
+        return box;
+      }
+      const multi = a.destinations.length > 1;
+      if (a.items.length) {
+        const ul = h('ul');
+        for (const it of a.items) {
+          const value = h('span', {}, it.value);
+          value.dataset.fact = it.factId;
+          const li = h('li', {}, h('strong', {}, (multi ? destName(it.destination) + ' — ' : '') + it.label + ': '), value);
+          if (it.conditions) li.append(' ', h('span', { className: 'muted' }, it.conditions));
+          li.append(h('div', { className: 'cite' }, link(it.citation.source), ` · verified ${formatDate(it.citation.verifiedAt)}`));
+          ul.append(li);
+        }
+        box.append(ul);
+      }
+      if (a.withheld.length) {
+        box.append(h('p', { className: 'small answer-sub' }, 'Not stated, so you can check it yourself:'));
+        const ul = h('ul');
+        for (const w of a.withheld)
+          ul.append(h('li', { className: 'small' }, h('strong', {}, (multi ? destName(w.destination) + ' — ' : '') + w.label + ': '), w.reason + ' ', link(w.officialPage)));
+        box.append(ul);
+      }
+      if (a.reported.length) {
+        const ul = h('ul');
+        for (const s of a.reported) ul.append(h('li', { className: 'small muted' }, 'Reported, not confirmed: ' + s.summary + ' ', link(s.watch)));
+        box.append(ul);
+      }
+      box.append(
+        h('p', { className: 'small muted answer-foot' }, `Rules applied for an application on ${formatDate(a.asOf)}. ${a.safePhrase}`),
+      );
+      return box;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const question = q.value.trim();
+      if (!question) return q.focus();
+      const quota = consumeQuota(readQuota(), today());
+      if (!quota.allowed) {
+        out.prepend(
+          h('div', { className: 'callout warn' },
+            h('p', {}, `You’ve used today’s ${FREE_DAILY_QUESTIONS} free questions. They reset tomorrow. The destination guides show every verified fact in the meantime.`)),
+        );
+        return;
+      }
+      writeQuota(quota.state);
+      const answer = ask(
+        { question, destinations: dest.value ? [dest.value as DestinationSlug] : [], asOf: asOf.value || today(), now: new Date() },
+        { facts: FACTS, signals: SIGNALS, destinations: DESTINATIONS },
+      );
+      out.prepend(renderAnswer(question, answer));
+      showQuota();
+      q.value = '';
+    });
+
+    form.querySelectorAll<HTMLButtonElement>('[data-example]').forEach((b) =>
+      b.addEventListener('click', () => {
+        q.value = b.dataset.example!;
+        q.focus();
+      }),
+    );
+    showQuota();
+  </script>
+</Base>

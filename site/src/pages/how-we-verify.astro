@@ -1,0 +1,126 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { ALLOWLIST, BLOCKED_CATEGORIES } from '../data/allowlist';
+import { DESTINATIONS } from '../lib/store';
+
+const statuses = [
+  ['ok', 'Current', 'In force today, verified against an official source.'],
+  ['info', 'Announced', 'Officially announced with a future start date. Shown with that date, never as today’s rule.'],
+  ['warn', 'Proposed — not final', 'A proposal only. Never shown as in force and never added to totals.'],
+  ['bad', 'In litigation', 'Blocked or challenged in court. Never shown as in force.'],
+  ['bad', 'Being re-checked', 'Official sources disagree. The fact is quarantined and re-checked every hour until they agree.'],
+  ['warn', 'Re-check due', 'Older than its freshness limit. Shown with a warning and never used in answers until verified again.'],
+  ['plain', 'Reported', 'Seen in reputable news or legal alerts but not yet confirmed officially. Never shown as fact.'],
+];
+const freshness = [
+  ['Visa rules, fees, funds, work, post-study', '7 days (fast-changing items: 24 hours)', 'Policy calendar, official page changes, news signals'],
+  ['Tuition and deadlines', '30 days; daily in the 60 days before a deadline', 'Fee schedule publication'],
+  ['Scholarships', '14 days during open calls', 'Call announcements'],
+  ['Living costs', '90 days', '—'],
+  ['Exchange rates', 'Daily', '—'],
+];
+---
+<Base
+  title="How we verify"
+  description="Pathfinder's verification method: official sources only, cross-source agreement, quarantine on conflict, visible dates and statuses, and automatic re-checks."
+>
+  <PageHead
+    eyebrow="Method"
+    title="How we verify"
+    lede="Pathfinder is run by automated agents, with no human editors. That only works if the rules are strict and public, so here they are."
+  />
+
+  <section class="section-tight">
+    <div class="container prose">
+      <h2>The short version</h2>
+      <ul class="check-list">
+        <li>We only read from a published allowlist of government, regulator and official institution websites.</li>
+        <li>A visa rule, fee or work right must come from a <strong>government source (T1)</strong>. University facts must come from the university’s own page (T2).</li>
+        <li>If two official sources disagree, the fact is <strong>quarantined</strong> and re-checked until they agree.</li>
+        <li>Future, proposed and court-blocked rules carry a status and are <strong>never shown as current</strong>.</li>
+        <li>Every fact shows its source and the date we last verified it. Changes appear in the <a href="/changes">public change log</a>.</li>
+        <li>Generated text may only state figures from the fact store. Every build is checked for uncited figures and fails if it finds one.</li>
+      </ul>
+
+      <h2>Source tiers</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Tier</th><th scope="col">What</th><th scope="col">How we use it</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="tier">T1</span></th><td>Government and regulator websites</td><td>Can establish any fact on its own</td></tr>
+            <tr><th scope="row"><span class="tier">T2</span></th><td>Universities, national study portals, statutory sector bodies, official registers</td><td>Can establish institution facts: entry requirements, tuition, deadlines, scholarships</td></tr>
+            <tr><th scope="row"><span class="tier">T3</span></th><td>Major law-firm immigration alerts, top-tier news agencies, education-sector media</td><td>Early warning only: triggers an official re-check, shown as “reported”</td></tr>
+            <tr><th scope="row">Blocked</th><td>{BLOCKED_CATEGORIES.join(', ')}</td><td>Never retrieved</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>What each status means</h2>
+      <dl class="grid" style="gap:12px">
+        {
+          statuses.map(([cls, label, text]) => (
+            <div class="row" style="align-items:baseline;flex-wrap:nowrap">
+              <dt style="flex:none;min-width:170px">
+                <span class={`pill ${cls}`}>{label}</span>
+              </dt>
+              <dd style="margin:0" class="muted">
+                {text}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <h2 id="freshness">Freshness policy</h2>
+      <p class="muted">A fact past its limit is marked “re-check due” and won’t be stated in answers until it is verified again.</p>
+      <div class="table-wrap">
+        <table data-figure-ok="policy">
+          <thead><tr><th scope="col">Content</th><th scope="col">Re-checked at least every</th><th scope="col">Extra triggers</th></tr></thead>
+          <tbody>{freshness.map(([a, b, c]) => <tr><th scope="row">{a}</th><td>{b}</td><td class="muted">{c}</td></tr>)}</tbody>
+        </table>
+      </div>
+
+      <h2>About the seed baseline</h2>
+      <p>
+        Pathfinder launched from a baseline of facts verified on 21 November 2026. Those facts are marked <em>seed baseline</em>.
+        Automated monitoring is now capturing the exact source passage for each fact and re-verifying it on the schedule above.
+        Until a fact is re-verified, it shows “re-check due” once its freshness limit passes, so you can always tell how current it is.
+      </p>
+
+      <h2>When something is wrong</h2>
+      <p>
+        If a fact is wrong, re-verification runs straight away. A wrong published fact is rolled back automatically when a later
+        check contradicts it, and the correction appears in the change log.
+      </p>
+    </div>
+  </section>
+
+  <section class="section-tight" id="sources">
+    <div class="container">
+      <h2>Official sources we use</h2>
+      <p class="muted prose">
+        The starting allowlist by destination. New official pages are only added if a T1 page links to them and the domain matches an
+        official pattern, such as a government domain or a university on an official register.
+      </p>
+      <div class="grid grid-3" style="margin-top:20px">
+        {
+          [...DESTINATIONS.map((d) => ({ name: d.name, key: d.slug })), { name: 'India (origin)', key: 'india' as const }].map((x) => (
+            <div class="card">
+              <h3 style="font-size:1.05rem">{x.name}</h3>
+              <ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px" class="small">
+                {ALLOWLIST[x.key].map((e) => (
+                  <li class="row" style="flex-wrap:nowrap;align-items:baseline">
+                    <span class="tier">{e.tier}</span>
+                    <code style="overflow-wrap:anywhere">{e.pattern}</code>
+                    {e.note && <span class="subtle">({e.note})</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,51 @@
+---
+import Logo from './Logo.astro';
+import { DESTINATIONS } from '../data/destinations';
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="grid grid-4">
+      <div>
+        <a class="brand" href="/" aria-label="Pathfinder home"><Logo /><span>Pathfinder</span></a>
+        <p class="small" style="margin-top:12px">
+          Unbiased, verifiable, always current. Study-abroad facts cited to official sources, with the date we last checked them.
+        </p>
+      </div>
+      <div>
+        <h2>Destinations</h2>
+        <ul>
+          {DESTINATIONS.slice(0, 6).map((d) => <li><a href={`/destinations/${d.slug}`}>{d.name}</a></li>)}
+          <li><a href="/destinations">All 11 destinations</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Tools</h2>
+        <ul>
+          <li><a href="/compare">Compare countries</a></li>
+          <li><a href="/cost-planner">Cost planner</a></li>
+          <li><a href="/ask">Ask Pathfinder</a></li>
+          <li><a href="/changes">What’s changed</a></li>
+          <li><a href="/plans">Plans</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Trust</h2>
+        <ul>
+          <li><a href="/how-we-verify">How we verify</a></li>
+          <li><a href="/how-we-verify#sources">Official sources we use</a></li>
+          <li><a href="/about">No-commission policy</a></li>
+          <li><a href="/terms">Terms and disclaimer</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p>
+        Pathfinder is an AI-generated information service. Content is produced and verified by automated agents with no human
+        review. It is not legal, immigration or financial advice, and we do not predict or guarantee admission or visa outcomes.
+        Always confirm on the official page before paying or applying. We take no commissions from universities or agents.
+      </p>
+      <p>Pilot release. © 2026 Pathfinder.</p>
+    </div>
+  </div>
+</footer>

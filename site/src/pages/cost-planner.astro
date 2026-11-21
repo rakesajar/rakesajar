@@ -1,0 +1,166 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { HOME_CURRENCIES } from '../lib/money';
+import { DESTINATIONS } from '../lib/store';
+---
+<Base
+  title="Cost planner"
+  description="Estimate your first-year cost of studying abroad: official visa fees and proof-of-funds figures plus your tuition, converted to your home currency."
+>
+  <PageHead
+    eyebrow="Free tool"
+    title="Cost planner"
+    lede="Start from the official fees and proof-of-funds figures, add the tuition on your offer letter, and see the first-year total in your home currency."
+  />
+  <section class="section-tight">
+    <div class="container grid grid-2" style="align-items:start;gap:32px">
+      <form class="card grid" style="gap:18px" data-planner onsubmit="return false">
+        <div class="field">
+          <label for="p-dest">Destination</label>
+          <select id="p-dest" name="dest">
+            {DESTINATIONS.map((d) => <option value={d.slug} data-ccy={d.currency}>{d.name}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="p-tuition">First-year tuition <span class="hint">(from your offer letter, in <span data-local-ccy>GBP</span>)</span></label>
+          <input id="p-tuition" name="tuition" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. as stated on your offer" />
+        </div>
+        <div class="field">
+          <label for="p-other">Other costs you expect <span class="hint">(flights, deposits; optional, in <span data-local-ccy>GBP</span>)</span></label>
+          <input id="p-other" name="other" type="number" min="0" step="any" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label for="p-date">Application date</label>
+          <input id="p-date" name="asOf" type="date" />
+          <span class="hint">We use the rules in force on this date.</span>
+        </div>
+        <div class="field">
+          <label for="p-home">Home currency</label>
+          <select id="p-home" name="home">
+            {HOME_CURRENCIES.map((c) => <option value={c} selected={c === 'INR'}>{c}</option>)}
+          </select>
+        </div>
+        <div class="field" data-manual hidden>
+          <label for="p-rate">Rate: 1 <span data-local-ccy>GBP</span> = ? <span data-manual-ccy>INR</span></label>
+          <input id="p-rate" type="number" min="0" step="any" inputmode="decimal" />
+        </div>
+        <p class="small subtle" data-fx-status style="margin:0" aria-live="polite">Loading exchange rates…</p>
+      </form>
+
+      <div aria-live="polite">
+        <div class="card" data-result>
+          <h2 style="font-size:1.3rem">Your first-year estimate</h2>
+          <noscript><p class="muted">The planner needs JavaScript. Each destination guide lists the official costs.</p></noscript>
+          <div class="table-wrap" style="border:0">
+            <table>
+              <caption class="visually-hidden">First-year cost breakdown</caption>
+              <tbody data-lines></tbody>
+            </table>
+          </div>
+          <p class="small muted" data-excluded hidden style="margin-top:12px"></p>
+          <p class="small muted" data-nofunds hidden style="margin-top:12px"></p>
+        </div>
+        <p class="small muted" style="margin-top:12px">
+          Official figures are from our verified fact store. Monthly funds figures are multiplied by 12 as a planning
+          assumption. Tuition and other costs are your own figures. Confirm on the official page before paying or applying.
+        </p>
+        <a class="btn btn-secondary" data-guide-link href="/destinations/uk">Open the guide</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { DESTINATIONS } from '../data/destinations';
+    import { FACTS } from '../data/facts';
+    import { convert, formatMoney, upfrontEstimate, type EurRates } from '../lib/money';
+    import { fetchFx, FX_SOURCE_LABEL } from '../lib/fx';
+    import { formatDate } from '../lib/facts';
+
+    const form = document.querySelector<HTMLFormElement>('[data-planner]')!;
+    const el = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+    const dest = form.elements.namedItem('dest') as HTMLSelectElement;
+    const tuition = form.elements.namedItem('tuition') as HTMLInputElement;
+    const other = form.elements.namedItem('other') as HTMLInputElement;
+    const asOf = form.elements.namedItem('asOf') as HTMLInputElement;
+    const home = form.elements.namedItem('home') as HTMLSelectElement;
+    const manualRate = el<HTMLInputElement>('#p-rate');
+    let rates: EurRates = {};
+
+    asOf.value = new Date().toISOString().slice(0, 10);
+    const qd = new URLSearchParams(location.search).get('d');
+    if (qd && DESTINATIONS.some((d) => d.slug === qd)) dest.value = qd;
+
+    function row(label: string, note: string, amount: string, factIds?: string): HTMLTableRowElement {
+      const tr = document.createElement('tr');
+      const th = document.createElement('th');
+      th.scope = 'row';
+      th.textContent = label;
+      const tdNote = document.createElement('td');
+      tdNote.className = 'small subtle';
+      tdNote.textContent = note;
+      const td = document.createElement('td');
+      td.className = 'num';
+      td.textContent = amount;
+      if (factIds) td.dataset.fact = factIds;
+      tr.append(th, tdNote, td);
+      return tr;
+    }
+
+    function render(): void {
+      const d = DESTINATIONS.find((x) => x.slug === dest.value)!;
+      const ccy = d.currency;
+      document.querySelectorAll('[data-local-ccy]').forEach((n) => (n.textContent = ccy));
+      el<HTMLAnchorElement>('[data-guide-link]').href = `/destinations/${d.slug}#costs`;
+      el<HTMLAnchorElement>('[data-guide-link]').textContent = `Open the ${d.name} guide`;
+      const date = asOf.value || new Date().toISOString().slice(0, 10);
+      const facts = FACTS.filter((f) => f.destination === d.slug);
+      const est = upfrontEstimate(facts, ccy, date);
+      const lines = el<HTMLElement>('[data-lines]');
+      lines.replaceChildren();
+      for (const l of est.lines) {
+        const f = facts.find((x) => x.id === l.factId)!;
+        lines.append(row(l.label, `${l.basis} · verified ${formatDate(f.verifiedAt)}`, formatMoney(l.amount, ccy), l.factId));
+      }
+      const t = Math.max(0, Number(tuition.value) || 0);
+      const o = Math.max(0, Number(other.value) || 0);
+      if (t) lines.append(row('Tuition', 'Your figure', formatMoney(t, ccy), 'user-input'));
+      if (o) lines.append(row('Other costs', 'Your figure', formatMoney(o, ccy), 'user-input'));
+      const total = est.total + t + o;
+      const totalRow = row('Total', 'First year', formatMoney(total, ccy), 'computed');
+      totalRow.className = 'total-row';
+      lines.append(totalRow);
+
+      const mr = Number(manualRate.value);
+      const converted = convert(total, ccy, home.value, rates) ?? (mr > 0 ? total * mr : null);
+      el<HTMLElement>('[data-manual-ccy]').textContent = home.value;
+      el<HTMLElement>('[data-manual]').hidden = converted !== null || home.value === ccy;
+      if (home.value !== ccy) {
+        const hr = row(`In ${home.value}`, 'Indicative exchange rate', converted === null ? 'Enter a rate' : '≈ ' + formatMoney(converted, home.value), 'computed');
+        hr.className = 'total-row';
+        lines.append(hr);
+      }
+
+      const ex = el<HTMLElement>('[data-excluded]');
+      ex.hidden = est.excluded.length === 0;
+      ex.textContent = est.excluded.length
+        ? 'Not included: ' + est.excluded.map((x) => `${x.label} (${x.reason})`).join('; ')
+        : '';
+      const nf = el<HTMLElement>('[data-nofunds]');
+      const hasFunds = facts.some((f) => f.topic === 'funds');
+      nf.hidden = hasFunds;
+      nf.textContent = hasFunds ? '' : `We have no verified proof-of-funds figure for ${d.name} yet. Check ${d.portals[0].title}.`;
+    }
+
+    form.addEventListener('input', render);
+    form.addEventListener('change', render);
+    render();
+    fetchFx().then((fx) => {
+      if (fx) {
+        rates = fx.rates;
+        el<HTMLElement>('[data-fx-status]').textContent = `${FX_SOURCE_LABEL}, ${fx.date}. Indicative only.`;
+      } else el<HTMLElement>('[data-fx-status]').textContent = 'Live rates unavailable. Enter a rate to convert.';
+      render();
+    });
+  </script>
+</Base>

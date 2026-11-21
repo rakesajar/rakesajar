@@ -1,0 +1,26 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import DestCard from '../../components/DestCard.astro';
+import { BUILD_DATE, DESTINATIONS, FACTS } from '../../lib/store';
+---
+<Base
+  title="Destinations"
+  description="Verified study guides for Singapore, the USA, UK, Canada, Australia, Germany, France, Ireland, New Zealand, the UAE and Japan."
+>
+  <PageHead
+    eyebrow="Free guides"
+    title="Destinations"
+    lede="Eleven countries, each guide built from facts with an official source and a verification date. Pick one to see study permission, work rights, post-study options and costs."
+  />
+  <section class="section-tight">
+    <div class="container">
+      <div class="grid grid-3">
+        {DESTINATIONS.map((d) => <DestCard destination={d} facts={FACTS} today={BUILD_DATE} />)}
+      </div>
+      <p class="small muted" style="margin-top:24px">
+        Not sure where to start? <a href="/compare">Compare two countries side by side</a> or <a href="/ask">ask a question</a>.
+      </p>
+    </div>
+  </section>
+</Base>

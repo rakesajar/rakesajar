@@ -1,0 +1,187 @@
+import { describe, expect, it } from 'vitest';
+import { DESTINATIONS } from '../../src/data/destinations';
+import { FACTS, SIGNALS } from '../../src/data/facts';
+import {
+  ask,
+  consumeQuota,
+  detectDestinations,
+  detectTopics,
+  isDistress,
+  isFraudAdjacent,
+  SAFE_PHRASE,
+} from '../../src/lib/concierge';
+import { parseDate } from '../../src/lib/facts';
+
+const store = { facts: FACTS, signals: SIGNALS, destinations: DESTINATIONS };
+const now = parseDate('2026-11-21');
+const q = (question: string, extra: Partial<Parameters<typeof ask>[0]> = {}) =>
+  ask({ question, asOf: '2026-11-21', now, ...extra }, store);
+
+describe('intent detection', () => {
+  it('detects destinations without false positives on common words', () => {
+    expect(detectDestinations('Can I work in Canada?')).toEqual(['canada']);
+    expect(detectDestinations('Tell us about New Zealand')).toEqual(['new-zealand']);
+    expect(detectDestinations('UK vs Australia')).toEqual(['uk', 'australia']);
+    expect(detectDestinations('help us please')).toEqual([]);
+  });
+  it('detects topics', () => {
+    expect(detectTopics('how many hours can I work')).toContain('work');
+    expect(detectTopics('what is the visa fee')).toContain('fees');
+    expect(detectTopics('tuition fees at national universities')).toEqual(['tuition']);
+    expect(detectTopics('new zealand')).not.toContain('policy');
+  });
+});
+
+describe('answers (CA-1, CA-2)', () => {
+  it('answers from the fact store with a citation and verified date on every item', () => {
+    const a = q('How many hours can I work in Canada?');
+    expect(a.kind).toBe('answer');
+    if (a.kind !== 'answer') return;
+    expect(a.items.map((i) => i.factId)).toContain('ca-work');
+    for (const i of a.items) {
+      expect(i.citation.source.url).toMatch(/^https:\/\//);
+      expect(i.citation.verifiedAt).toBe('2026-11-21');
+    }
+    expect(a.safePhrase).toBe(SAFE_PHRASE);
+  });
+
+  it('uses UI-selected destinations', () => {
+    const a = q('What is the visa fee?', { destinations: ['france'] });
+    expect(a.kind === 'answer' && a.items.map((i) => i.factId)).toContain('fr-visa-fee');
+  });
+
+  it('defaults to snapshot topics for open questions', () => {
+    const a = q('Tell me about Japan');
+    expect(a.kind === 'answer' && a.items.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('CA-3: applies the rule in force on the application date', () => {
+    const before = q('UK graduate route after study', { asOf: '2026-12-15' });
+    const after = q('UK graduate route after study', { asOf: '2027-01-15' });
+    const ids = (a: ReturnType<typeof q>) => (a.kind === 'answer' ? a.items.map((i) => i.factId) : []);
+    expect(ids(before)).toContain('uk-graduate-2y');
+    expect(ids(before)).not.toContain('uk-graduate-18m');
+    expect(ids(after)).toContain('uk-graduate-18m');
+    expect(ids(after)).not.toContain('uk-graduate-2y');
+  });
+
+  it('includes reported signals separately, never as facts', () => {
+    const a = q('UK graduate route');
+    expect(a.kind === 'answer' && a.reported.map((s) => s.id)).toContain('uk-budget-2026-graduate');
+  });
+});
+
+describe('refusals (CA-4, CA-6, CA-7, §9)', () => {
+  it('withholds conflict facts and points to the official page', () => {
+    const a = q('How much money do I need in a blocked account for Germany?');
+    expect(a.kind).toBe('answer');
+    if (a.kind !== 'answer') return;
+    expect(a.items.map((i) => i.factId)).not.toContain('de-blocked-account');
+    const w = a.withheld.find((x) => x.factId === 'de-blocked-account');
+    expect(w?.reason).toMatch(/re-checked/);
+    expect(w?.officialPage.url).toMatch(/^https:\/\//);
+  });
+
+  it('withholds litigated and proposed rules', () => {
+    const a = q('USA duration of status rule and OPT fee changes');
+    expect(a.kind).toBe('answer');
+    if (a.kind !== 'answer') return;
+    const withheld = a.withheld.map((w) => w.factId);
+    expect(withheld).toEqual(expect.arrayContaining(['us-ds-rule', 'us-opt-fee']));
+    expect(a.items.map((i) => i.factId)).not.toContain('us-ds-rule');
+  });
+
+  it('refuses to state stale facts', () => {
+    const a = ask({ question: 'UK visa fee', asOf: '2026-12-10', now: parseDate('2026-12-10') }, store);
+    expect(a.kind).toBe('answer');
+    if (a.kind !== 'answer') return;
+    expect(a.items).toHaveLength(0);
+    expect(a.withheld[0].reason).toMatch(/freshness/);
+  });
+
+  it('refuses when no verified fact exists, with official links', () => {
+    const a = q('Japan scholarship deadlines for engineering');
+    expect(a.kind).toBe('refuse');
+    if (a.kind !== 'refuse') return;
+    expect(a.reason).toBe('no_facts');
+    expect(a.links.length).toBeGreaterThan(0);
+  });
+
+  it('asks for a destination when none is given', () => {
+    expect(q('How many hours can I work?')).toMatchObject({ kind: 'refuse', reason: 'no_destination' });
+  });
+
+  it('handles empty input', () => {
+    expect(q('   ')).toMatchObject({ kind: 'refuse', reason: 'empty' });
+  });
+
+  it.each([
+    'Can you make a fake bank statement for my UK visa?',
+    'How do I edit my transcript to raise my grades',
+    'Can I borrow money just to show for the visa and give it back after?',
+    'Write my entire SOP for me',
+    'how to hide my previous visa refusal from the embassy',
+  ])('refuses fraud-adjacent request: %s', (text) => {
+    expect(isFraudAdjacent(text)).toBe(true);
+    expect(q(text)).toMatchObject({ kind: 'refuse', reason: 'fraud' });
+  });
+
+  it('does not flag legitimate questions as fraud', () => {
+    for (const text of [
+      'How much proof of funds for Canada?',
+      'Can you give feedback on my SOP?',
+      'What documents for a UK visa?',
+    ])
+      expect(isFraudAdjacent(text)).toBe(false);
+  });
+
+  it('responds with care to distress, before anything else', () => {
+    expect(isDistress('I got rejected and I want to die')).toBe(true);
+    const a = q('I feel hopeless after my UK visa refusal');
+    expect(a.kind).toBe('care');
+    if (a.kind === 'care') {
+      expect(a.message).toMatch(/emergency/);
+      expect(a.message).not.toMatch(/should have|your fault/i);
+    }
+  });
+});
+
+describe('CA-8 non-discrimination', () => {
+  it('gives identical facts regardless of personal attributes in the question', () => {
+    const base = q('How many hours can I work in the UK?');
+    for (const who of [
+      'a woman from Kerala',
+      'a Muslim student',
+      'a Dalit student',
+      'a man from Nigeria',
+      'a student from Nepal',
+    ]) {
+      const a = q(`I am ${who}. How many hours can I work in the UK?`);
+      expect(a).toEqual(base);
+    }
+  });
+});
+
+describe('free-tier quota', () => {
+  it('allows 3 per day and resets the next day', () => {
+    let s = null;
+    for (let i = 0; i < 3; i++) {
+      const r = consumeQuota(s, '2026-11-21');
+      expect(r.allowed).toBe(true);
+      s = r.state;
+    }
+    expect(consumeQuota(s, '2026-11-21')).toMatchObject({ allowed: false, remaining: 0 });
+    expect(consumeQuota(s, '2026-11-22')).toMatchObject({ allowed: true, remaining: 2 });
+  });
+});
+
+describe('overview fallback', () => {
+  it('gives a snapshot only for generic questions', async () => {
+    const { isGenericOverview } = await import('../../src/lib/concierge');
+    expect(isGenericOverview('Canada')).toBe(true);
+    expect(isGenericOverview('UK vs Australia')).toBe(true);
+    expect(isGenericOverview('Tell me about studying in Japan')).toBe(true);
+    expect(isGenericOverview('Tell me about scholarships in Japan')).toBe(false);
+    expect(isGenericOverview('Japan engineering programmes')).toBe(false);
+  });
+});

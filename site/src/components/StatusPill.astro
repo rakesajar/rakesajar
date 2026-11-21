@@ -1,0 +1,29 @@
+---
+import type { Fact } from '../data/types';
+import { presentation, STATUS_LABEL, formatDate } from '../lib/facts';
+
+interface Props {
+  fact: Fact;
+  today: string;
+}
+const { fact, today } = Astro.props;
+const p = presentation(fact, today);
+let cls = 'ok';
+let text = 'Current';
+if (p === 'not_current') {
+  cls = fact.status === 'conflict' || fact.status === 'litigated' ? 'bad' : 'warn';
+  text = STATUS_LABEL[fact.status];
+} else if (p === 'upcoming') {
+  cls = 'info';
+  text = `From ${formatDate(fact.effectiveFrom!)}`;
+} else if (p === 'expired') {
+  cls = 'warn';
+  text = 'Superseded by date';
+} else if (fact.estimate) {
+  cls = 'gold';
+  text = 'Indicative';
+} else if (fact.effectiveTo) {
+  text = `Until ${formatDate(fact.effectiveTo)}`;
+}
+---
+<span class={`pill ${cls}`}>{text}</span>

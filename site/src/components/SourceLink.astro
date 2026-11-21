@@ -1,0 +1,16 @@
+---
+import type { SourceRef } from '../data/types';
+import { hostOf } from '../lib/domains';
+
+interface Props {
+  source: SourceRef;
+  showTitle?: boolean;
+}
+const { source, showTitle = false } = Astro.props;
+const tierName = source.tier === 'T1' ? 'Government or regulator source' : 'Official institution source';
+---
+<a class="source-link" href={source.url} rel="noopener" target="_blank">
+  <span class="tier" title={tierName}><span class="visually-hidden">{tierName}: </span>{source.tier}</span>
+  <span>{showTitle ? source.title : hostOf(source.url)}</span>
+  <span class="visually-hidden">(opens in a new tab)</span>
+</a>

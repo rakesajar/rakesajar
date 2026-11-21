@@ -1,0 +1,39 @@
+---
+import type { Fact } from '../data/types';
+import { formatDate, maxAgeDays, presentation } from '../lib/facts';
+import SourceLink from './SourceLink.astro';
+import StatusPill from './StatusPill.astro';
+
+interface Props {
+  fact: Fact;
+  today: string;
+  /** Override the label, e.g. in compare tables. */
+  label?: string;
+  /** Set false where the same fact is repeated on a page, so the anchor id stays unique. */
+  anchor?: boolean;
+}
+const { fact, today, label, anchor = true } = Astro.props;
+const p = presentation(fact, today);
+const notCurrent = p === 'not_current' || p === 'expired';
+---
+<div
+  class:list={['fact', { 'not-current': notCurrent }]}
+  data-verified={fact.verifiedAt}
+  data-max-age={maxAgeDays(fact)}
+  id={anchor ? `fact-${fact.id}` : undefined}
+>
+  <div class="fact-label">{label ?? fact.label}</div>
+  <div data-fact={fact.id}>
+    <div class="fact-value">{fact.value}</div>
+    {fact.conditions && <p class="fact-note">{fact.conditions}</p>}
+    {fact.statusNote && <p class="fact-note">{fact.statusNote}</p>}
+  </div>
+  <div class="fact-meta">
+    <StatusPill fact={fact} today={today} />
+    {fact.sources.map((s) => <SourceLink source={s} />)}
+    <span>
+      Verified {formatDate(fact.verifiedAt)}{fact.verification === 'seed' && <> · seed baseline</>}
+    </span>
+    <span class="pill warn stale-flag" hidden>Re-check due — confirm on the official page</span>
+  </div>
+</div>
