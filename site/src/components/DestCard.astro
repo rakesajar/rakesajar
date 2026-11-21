@@ -1,7 +1,8 @@
 ---
 import type { Destination } from '../data/destinations';
 import type { Fact } from '../data/types';
-import { appliesOn, freshAttrs, presentation } from '../lib/facts';
+import { hostOf } from '../lib/domains';
+import { appliesOn, formatDate, freshAttrs, presentation } from '../lib/facts';
 import ViewFlags from './ViewFlags.astro';
 
 interface Props {
@@ -10,35 +11,60 @@ interface Props {
   today: string;
 }
 const { destination: d, facts, today } = Astro.props;
-const pick = (topic: Fact['topic']) =>
-  facts.find((f) => f.destination === d.slug && f.topic === topic && appliesOn(f, today) && presentation(f, today) === 'current');
-const rows = [
-  { k: 'Study on', f: pick('permission') },
-  { k: 'Work while studying', f: pick('work') },
-  { k: 'After you graduate', f: pick('post_study') },
-].filter((r) => r.f);
+const current = (f: Fact) => f.destination === d.slug && appliesOn(f, today) && presentation(f, today) === 'current';
+const permission = facts.find((f) => current(f) && f.topic === 'permission' && !f.stages);
+const tuition = facts.filter((f) => current(f) && f.topic === 'tuition');
 const changing = facts.filter((f) => f.destination === d.slug && ['upcoming', 'not_current'].includes(presentation(f, today))).length;
+const lead = d.admissions[0];
 ---
-<a class="visa" href={`/destinations/${d.slug}`}>
+<article class="visa">
   <div class="visa-top">
     <div>
-      <span class="visa-code" aria-hidden="true">{d.code}</span>
-      <h3 class="visa-name">{d.name}</h3>
+      <span class="visa-code" aria-hidden="true" style={`view-transition-name: code-${d.slug}`}>{d.code}</span>
+      <h3 class="visa-name">
+        <a class="visa-link" href={`/destinations/${d.slug}`}>{d.name}</a>
+      </h3>
     </div>
     {changing > 0 && <span class="pill warn">{changing} changing</span>}
   </div>
   <div class="visa-body">
     <dl>
+      <div>
+        <dt>Find courses</dt>
+        <dd>
+          <a class="visa-sub" href={lead.url} rel="noopener" target="_blank">{lead.short}</a>
+          <span class="subtle small"> · {hostOf(lead.url)}</span>
+        </dd>
+      </div>
       {
-        rows.map((r) => (
+        tuition.length > 0 ? (
+          tuition.map((f) => (
+            <div>
+              <dt>{f.label}</dt>
+              <dd data-fact={f.id} {...freshAttrs([f])}>
+                {f.value}
+                <span class="cite"> · {hostOf(f.sources[0].url)} · {formatDate(f.verifiedAt)}</span> <ViewFlags />
+              </dd>
+            </div>
+          ))
+        ) : (
           <div>
-            <dt>{r.k}</dt>
-            <dd data-fact={r.f!.id} {...freshAttrs([r.f!])}>
-              {r.f!.value} <ViewFlags />
+            <dt>Tuition</dt>
+            <dd class="muted">Varies by university. Check the course page.</dd>
+          </div>
+        )
+      }
+      {
+        permission && (
+          <div>
+            <dt>You’d study on</dt>
+            <dd data-fact={permission.id} {...freshAttrs([permission])}>
+              {permission.value}
+              <span class="cite"> · {hostOf(permission.sources[0].url)} · {formatDate(permission.verifiedAt)}</span> <ViewFlags />
             </dd>
           </div>
-        ))
+        )
       }
     </dl>
   </div>
-</a>
+</article>

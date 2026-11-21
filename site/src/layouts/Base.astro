@@ -17,6 +17,8 @@ interface Props {
   jsonLd?: Record<string, unknown>;
 }
 const { title, description, jsonLd } = Astro.props;
+// Prefetch same-site pages on hover/intent so moving between guides feels instant (browsers without support ignore it).
+const SPECULATION_RULES = JSON.stringify({ prefetch: [{ where: { href_matches: '/*' }, eagerness: 'moderate' }] });
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title === 'Pathfinder' ? 'Pathfinder: study abroad, checked against the official pages' : `${title} · Pathfinder`;
 ---
@@ -45,6 +47,7 @@ const fullTitle = title === 'Pathfinder' ? 'Pathfinder: study abroad, checked ag
         } catch (e) {}
       })();
     </script>
+    <script type="speculationrules" is:inline set:html={SPECULATION_RULES} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, "\\u003c")} />}
   </head>
   <body>

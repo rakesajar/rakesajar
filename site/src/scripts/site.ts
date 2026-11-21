@@ -47,7 +47,8 @@ export function markViewState(root: ParentNode = document, now = Date.now()): nu
       const isStale = (now - verified) / DAY_MS > maxAge;
       el.classList.toggle('is-stale', isStale);
       ownFlags(el, '.stale-flag').forEach((f) => (f.hidden = !isStale));
-      if (isStale) stale++;
+      // Totals and other groups repeat facts already counted on the page.
+      if (isStale && !el.hasAttribute('data-group')) stale++;
     }
     const started = !!el.dataset.effectiveFrom && today >= el.dataset.effectiveFrom;
     const ended = !!el.dataset.effectiveTo && today > el.dataset.effectiveTo;

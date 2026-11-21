@@ -87,6 +87,12 @@ const TOPIC_KEYWORDS: Record<Topic, string[]> = {
     'job-search',
     'stamp 1g',
     'golden visa',
+    // Only reachable for France: the APS guard in ask() refuses it for other destinations.
+    'aps',
+    'after my degree',
+    'after my course',
+    "after my master's",
+    'after my masters',
   ],
   fees: ['fee', 'fees', 'cost of visa', 'visa cost', 'sevis', 'charge', 'pay'],
   funds: ['funds', 'fund', 'bank', 'balance', 'maintenance', 'blocked account', 'living', 'proof of', 'money'],
@@ -101,27 +107,35 @@ const FRAUD_PATTERNS = [
   /\bborrowed (bank )?(balance|funds|money)\b/,
   /\b(show|park|deposit|put)\b.{0,30}\b(money|funds|balance)\b.{0,60}\b(temporar|just for (the )?visa|then (return|give|send|pay|transfer)|give (it |them )?back|return (it|them))/,
   /\b(hide|lie about|lie on|lie to|misrepresent|conceal|not mention|not disclose|don'?t (mention|disclose))\b.{0,40}\b(refusal|refused|rejection|rejected|visa|funds|income|history|gap|criminal|record|embassy|officer)/,
-  /\b(overstay|work more than (allowed|permitted|the limit)|work illegally|cash in hand|without (a )?(work )?permit|work off the books)/,
-  /\b(write|draft|do)\b (my|the|an?) (entire |whole |full |complete )?(essay|sop|statement of purpose|personal statement|lor|recommendation letter)\b.{0,20}(for me)?/,
+  // Changing a balance, marks or grades is misrepresentation; changing documents after submitting is not.
+  /\b(change|modify|increase|raise|bump up)\b.{0,20}\b(balance|marks|grades|percentage|cgpa|gpa)\b/,
+  /\b(work illegally|cash in hand|work off the books|work more than (allowed|permitted|the limit) without)/,
+  /\b(write|draft|do)\b (my|the|an?) (entire |whole |full |complete )?(essay|sop|statement of purpose|personal statement|lor|recommendation letter)\b.{0,20}\bfor me\b/,
+  /\b(can|could|will|would) you (write|draft) (my|an?|the) (entire |whole |full |complete )?(essay|sop|statement of purpose|personal statement)/,
   /\b(buy|purchase)\b (a |an )?(degree|admission|visa|seat|certificate)/,
 ];
 
 /** Word-proximity rules: a misrepresentation verb within a few words of a document or money noun. */
 const FRAUD_NEAR: { verbs: RegExp; nouns: RegExp; gap: number }[] = [
   {
-    verbs: /^(fake|faking|faked|forge|forged|forging|fabricate|fabricated|counterfeit|doctor|doctored)$/,
+    verbs: /^(fake|faking|faked|forge|forged|forging|fabricate|fabricated|counterfeit|doctored)$/,
     nouns:
       /^(bank|documents?|degrees?|certificates?|transcripts?|statements?|letters?|offers?|marksheets?|payslips?|sponsors?|itr|passports?|visas?)$/,
     gap: 5,
   },
   {
-    verbs: /^(edit|edited|alter|altered|photoshop|photoshopped|tamper|tampered|change|modify|modified|inflate|inflated)$/,
-    nouns: /^(statements?|transcripts?|certificates?|documents?|passports?|marksheets?|grades|marks|balance|payslips?)$/,
+    verbs: /^(edit|edited|alter|altered|photoshop|photoshopped|tamper|tampered|inflate|inflated)$/,
+    nouns: /^(transcripts?|certificates?|passports?|marksheets?|grades|marks|balance|payslips?)$/,
     gap: 5,
   },
 ];
 
+/** Questions about spotting or avoiding fraud are legitimate and must not be refused as fraud. */
+const ANTI_FRAUD =
+  /\b(spot|check|detect|identify|avoid|report|recognise|recognize|verify|scam|is this (a )?(real|fake|genuine)|how (to|do i|can i) tell)\b/;
+
 function nearMatch(text: string): boolean {
+  if (ANTI_FRAUD.test(text)) return false;
   const words = text.split(/[^a-z0-9']+/).filter(Boolean);
   return FRAUD_NEAR.some(({ verbs, nouns, gap }) =>
     words.some((w, i) => verbs.test(w) && words.slice(i + 1, i + 1 + gap).some((n) => nouns.test(n))),
@@ -132,7 +146,7 @@ const DISTRESS_PATTERNS = [
   /kill myself|end my life|end it all|suicid|want to die|wanna die|self[- ]harm|hurt myself|no reason to live|better off dead/,
   /(can'?t|cannot) (cope|go on|take it|do this|handle (this|it))|hopeless|worthless|panic attacks?|breaking down|falling apart/,
   /\b(i'?m|i am|i feel( like)?) (a )?(failure|useless|a burden|so ashamed|ashamed|disappointment)/,
-  /(parents|family|dad|mum|mom|father|mother).{0,40}(disappointed|kill|disown|never forgive|ashamed of me|hate me)/,
+  /(parents|family|dad|mum|mom|father|mother).{0,40}(disappointed (in|with) me|kill me|disown me|never forgive me|ashamed of me|hate me)/,
   /everything is (ruined|over)|my life is (ruined|over)|ruined my life/,
 ];
 
@@ -191,7 +205,7 @@ export function isDistress(q: string): boolean {
 const OVERVIEW = /\b(tell me about|overview|summary|summarise|summarize|basics|what about|how about|studying in|study in)\b/;
 /** Subjects with no verified facts in the pilot store: never answered with an adjacent snapshot. */
 const UNSUPPORTED =
-  /\b(scholarships?|deadlines?|rankings?|ranked|ielts|toefl|pte|duolingo|gre|gmat|intakes?|loans?|accommodation|housing|insurance|acceptance rate|wife|husband|spouse|partner|dependants?|dependents?|children|kids|family visa|refund|refundable|ihs|health surcharge|nhs|permanent residen\w*|pr|citizenship|interview|refusal rate|success rate|chances?|wait(ing)? time|processing time|how long does it take|biometrics?|medical|police|aps|apostille)\b/;
+  /\b(scholarships?|deadlines?|rankings?|ranked|ielts|toefl|pte|duolingo|gre|gmat|intakes?|loans?|accommodation|housing|insurance|acceptance rate|wife|husband|spouse|partner|dependants?|dependents?|children|kids|family visa|refund|refundable|ihs|health surcharge|nhs|permanent residen\w*|pr|citizenship|interview|refusal rate|success rate|chances?|wait(ing)? time|processing time|how long does it take|biometrics?|medical|police|apostille|overstay\w*|volunteer\w*|disclose|declare|change (my )?course|switch\w*|extend|extension|renew\w*)\b/;
 
 /**
  * Qualifiers that narrow a question to a case our facts may not cover. Items in the topic are kept only if
@@ -283,6 +297,8 @@ export function ask(input: AskInput, store: Store): Answer {
   // A specific subject we hold no facts on (spouse visas, refunds, IELTS…) is refused before topic matching,
   // so a keyword like "visa" or "work" can't pull in a neighbouring fact as if it answered the question.
   if (isUnsupportedSubject(q)) return noFacts(dests, store);
+  // "APS" is France's post-study permit, but also a German pre-application check we hold no facts on.
+  if (/\baps\b/i.test(q) && !dests.includes('france')) return noFacts(dests, store);
 
   let topics = detectTopics(q);
   if (topics.length === 0) {

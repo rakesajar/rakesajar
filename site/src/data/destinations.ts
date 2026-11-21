@@ -17,6 +17,8 @@ export interface Destination {
   funding: SourceRef[];
   /** Ordered application steps. Procedural wording only; figures live in facts. */
   steps: string[];
+  /** Official places to research courses and admissions (T1/T2 only). First entry is the headline. */
+  admissions: (SourceRef & { short: string })[];
 }
 
 export const DESTINATIONS: Destination[] = [
@@ -42,6 +44,11 @@ export const DESTINATIONS: Destination[] = [
       'Apply for the Student’s Pass through ICA’s SOLAR+ system.',
       'Pay the Student’s Pass fees.',
       'Follow the instructions in your ICA approval before and after arrival.',
+    ],
+    admissions: [
+      { url: 'https://www.nus.edu.sg', tier: 'T2', title: 'National University of Singapore', short: 'NUS' },
+      { url: 'https://www.ntu.edu.sg', tier: 'T2', title: 'Nanyang Technological University', short: 'NTU' },
+      { url: 'https://www.smu.edu.sg', tier: 'T2', title: 'Singapore Management University', short: 'SMU' },
     ],
   },
   {
@@ -77,6 +84,9 @@ export const DESTINATIONS: Destination[] = [
       'Apply for the F-1 visa and pay the visa fee.',
       'Follow the U.S. embassy or consulate instructions for your appointment.',
     ],
+    admissions: [
+      { url: 'https://studyinthestates.dhs.gov', tier: 'T1', title: 'Study in the States (DHS)', short: 'Study in the States' },
+    ],
   },
   {
     slug: 'uk',
@@ -95,6 +105,14 @@ export const DESTINATIONS: Destination[] = [
       'Accept an offer from a UK university.',
       'Prepare evidence of maintenance funds.',
       'Apply for the Student visa on GOV.UK and pay the fee.',
+    ],
+    admissions: [
+      {
+        url: 'https://www.ukcisa.org.uk',
+        tier: 'T2',
+        title: 'UKCISA (UK Council for International Student Affairs)',
+        short: 'UKCISA',
+      },
     ],
   },
   {
@@ -124,6 +142,14 @@ export const DESTINATIONS: Destination[] = [
       'Obtain a provincial or territorial attestation letter (PAL/TAL) unless you are exempt.',
       'Prepare proof of funds and pay the application fees.',
       'Apply for your study permit online with IRCC.',
+    ],
+    admissions: [
+      {
+        url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html',
+        tier: 'T1',
+        title: 'IRCC — Designated learning institutions list',
+        short: 'DLI list',
+      },
     ],
   },
   {
@@ -155,6 +181,10 @@ export const DESTINATIONS: Destination[] = [
       'Prepare evidence of funds.',
       'Apply for the Student visa (subclass 500) online and pay the fee.',
     ],
+    admissions: [
+      { url: 'https://cricos.education.gov.au', tier: 'T1', title: 'CRICOS register of courses', short: 'CRICOS' },
+      { url: 'https://www.studyaustralia.gov.au', tier: 'T1', title: 'Study Australia', short: 'Study Australia' },
+    ],
   },
   {
     slug: 'germany',
@@ -175,6 +205,7 @@ export const DESTINATIONS: Destination[] = [
       'Arrange proof of funds (commonly a blocked account).',
       'Apply for a national (D) visa for study at the German mission responsible for you.',
     ],
+    admissions: [{ url: 'https://www.daad.de/en/', tier: 'T2', title: 'DAAD — study programmes in Germany', short: 'DAAD' }],
   },
   {
     slug: 'france',
@@ -194,6 +225,7 @@ export const DESTINATIONS: Destination[] = [
       'Receive admission and prepare proof of resources.',
       'Apply for the VLS-TS student visa on France-Visas and pay the fee.',
     ],
+    admissions: [{ url: 'https://www.campusfrance.org/en', tier: 'T2', title: 'Campus France', short: 'Campus France' }],
   },
   {
     slug: 'ireland',
@@ -214,6 +246,10 @@ export const DESTINATIONS: Destination[] = [
       'Apply for a D study visa and pay the fee.',
       'Obtain Stamp 2 immigration permission.',
     ],
+    admissions: [
+      { url: 'https://www.educationinireland.com', tier: 'T2', title: 'Education in Ireland', short: 'Education in Ireland' },
+      { url: 'https://www.qqi.ie', tier: 'T2', title: 'QQI — Quality and Qualifications Ireland', short: 'QQI' },
+    ],
   },
   {
     slug: 'new-zealand',
@@ -233,6 +269,7 @@ export const DESTINATIONS: Destination[] = [
       'Prepare evidence of funds.',
       'Apply for the Fee Paying Student Visa online.',
     ],
+    admissions: [{ url: 'https://www.enz.govt.nz', tier: 'T1', title: 'Education New Zealand', short: 'ENZ' }],
   },
   {
     slug: 'uae',
@@ -251,6 +288,10 @@ export const DESTINATIONS: Destination[] = [
       'Receive admission from a UAE university.',
       'Your university sponsors your student residence visa.',
       'Follow your university’s instructions to complete the residence visa.',
+    ],
+    admissions: [
+      { url: 'https://www.caa.ae', tier: 'T2', title: 'Commission for Academic Accreditation', short: 'CAA' },
+      { url: 'https://www.khda.gov.ae', tier: 'T2', title: 'KHDA (Dubai)', short: 'KHDA' },
     ],
   },
   {
@@ -271,6 +312,7 @@ export const DESTINATIONS: Destination[] = [
       'Obtain a Certificate of Eligibility (CoE).',
       'Apply for the Student visa at a Japanese embassy or consulate with your CoE.',
     ],
+    admissions: [{ url: 'https://www.studyinjapan.go.jp/en/', tier: 'T2', title: 'Study in Japan (JASSO)', short: 'JASSO' }],
   },
 ];
 

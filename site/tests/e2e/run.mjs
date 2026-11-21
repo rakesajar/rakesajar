@@ -99,6 +99,15 @@ async function open(path, opts = {}) {
   return { page, ctx, errors };
 }
 async function axe(page) {
+  // Let finite entrance animations (split-flap board, panel fade) settle; scroll-driven ones never "finish".
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.timeline instanceof DocumentTimeline)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
   await page.addScriptTag({ content: AXE });
   const r = await page.evaluate(async () => (await window.axe.run(document, { resultTypes: ['violations'] })).violations);
   return r.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id}: ${v.nodes[0]?.target}`);
@@ -244,6 +253,21 @@ try {
     const t = await a.page.locator('[data-answers] article').first().textContent();
     assert(t.includes('Not stated') && !t.includes('£558'), 'stale fee was stated: ' + t.slice(0, 200));
     await a.ctx.close();
+  });
+
+  await check('Home: audience switcher works with and without JavaScript', async () => {
+    for (const js of [true, false]) {
+      const ctx = await browser.newContext({ javaScriptEnabled: js });
+      const page = await ctx.newPage();
+      await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+      assert(await page.locator('[data-door="ug"]').isVisible(), 'undergraduate panel not shown by default');
+      assert(!(await page.locator('[data-door="pg"]').isVisible()), 'postgraduate panel visible before choosing');
+      await page.click('label[for=door-pg]');
+      assert(await page.locator('[data-door="pg"] [data-fact="ca-pal-exempt"]').isVisible(), 'PG panel lacks master’s/PhD facts');
+      await page.keyboard.press('ArrowRight');
+      assert(await page.locator('[data-door="parent"]').isVisible(), 'arrow key does not move between audiences');
+      await ctx.close();
+    }
   });
 
   await check('AC-10 accessibility (axe: no serious/critical), light and dark', async () => {

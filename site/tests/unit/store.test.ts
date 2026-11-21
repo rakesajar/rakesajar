@@ -33,7 +33,7 @@ describe('seed fact store', () => {
 
   it('uses only allowlisted official pages for portals and funding links', () => {
     for (const d of DESTINATIONS)
-      for (const s of [...d.portals, ...d.funding]) {
+      for (const s of [...d.portals, ...d.funding, ...d.admissions]) {
         const v = classifyUrl(s.url, [d.slug]);
         expect(v.allowed, s.url).toBe(true);
         expect(v.tier, s.url).toBe(s.tier);

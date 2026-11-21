@@ -161,7 +161,7 @@ const changing = (slug: string) =>
                 DESTINATIONS.map((d) => {
                   const e = estimates[d.slug];
                   return (
-                    <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)} {...freshAttrs(FACTS.filter((f) => e.lines.some((l) => l.factId === f.id)))}>
+                    <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)} data-group {...freshAttrs(FACTS.filter((f) => e.lines.some((l) => l.factId === f.id)))}>
                       {e.lines.length ? (
                         <>
                           <div data-fact={e.lines.map((l) => l.factId).join(' ')} data-total={e.total} data-ccy={d.currency}>
@@ -186,8 +186,9 @@ const changing = (slug: string) =>
               <th scope="row">In your currency</th>
               {
                 DESTINATIONS.map((d) => (
-                  <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)}>
+                  <td data-col={d.slug} hidden={!DEFAULT.includes(d.slug)} data-group {...freshAttrs(FACTS.filter((f) => estimates[d.slug].lines.some((l) => l.factId === f.id)))}>
                     <span data-converted={d.slug} data-fact={estimates[d.slug].lines.map((l) => l.factId).join(' ') || 'none'}>—</span>
+                    <ViewFlags />
                   </td>
                 ))
               }

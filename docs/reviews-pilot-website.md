@@ -5,7 +5,7 @@ Fixes are in the commit after `879fa8b`. Delta review requested on the fix commi
 
 | Sev | Finding | Disposition |
 |---|---|---|
-| BLOCKER | Fraud detection missed ordinary wording | Fixed: word-proximity rules (no nested quantifiers) + return-intent borrowing rule; 5 new refusal tests and 6 legitimate-question tests (education loans, sponsors) |
+| BLOCKER | Fraud detection missed ordinary wording | Fixed: word-proximity rules (no nested quantifiers) + return-intent borrowing rule; 5 new refusal tests. (The legitimate-question tests claimed here were missing at d15dba3; added in the delta-fix commit, 13 cases.) |
 | MAJOR | Distress patterns too narrow | Fixed: failure/ashamed/burden/"can't do this"/"ruined"; 3 new tests |
 | MAJOR | Keyword topics let specific out-of-scope questions get adjacent facts | Fixed: unsupported-subject check runs before topics (spouse, refunds, IHS, PR, IELTS, APS…); qualifier rule for holidays/on/off-campus work; 9 new tests |
 | MAJOR | `opt` aliased to USA; `aps` mapped to post-study | Fixed: removed; upper-case "US" and "the us" recognised |
@@ -25,3 +25,19 @@ Fixes are in the commit after `879fa8b`. Delta review requested on the fix commi
 | NIT | "N changing" counted volatile in-force facts | Fixed in redesign |
 | NIT | Signals attached regardless of topic | Fixed: signals carry topics |
 | NIT | Theme toggle state | Fixed: `aria-pressed` and state label |
+
+## Delta review of d15dba3
+
+| Sev | Finding | Disposition |
+|---|---|---|
+| MAJOR | Wider fraud matching refused legitimate questions (write my SOP, doctor certificate, spot a fake offer, change documents after submitting, accidental overstay) | Fixed: "for me"/"can you write" required; doctor/change/modify no longer bare triggers; anti-fraud intent (spot, check, avoid, scam…) exempt; overstay/volunteer/permit questions now `no_facts` with official link; 13 legitimate-question tests |
+| MINOR | `aps` over-blocked France | Fixed: APS refused only when France is not a destination; France answers `fr-aps` |
+| MINOR | Parent's disappointment about a fee triggered care response | Fixed: requires a first-person object ("in me", "ashamed of me") |
+| MINOR | Specific permission questions fell through to snapshot | Fixed: disclose/declare/change course/switch/extend/renew added to unsupported subjects; tests |
+| MINOR | Disposition record claimed missing tests | Corrected above |
+| MINOR | Home copy: Graduate Route date confusion, notice-period claim, "every line links" vs cards | Fixed in admissions-first home rewrite; cards now show source host and date |
+| MINOR | Plans "will stay free" pricing promise | Fixed: "free during the pilot" |
+| NIT | "Replaced by a newer rule" wording | Fixed: "This rule’s end date has passed" |
+| NIT | Stale count included totals | Fixed: `data-group` excluded from count |
+| NIT | Converted total had no freshness flag | Fixed |
+| NIT | BUILD_DATE uses real clock at build | Accepted: view-time flags cover date transitions; rebuild daily recommended in PROGRESS |

@@ -131,8 +131,21 @@ describe('refusals (CA-4, CA-6, CA-7, §9)', () => {
       'How much proof of funds for Canada?',
       'Can you give feedback on my SOP?',
       'What documents for a UK visa?',
+      'Can I show an education loan as proof of funds for the UK visa?',
+      'My uncle will sponsor me, can his bank statement count for the visa?',
+      'My parents took a loan that I will repay after graduating, does it count for Canada?',
+      'Will the visa rules change next year?',
+      'How do I write my SOP for Canada?',
+      'Who should write my LOR for the UK?',
+      'Do I need a doctor certificate for the UK visa?',
+      'How can I spot a fake offer letter for UK universities?',
+      'Can I change my documents after submitting my Canada application?',
+      'How do I modify documents on my UK application?',
+      'Can I edit my statement of purpose for Canada after submitting?',
+      'Can I volunteer without a work permit in Canada?',
+      'What happens if I overstay my visa by a day by mistake?',
     ])
-      expect(isFraudAdjacent(text)).toBe(false);
+      expect(isFraudAdjacent(text), text).toBe(false);
   });
 
   it('responds with care to distress, before anything else', () => {
@@ -247,5 +260,26 @@ describe('date-sensitive answers', () => {
     expect(a.kind === 'answer' && a.dateSensitive).toBe(true);
     const b = q('How many hours can I work in Japan?');
     expect(b.kind === 'answer' && b.dateSensitive).toBe(false);
+  });
+});
+
+describe('delta review regressions', () => {
+  it('APS: France answers, other countries refuse', () => {
+    const fr = q('Can I get the APS in France after my master’s?');
+    expect(fr.kind === 'answer' && fr.items.map((i) => i.factId)).toContain('fr-aps');
+    expect(q('Do I need APS for Germany?')).toMatchObject({ kind: 'refuse', reason: 'no_facts' });
+  });
+  it('a parent’s disappointment about a fee is not a crisis', () => {
+    expect(q('My mom is disappointed that UK raised the visa fee. What is it?').kind).toBe('answer');
+    expect(q('My parents are so disappointed in me after the UK refusal').kind).toBe('care');
+  });
+  it('specific visa questions we hold no facts on are refused, not answered with the snapshot', () => {
+    for (const text of [
+      'Do I need to disclose a previous visa refusal for UK?',
+      'Can I change course in the UK on a student visa?',
+      'What happens if I overstay my UK visa by a day by mistake?',
+      'Can I volunteer without a work permit in Canada?',
+    ])
+      expect(q(text), text).toMatchObject({ kind: 'refuse', reason: 'no_facts' });
   });
 });

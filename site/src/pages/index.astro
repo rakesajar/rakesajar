@@ -2,12 +2,15 @@
 import Base from '../layouts/Base.astro';
 import DestCard from '../components/DestCard.astro';
 import FactRow from '../components/FactRow.astro';
+import ViewFlags from '../components/ViewFlags.astro';
+import type { Fact, Stage } from '../data/types';
 import { BUILD_DATE, CHANGES, DESTINATIONS, FACTS, SIGNALS, DESTINATION_BY_SLUG } from '../lib/store';
-import { factById, formatDate, presentation } from '../lib/facts';
+import { factById, formatDate, freshAttrs, presentation } from '../lib/facts';
+import { hostOf } from '../lib/domains';
 
 const today = BUILD_DATE;
-const example = factById(FACTS, 'uk-graduate-2y');
-const recent = CHANGES.filter((c) => c.destination !== 'all').slice(0, 4);
+const example = factById(FACTS, 'fr-fee-master');
+const recent = CHANGES.filter((c) => c.destination !== 'all').slice(0, 3);
 const KIND: Record<string, { pill: string; label: string }> = {
   announced: { pill: 'info', label: 'Announced' },
   litigated: { pill: 'bad', label: 'In court' },
@@ -21,68 +24,81 @@ const board = DESTINATIONS.map((d) => {
   const changing =
     facts.filter((f) => ['upcoming', 'not_current'].includes(presentation(f, today))).length +
     SIGNALS.filter((s) => s.destination === d.slug).length;
-  const checked = facts.map((f) => f.verifiedAt).sort().at(-1)!;
-  return { d, changing, checked };
+  return { d, changing };
 });
+
+// Facts that differ by level of study, grouped for the "where are you now" panels.
+const byStage = (stage: Stage): Fact[] =>
+  FACTS.filter((f) => f.stages?.includes(stage) && ['current', 'upcoming'].includes(presentation(f, today)));
+const ug = byStage('ug');
+const pg = FACTS.filter(
+  (f) =>
+    (f.stages?.includes('pg') || f.stages?.includes('phd')) &&
+    !f.stages?.includes('ug') &&
+    ['current', 'upcoming'].includes(presentation(f, today)),
+);
+const tuitionFacts = FACTS.filter((f) => f.topic === 'tuition' && presentation(f, today) === 'current');
 ---
+
 <Base
   title="Pathfinder"
-  description="Visa, work and cost rules for 11 study-abroad destinations, taken from official government pages, with a link to each source and the date it was last checked. No commissions."
+  description="Choosing where to study abroad after Class 12 or your bachelor's: compare 11 countries on how to apply, tuition, what you'd study on and the official costs, each linked to its official source."
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Pathfinder',
-    description: 'Study-abroad rules for 11 countries, checked against official sources.',
+    description: 'Choosing where to study abroad, checked against official sources.',
   }}
 >
   <section class="hero">
     <div class="container grid grid-2" style="align-items:center;gap:clamp(32px,5vw,64px)">
       <div>
-        <p class="eyebrow">Study abroad · 11 countries</p>
-        <h1>Before you pay a deposit, read what the government actually says.</h1>
+        <p class="eyebrow">University admissions abroad · 11 countries</p>
+        <h1>Choosing where to apply is the biggest decision. Make it on the official facts.</h1>
         <p class="lede">
-          Visa rules, work hours, what happens after graduation and the official costs, taken from the immigration and
-          education websites of each country. Every line links to its source and shows the day we last checked it.
+          For students finishing Class 12 or a bachelor’s, and the parents helping them decide. See where each country’s courses
+          are listed, what tuition looks like, what you’d study on and what the government expects you to show, all linked to the
+          official pages.
         </p>
         <div class="row" style="margin-top:28px">
-          <a class="btn btn-primary" href="/destinations">Choose a country</a>
-          <a class="btn btn-secondary" href="/compare">Compare two</a>
+          <a class="btn btn-primary" href="#where-are-you">Start from where you are</a>
+          <a class="btn btn-secondary" href="/compare">Compare two countries</a>
         </div>
         <p class="small muted" style="margin-top:24px;max-width:52ch">
-          We don’t take money from universities or agents, so we have no reason to nudge you towards any of them.
+          No university pays us, and no agent earns from your choice. We don’t rank universities and we never will.
         </p>
       </div>
 
       <div class="board" role="region" aria-label="Destinations board">
         <div class="board-head">
           <span class="board-title">Departures</span>
-          <span>Status as of {formatDate(today)}</span>
+          <span>As of {formatDate(today)}</span>
         </div>
         <div style="overflow-x:auto">
           <table>
-            <caption class="visually-hidden">Destinations with their last check date and whether rules are changing</caption>
+            <caption class="visually-hidden">Destinations, where to find courses, and whether rules are changing</caption>
             <thead>
               <tr>
                 <th scope="col">Code</th>
                 <th scope="col">Destination</th>
-                <th scope="col" class="col-wide">Last checked</th>
+                <th scope="col" class="col-wide">Find courses via</th>
                 <th scope="col">Remarks</th>
               </tr>
             </thead>
             <tbody>
               {
-                board.map(({ d, changing, checked }) => (
+                board.map(({ d, changing }, i) => (
                   <tr>
                     <td>
-                      <span class="flap">{d.code}</span>
+                      <span class="flap" style={`--i:${i}`}>
+                        {d.code}
+                      </span>
                     </td>
                     <td>
                       <a href={`/destinations/${d.slug}`}>{d.name}</a>
                     </td>
-                    <td class="col-wide">{formatDate(checked)}</td>
-                    <td class={changing ? 'status-changing' : 'status-settled'}>
-                      {changing ? 'Changes ahead' : 'No changes logged'}
-                    </td>
+                    <td class="col-wide">{d.admissions[0].short}</td>
+                    <td class={changing ? 'status-changing' : 'status-settled'}>{changing ? 'Changing' : 'No changes'}</td>
                   </tr>
                 ))
               }
@@ -93,71 +109,236 @@ const board = DESTINATIONS.map((d) => {
     </div>
   </section>
 
+  <section class="section" id="where-are-you" style="padding-top:0">
+    <div class="container">
+      <p class="eyebrow">Where are you right now?</p>
+      <h2 style="max-width:24ch">The same country can look very different depending on what you’re applying for</h2>
+      <div class="doors">
+        <fieldset class="door-tabs">
+        <legend class="visually-hidden">Choose what describes you</legend>
+        <input type="radio" name="door" id="door-ug" value="ug" checked />
+        <label for="door-ug" class="door">
+          <span class="door-kicker">I’m in or finishing</span>
+          <span class="door-title">Class 12</span>
+        </label>
+        <input type="radio" name="door" id="door-pg" value="pg" />
+        <label for="door-pg" class="door">
+          <span class="door-kicker">I’ve done or am finishing</span>
+          <span class="door-title">A bachelor’s</span>
+        </label>
+        <input type="radio" name="door" id="door-parent" value="parent" />
+        <label for="door-parent" class="door">
+          <span class="door-kicker">I’m helping as a</span>
+          <span class="door-title">Parent or guardian</span>
+        </label>
+        </fieldset>
+
+        <div class="door-panel" data-door="ug">
+          <div class="grid grid-2" style="gap:32px;align-items:start">
+            <div>
+              <h3>Applying for an undergraduate degree</h3>
+              <p class="muted">
+                Most of what you’ll compare is the course itself: where it’s listed, what it costs, and what you’ll be allowed to
+                do once you graduate. Entry requirements are set by each university, so the university’s own course page is the
+                final word.
+              </p>
+              <ul class="check-list small">
+                <li>Shortlist countries first, then courses. The official course listings are on each country card below.</li>
+                <li>Read the university’s entry requirements for applicants with your board (CBSE, ICSE, state board or other).</li>
+                <li>Note what happens after the degree. It changes for some countries depending on when you apply.</li>
+              </ul>
+            </div>
+            <div>
+              <p class="small subtle mono" style="margin:0 0 8px">Rules that apply to undergraduates</p>
+              <ul class="stage-facts">
+                {
+                  ug.map((f) => (
+                    <li data-fact={f.id} {...freshAttrs([f])}>
+                      <span class="stage-country mono">{DESTINATION_BY_SLUG[f.destination].code}</span>
+                      <span>
+                        <strong>{f.label}:</strong> {f.value}
+                        <span class="cite">
+                          {' '}
+                          · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · {formatDate(f.verifiedAt)}
+                        </span>
+                        <ViewFlags />
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="door-panel" data-door="pg">
+          <div class="grid grid-2" style="gap:32px;align-items:start">
+            <div>
+              <h3>Applying for a master’s or PhD</h3>
+              <p class="muted">
+                Each university sets its own entry rules for postgraduate courses, and a few visa rules treat master’s and PhD
+                students differently from undergraduates. Those differences are listed here so they don’t surprise you later.
+              </p>
+              <ul class="check-list small">
+                <li>Check whether your degree is recognised for entry: the university’s admissions page will say.</li>
+                <li>For a PhD, find the supervisor or research group before you apply.</li>
+                <li>Compare what each country allows after a postgraduate or research degree.</li>
+              </ul>
+            </div>
+            <div>
+              <p class="small subtle mono" style="margin:0 0 8px">Rules specific to master’s and PhD</p>
+              <ul class="stage-facts">
+                {
+                  pg.map((f) => (
+                    <li data-fact={f.id} {...freshAttrs([f])}>
+                      <span class="stage-country mono">{DESTINATION_BY_SLUG[f.destination].code}</span>
+                      <span>
+                        <strong>{f.label}:</strong> {f.value}
+                        <span class="cite">
+                          {' '}
+                          · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · {formatDate(f.verifiedAt)}
+                        </span>
+                        <ViewFlags />
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="door-panel" data-door="parent">
+          <div class="grid grid-2" style="gap:32px;align-items:start">
+            <div>
+              <h3>If you’re the one paying</h3>
+              <p class="muted">
+                Every country page separates the amounts set by the government, like visa fees and proof of funds, from the
+                amounts only the university can tell you, like tuition. Those two are easy to mix up, and not everyone who
+                advises you will make the difference clear.
+              </p>
+              <ul class="check-list small">
+                <li>Use the cost planner with the tuition on the offer letter to see the first year in rupees.</li>
+                <li>Before any money leaves your account, check the amount on the official page we link to.</li>
+                <li>Pay only on official university or government websites. We list the official domains on every country page.</li>
+              </ul>
+              <a class="btn btn-secondary" href="/cost-planner">Open the cost planner</a>
+            </div>
+            <div>
+              <p class="small subtle mono" style="margin:0 0 8px">Tuition figures we’ve verified so far</p>
+              <ul class="stage-facts">
+                {
+                  tuitionFacts.map((f) => (
+                    <li data-fact={f.id} {...freshAttrs([f])}>
+                      <span class="stage-country mono">{DESTINATION_BY_SLUG[f.destination].code}</span>
+                      <span>
+                        <strong>{f.label}:</strong> {f.value}
+                        <span class="cite">
+                          {' '}
+                          · <a href={f.sources[0].url} rel="noopener" target="_blank">{hostOf(f.sources[0].url)}</a> · {formatDate(f.verifiedAt)}
+                        </span>
+                        <ViewFlags />
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+              <p class="small muted">For other countries, tuition is set by each university. It will be on the course page and your offer letter.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" style="padding-top:0">
     <div class="container">
       <p class="eyebrow">Destinations</p>
       <div class="row" style="justify-content:space-between;align-items:end;margin-bottom:28px">
         <h2 style="margin:0;max-width:22ch">Start with the country you keep coming back to</h2>
-        <a class="btn btn-ghost" href="/destinations">See them all as a list</a>
+        <a class="btn btn-ghost" href="/destinations">All destinations</a>
       </div>
-      <div class="grid grid-3">
+      <div class="grid grid-3 cards">
         {DESTINATIONS.map((d) => <DestCard destination={d} facts={FACTS} today={today} />)}
       </div>
     </div>
   </section>
 
   <section class="section" style="background:var(--surface-2);border-block:1px dashed var(--line-strong)">
-    <div class="container anatomy">
-      <div>
-        <p class="eyebrow">How to read this site</p>
-        <h2>Every rule comes with its paperwork</h2>
-        <p class="muted" style="margin-bottom:24px">
-          Here is one real entry from the United Kingdom page. Each part is there so you can check it yourself.
-        </p>
-        <div class="facts" style="box-shadow:var(--shadow)">
-          <FactRow fact={example} today={today} anchor={false} />
-        </div>
-      </div>
-      <ol class="anatomy-notes">
+    <div class="container">
+      <p class="eyebrow">The admissions road</p>
+      <h2 style="max-width:26ch">From “maybe abroad” to a seat on the plane, in the order it happens</h2>
+      <ol class="road">
         <li>
-          <span>
-            <strong>The rule</strong>, in plain words, kept as close as we can to how the official page puts it.
-          </span>
+          <span class="road-step mono">Shortlist</span>
+          <h3>Pick two or three countries</h3>
+          <p class="small muted">Compare how you’d apply, tuition, and what you can do after the degree.</p>
+          <a class="small" href="/compare">Compare countries</a>
         </li>
         <li>
-          <span>
-            <strong>The stamp.</strong> Green means in force. Blue means announced with a start date. Amber and red mean proposed,
-            in court or being re-checked, and we never present those as today’s rule.
-          </span>
+          <span class="road-step mono">Research</span>
+          <h3>Find courses and entry requirements</h3>
+          <p class="small muted">Use the official course listings on each country page, then the university’s own page.</p>
+          <a class="small" href="/destinations">Country pages</a>
         </li>
         <li>
-          <span>
-            <strong>The source.</strong> T1 is a government or regulator. T2 is a university or official register. Click it and you
-            land on the page we used.
-          </span>
+          <span class="road-step mono">Apply</span>
+          <h3>Send applications and track deadlines</h3>
+          <p class="small muted">Deadlines are set by each university. Premium will keep them in one tracker.</p>
+          <a class="small" href="/plans">About Premium</a>
         </li>
         <li>
-          <span>
-            <strong>The date we checked.</strong> When it gets too old, the entry says “re-check due” instead of hoping nobody
-            notices.
-          </span>
+          <span class="road-step mono">Offer</span>
+          <h3>Accept an offer and plan the money</h3>
+          <p class="small muted">Add your tuition to the official fees and proof-of-funds amounts.</p>
+          <a class="small" href="/cost-planner">Cost planner</a>
+        </li>
+        <li>
+          <span class="road-step mono">Visa</span>
+          <h3>Apply for your student visa</h3>
+          <p class="small muted">Each country page lists the steps and the official pages to apply on.</p>
+          <a class="small" href="/destinations/uk#steps">See an example</a>
         </li>
       </ol>
     </div>
   </section>
 
   <section class="section">
+    <div class="container anatomy">
+      <div>
+        <p class="eyebrow">How to read this site</p>
+        <h2>Every number comes with its paperwork</h2>
+        <p class="muted" style="margin-bottom:24px">This is a real entry from the France page. Each part is there so you can check it yourself.</p>
+        <div class="facts" style="box-shadow:var(--shadow)">
+          <FactRow fact={example} today={today} anchor={false} />
+        </div>
+      </div>
+      <ol class="anatomy-notes">
+        <li><span><strong>The figure</strong>, worded as closely as we can to the official page.</span></li>
+        <li>
+          <span>
+            <strong>The stamp.</strong> Green is in force, blue is announced with a start date, amber and red mean proposed, in
+            court or being re-checked. Those are never shown as today’s rule.
+          </span>
+        </li>
+        <li>
+          <span><strong>The source.</strong> T1 is a government. T2 is a university or official register. Click through to the page we used.</span>
+        </li>
+        <li>
+          <span><strong>The date we checked.</strong> When it gets old, the entry says “re-check due” instead of hoping nobody notices.</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
     <div class="container grid grid-2" style="gap:clamp(32px,5vw,64px);align-items:start">
       <div>
         <p class="eyebrow">Notice board</p>
-        <h2>What’s moving right now</h2>
-        <p class="muted">
-          Student visa rules change more often than most families expect, and usually with a few weeks’ notice. When something is
-          announced, proposed or taken to court, it goes up here first.
-        </p>
+        <h2>Changes that could affect this year’s applicants</h2>
         <p class="aside-note">
-          If you’re applying to the UK this winter, look at the Graduate Route entry. The answer depends on whether you apply
-          before or after 1 January 2027.
+          Applying to the UK? What you can do after graduating depends on when you apply for the Graduate Route, before or after 1
+          January 2027.
         </p>
         <a class="btn btn-secondary" href="/changes">Read the full change log</a>
       </div>
@@ -183,58 +364,17 @@ const board = DESTINATIONS.map((d) => {
 
   <section class="section" style="padding-top:0">
     <div class="container">
-      <hr class="rule-dashed" />
-      <div class="grid grid-3" style="margin-top:40px;gap:32px">
+      <div class="panel grid grid-2" style="gap:32px;align-items:center">
         <div>
-          <h3>Torn between two countries?</h3>
-          <p class="muted small">
-            Put them side by side: what you can study on, how much you can work, how long you can stay after, and the official
-            costs in rupees or your own currency.
-          </p>
-          <a href="/compare">Compare countries</a>
+          <p class="eyebrow">Things we won’t do</p>
+          <h2 style="font-size:1.6rem">We’re here to help you choose, not to choose for you</h2>
         </div>
-        <div>
-          <h3>Someone at home is asking what it will cost</h3>
-          <p class="muted small">
-            The cost planner adds the official visa fees and proof-of-funds amounts to the tuition on your offer letter, so the
-            conversation starts from real numbers.
-          </p>
-          <a href="/cost-planner">Open the cost planner</a>
-        </div>
-        <div>
-          <h3>You have one specific question</h3>
-          <p class="muted small">
-            Ask it in your own words. You get only what we’ve verified, each point with its source. If we haven’t verified it, we
-            tell you who to ask instead.
-          </p>
-          <a href="/ask">Ask a question</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" style="padding-top:0">
-    <div class="container grid grid-2" style="gap:32px;align-items:start">
-      <div class="card" style="background:var(--surface)">
-        <p class="eyebrow">For parents</p>
-        <h2 style="font-size:1.5rem">If you’re the one paying</h2>
-        <p class="muted">
-          Each country page separates the amounts set by the government, like visa fees and proof of funds, from the amounts
-          only the university can tell you, like tuition. Those two are easy to mix up, and agents don’t always make the
-          difference clear.
-        </p>
-        <p class="muted" style="margin:0">
-          Before any money leaves your account, check the amount on the official page we link to. That is the one that counts.
-        </p>
-      </div>
-      <div>
-        <p class="eyebrow">Things we won’t do</p>
         <ul class="check-list x-list">
           <li>Take a commission from a university, agent or lender</li>
-          <li>Tell you your chances of getting in or getting a visa</li>
+          <li>Rank universities or tell you your chances of admission</li>
           <li>Write your statement of purpose for you (we’ll give feedback on yours)</li>
-          <li>Fill in or submit official forms, or ask for your portal passwords</li>
-          <li>Quote a rule or fee we haven’t checked against an official page</li>
+          <li>Fill in or submit applications, or ask for your portal passwords</li>
+          <li>Quote a rule, fee or deadline we haven’t checked against an official page</li>
         </ul>
       </div>
     </div>

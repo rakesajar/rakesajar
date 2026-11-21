@@ -1343,3 +1343,314 @@ code {
   font-style: italic;
   color: var(--ink-2);
 }
+
+/* ---------------------------------------------------------------- audience doors (CSS-only tabs via :has) */
+.doors {
+  margin-top: 28px;
+}
+.door-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.door-tabs input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.door {
+  display: grid;
+  gap: 2px;
+  padding: 16px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  font-weight: 400;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.door:hover {
+  border-color: var(--ink-3);
+}
+.door-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.door-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 560;
+  color: var(--ink);
+}
+.door-tabs input:checked + .door {
+  background: var(--cover);
+  border-color: var(--cover);
+  box-shadow: var(--shadow);
+}
+.door-tabs input:checked + .door .door-title,
+.door-tabs input:checked + .door .door-kicker {
+  color: var(--cover-ink);
+}
+.door-tabs input:focus-visible + .door {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.door-panel {
+  border-top: 1px dashed var(--line-strong);
+  padding-top: 24px;
+}
+.door-panel + .door-panel {
+  margin-top: 32px;
+}
+/* Without :has() every panel shows, stacked; with it, only the chosen one. */
+@supports selector(:has(*)) {
+  .door-panel {
+    display: none;
+  }
+  .door-panel + .door-panel {
+    margin-top: 0;
+  }
+  .doors:has(#door-ug:checked) [data-door='ug'],
+  .doors:has(#door-pg:checked) [data-door='pg'],
+  .doors:has(#door-parent:checked) [data-door='parent'] {
+    display: block;
+    animation: panel-in 0.25s ease-out;
+  }
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.stage-facts {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.stage-facts li {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 0.93rem;
+}
+.stage-facts li:first-child {
+  border-top: 0;
+}
+.stage-country {
+  display: inline-grid;
+  place-items: center;
+  height: 24px;
+  border-radius: 3px;
+  background: var(--cover);
+  color: var(--cover-ink);
+  font-size: 0.7rem;
+}
+
+/* ---------------------------------------------------------------- admissions road */
+.road {
+  list-style: none;
+  padding: 0;
+  margin: 32px 0 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  counter-reset: road;
+}
+.road li {
+  position: relative;
+  counter-increment: road;
+  padding: 18px 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.road li::before {
+  content: counter(road, decimal-leading-zero);
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: var(--line-strong);
+}
+.road h3 {
+  font-size: 1.05rem;
+  margin: 6px 0 8px;
+}
+.road-step {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bad);
+}
+@media (min-width: 1020px) {
+  .road li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -13px;
+    width: 10px;
+    border-top: 2px dotted var(--line-strong);
+  }
+}
+
+/* ---------------------------------------------------------------- cards: whole card clickable, container-aware */
+.cards {
+  container-type: inline-size;
+}
+.visa {
+  container-type: inline-size;
+}
+.visa-link {
+  color: inherit;
+  text-decoration: none;
+}
+.visa-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.visa-link:focus-visible {
+  outline: none;
+}
+.visa:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.visa-sub {
+  position: relative;
+  z-index: 1;
+}
+@container (min-width: 420px) {
+  .visa dl {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------- motion: split-flap board, stamp press */
+@media (prefers-reduced-motion: no-preference) {
+  .board .flap {
+    animation: flap 0.5s cubic-bezier(0.3, 1.4, 0.6, 1) both;
+    animation-delay: calc(var(--i, 0) * 55ms + 150ms);
+    transform-origin: 50% 50%;
+  }
+  @supports (animation-timeline: view()) {
+    .fact .pill,
+    .notice .pill,
+    .visa .pill {
+      animation: stamp linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+@keyframes flap {
+  0% {
+    transform: perspective(200px) rotateX(-90deg);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(200px) rotateX(0);
+  }
+}
+@keyframes stamp {
+  from {
+    opacity: 0;
+    scale: 1.35;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- cross-document view transitions */
+@view-transition {
+  navigation: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+}
+
+/* ---------------------------------------------------------------- print: parents print cost pages */
+@media print {
+  :root {
+    --bg: #fff;
+    --surface: #fff;
+    --surface-2: #fff;
+    --ink: #000;
+    --ink-2: #222;
+    --ink-3: #444;
+    --line: #bbb;
+  }
+  body {
+    background: #fff !important;
+    font-size: 11pt;
+  }
+  .site-header,
+  .site-footer,
+  .toc,
+  .theme-toggle,
+  .btn,
+  .skip-link,
+  noscript {
+    display: none !important;
+  }
+  .guide {
+    display: block;
+  }
+  .guide-section {
+    break-inside: avoid-page;
+  }
+  .fact,
+  .card,
+  tr {
+    break-inside: avoid;
+  }
+  .pill {
+    transform: none;
+    animation: none !important;
+  }
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 8pt;
+    color: #444;
+    word-break: break-all;
+  }
+  .board,
+  .visa-link::after {
+    display: none;
+  }
+  main::after {
+    content: 'Printed from Pathfinder. Figures change: confirm on the official page before paying or applying.';
+    display: block;
+    margin-top: 24pt;
+    font-size: 9pt;
+  }
+}
